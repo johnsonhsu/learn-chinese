@@ -1,0 +1,13 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# This repository version-controls ONLY the app "brain": the curriculum
+# CHARACTERS & SENTENCES, exported from content.db to readable TSV in brain/.
+# The application code lives in this folder locally but is intentionally NOT
+# tracked here.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Ignore everything by default …
+/*
+
+# … except the brain export and this ignore file.
+!/.gitignore
+!/brain/
