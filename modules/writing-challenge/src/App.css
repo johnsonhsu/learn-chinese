@@ -993,18 +993,27 @@ canvas {
   box-shadow: none;
   transform: translateY(-1px);
 }
+/* Done + user-skipped: placed AFTER the editorial .char-box base above so their
+   distinct colors win the cascade (the base was clobbering them by source order). */
+.char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
+.char-box-skipped { background: var(--paper-raised, #FBF8F0); border-color: var(--rule, #DAD2C2); color: var(--text-dim, #8A8377); box-shadow: none; }
 /* Above-level / auto-skip = the SAME red as .char-box-fail, ALWAYS, in every theme.
    Per reviewer: above-level/auto-skip is a negative state and must track the fail
    colour — tie it to the themed --error token with the same color-mix wash recipe as
    .char-box-fail below so the two are byte-identical now and if fail's red ever moves.
    (Was the --seal accent family — gold/teal/green/pink/platinum per theme — which made
    it read green/gold instead of red; that "≠ fail" distinction is intentionally
-   reversed.) */
+   reversed.)
+   ORDER MATTERS: this MUST come AFTER .char-box-done. An auto-skipped (above-level) char
+   that has been passed to the LEFT of the cursor carries BOTH `char-box-done char-box-above`
+   (auto-skip emits result 'skip', so it gets no graded pass/warn/fail class). All four are
+   single-class selectors of equal specificity, so source order decides — placing -above
+   after -done lets the red win over the grey -done, so a completed auto-skipped tile reads
+   red just like an upcoming one (previously the later -done clobbered it and a passed
+   auto-skipped tile rendered grey). It stays BEFORE the pass/warn/fail trio below so a
+   graded above-level char (auto-skip OFF: drawn + scored, carries -above + a trio class)
+   keeps its result colour — only the passed-auto-skipped (ungraded) case turns red. */
 .char-box-above { background: color-mix(in srgb, var(--error, #B23B30) 16%, var(--paper-raised)); border-color: var(--error, #B23B30); color: var(--error, #B23B30); box-shadow: none; }
-/* Done + user-skipped: placed AFTER the editorial .char-box base above so their
-   distinct colors win the cascade (the base was clobbering them by source order). */
-.char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
-.char-box-skipped { background: var(--paper-raised, #FBF8F0); border-color: var(--rule, #DAD2C2); color: var(--text-dim, #8A8377); box-shadow: none; }
 /* Stroke-result trio (pass=green → warn=orange → fail=red).
    ORDER MATTERS: these MUST come AFTER .char-box-done because a COMPLETED char in the
    live track (PracticePage) carries BOTH classes together, e.g. `char-box-done
