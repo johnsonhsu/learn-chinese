@@ -11,8 +11,16 @@
  * SECURITY: this is the user's own secret, entered on their own device. Never
  * log it. The proxy uses the client-sent key transiently for that one request
  * and never persists it server-side.
+ *
+ * DEMO ISOLATION (issue #48): the key is doubly sensitive in demo — without
+ * namespacing, the demo's profile-id collision (demo profile 1 vs real profile 1)
+ * would let the demo READ a real user's stored API key, or OVERWRITE it. Routing
+ * through demoKey() means demo touches only 'lc-gemini-key-u{id}-demo'; the real
+ * secret is never read or written. Reset each demo load via resetDemoKeys.
  */
-const userKey = (id: number) => `lc-gemini-key-u${id}`;
+import { demoKey } from '../offline/demo-key.js';
+
+const userKey = (id: number) => demoKey(`lc-gemini-key-u${id}`);
 
 export const getUserGeminiKey = (id: number) => localStorage.getItem(userKey(id)) ?? '';
 

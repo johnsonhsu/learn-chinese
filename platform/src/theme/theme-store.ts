@@ -24,25 +24,25 @@ import {
   type Theme,
 } from './themes.js';
 import { isFeatureUnlocked, setUnlockedFeatures } from '../utils/unlocks.js';
-import { isDemoMode } from '../offline/demo-mode.js';
+import { demoKey, resetDemoKeys } from '../offline/demo-key.js';
 
 // Device-level theme selection. Reuses the historical localStorage key so an
 // existing gold/silver device keeps its selection across the theme refactor.
 //
-// DEMO ISOLATION (issue #27 demo-by-default): the device theme is the ONE bit of
-// theme state that lives in localStorage, NOT in the demo IndexedDB jar that the
-// always-fresh reset wipes — so without isolation a theme picked in the demo
-// would survive a refresh (and, worse, a shared key would let the demo overwrite
-// the INSTALLED PWA's real theme on the same origin). Mirror user-store's jar
-// choice: in demo mode the device theme reads/writes a SEPARATE `-demo` key,
-// reset on each demo load (see resetDemoDeviceTheme); the real installed/non-demo
-// path keeps using the historical 'lc-gold-mode' untouched. Decided once at
-// module load — isDemoMode() is memoized and fixed for the page session.
-const REAL_DEVICE_THEME_KEY = 'lc-gold-mode';
-const DEMO_DEVICE_THEME_KEY = 'lc-gold-mode-demo';
-const DEVICE_THEME_KEY = isDemoMode() ? DEMO_DEVICE_THEME_KEY : REAL_DEVICE_THEME_KEY;
+// DEMO ISOLATION (issue #27 demo-by-default; generalized in #48): the device
+// theme and the per-profile override both live in localStorage, NOT in the demo
+// IndexedDB jar that the always-fresh reset wipes — so without isolation a theme
+// picked in the demo would survive a refresh (and, worse, a shared key would let
+// the demo overwrite the INSTALLED PWA's real theme on the same origin; the
+// per-profile override is worse still — demo profile ids collide with real ones).
+// Both keys now route through the shared demoKey() (offline/demo-key.ts): in demo
+// they become 'lc-gold-mode-demo' / 'lc-theme-u{id}-demo', reset on each demo load
+// (resetDemoKeys, called from ensureDemoSeed); the real installed/non-demo path
+// keeps the historical keys untouched. demoKey() is decided by the memoized
+// isDemoMode(), fixed for the page session — capture once at module load.
+const DEVICE_THEME_KEY = demoKey('lc-gold-mode');
 // Per-profile theme override, keyed by profile id. Empty/absent → use device.
-const profileThemeKey = (profileId: number) => `lc-theme-u${profileId}`;
+const profileThemeKey = (profileId: number) => demoKey(`lc-theme-u${profileId}`);
 
 // ── Device theme ────────────────────────────────────────────────────────────
 
@@ -69,20 +69,17 @@ export function setDeviceTheme(id: string): void {
 }
 
 /**
- * Reset the DEMO device theme to the default selection (always-fresh, issue #27).
- * Clears ONLY the isolated `lc-gold-mode-demo` key, so a theme picked while trying
- * the demo is wiped on the next demo load — matching how the demo IndexedDB jar is
- * reseeded. The real installed PWA's 'lc-gold-mode' is NEVER touched, even on the
- * same origin. Called from ensureDemoSeed; a no-op (and never writes the real key)
- * outside demo mode. Keep this paired with demo.ts's reset.
+ * Reset the DEMO theme keys to the default selection (always-fresh, issue #27).
+ * Now a thin wrapper over the shared resetDemoKeys() (issue #48), which clears ALL
+ * `-demo`-suffixed localStorage keys — so the isolated device theme
+ * ('lc-gold-mode-demo') AND the per-profile overrides ('lc-theme-u{id}-demo') are
+ * wiped on the next demo load. The real installed PWA's keys are NEVER touched,
+ * even on the same origin (resetDemoKeys is a no-op outside demo mode). Kept as a
+ * named export so demo.ts's existing call site and the device-theme isolation test
+ * keep their contract; new keys are covered automatically by resetDemoKeys.
  */
 export function resetDemoDeviceTheme(): void {
-  if (!isDemoMode()) return;
-  try {
-    localStorage.removeItem(DEMO_DEVICE_THEME_KEY);
-  } catch {
-    /* storage blocked — nothing persisted to clear */
-  }
+  resetDemoKeys();
 }
 
 // ── Per-profile override ──────────────────────────────────────────────────────

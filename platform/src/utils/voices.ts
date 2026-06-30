@@ -2,9 +2,16 @@
  * English TTS voice settings, managed from platform Settings. Shares localStorage
  * keys with modules/practice-english/src/speech.ts (the module RESOLVES the voice:
  * per-profile override → device default → auto-pick; here we just read/write them).
+ *
+ * DEMO ISOLATION (issue #48): both keys route through demoKey() so a voice picked
+ * in the demo writes 'pe-en-voice[-u{id}]-demo', never the real key. speech.ts uses
+ * the SAME demoKey() in the same page session, so the writer here and the resolver
+ * there always agree on which key to read.
  */
-const DEVICE_KEY = 'pe-en-voice';
-const userKey = (id: number) => `pe-en-voice-u${id}`;
+import { demoKey } from '../offline/demo-key.js';
+
+const DEVICE_KEY = demoKey('pe-en-voice');
+const userKey = (id: number) => demoKey(`pe-en-voice-u${id}`);
 
 // macOS "novelty"/legacy-robotic voices — never list these.
 const JUNK = new Set([

@@ -25,7 +25,7 @@
  * dataset to maintain): a couple of profiles with a band of "known" chars.
  */
 import { setPref, deletePref } from './user-store.js';
-import { resetDemoDeviceTheme } from '../theme/theme-store.js';
+import { resetDemoKeys } from './demo-key.js';
 import type { OfflineDataLayer } from './offline-data-layer.js';
 
 // Re-exported so existing imports (`offline-context`, etc.) keep working while
@@ -35,7 +35,14 @@ export { isDemoMode } from './demo-mode.js';
 // Identity of the canonical preset seed. Always-fresh means every load reseeds,
 // so this no longer gates the reset — it's stamped for diagnostics and bumped
 // when the preset definition itself changes.
-const DEMO_VERSION = '1';
+//
+// Bumped to '2' (issue #48): demo now resets its OWN isolated localStorage state
+// (unlocks/themes/voices/gemini/copybook/auto-skip) on every load, so the demo's
+// observable settable state changed. NOTE: with no demo unlock seed, demo starts
+// with NOTHING unlocked (premium themes hidden) — see the product question flagged
+// on #48 about whether to showcase premium-unlocked in the demo; if adopted, seed
+// it here alongside the profiles and bump this again.
+const DEMO_VERSION = '2';
 
 // Preset profiles: name + how many of the top-ranked chars to mark "known".
 // setActiveProfile is called per preset only to SCOPE the seeded char-stats to
@@ -61,11 +68,14 @@ export async function ensureDemoSeed(dl: OfflineDataLayer): Promise<void> {
   // only ever clears demo profiles (incl. any default profile init seeded).
   for (const p of await dl.listProfiles()) await dl.deleteProfile(p.id);
 
-  // Reset the DEVICE theme too — it lives in a localStorage key (the isolated
-  // demo key in demo mode), NOT in the jar deleteProfile just cleared, so it
-  // would otherwise survive the refresh. Touches only the demo key; the real
-  // installed-PWA theme is untouched.
-  resetDemoDeviceTheme();
+  // Reset ALL demo-scoped localStorage too — these live in localStorage keys (the
+  // isolated `-demo` variants in demo mode), NOT in the jar deleteProfile just
+  // cleared, so they would otherwise survive the refresh and break always-fresh
+  // (issue #48): unlocks, device + per-profile themes, English voices, the Gemini
+  // key, copybook text, and the WC auto-skip toggle. resetDemoKeys() clears every
+  // `-demo`-suffixed key; it touches ONLY demo keys — the real installed-PWA keys
+  // are untouched, even on the same origin.
+  resetDemoKeys();
 
   const ranked = dl.getCharRanking().map((c) => c.char); // index 0 = rank 1
   for (const preset of PRESETS) {

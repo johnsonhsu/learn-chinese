@@ -5,6 +5,7 @@ import { PracticeModal } from '@platform/components/PracticeModal.tsx';
 import { speak } from '@platform/utils/speech.ts';
 import { useOffline } from '@platform/offline/offline-context.tsx';
 import { ModuleScreen, Button, CharTile } from '@platform/ui/index.ts';
+import { demoKey } from '@platform/offline/demo-key.ts';
 import { LanguageContext, useT } from './i18n/index.ts';
 import type { Language } from './i18n/index.ts';
 import { PracticePage } from './pages/PracticePage.tsx';
@@ -35,7 +36,9 @@ export default function App({ userId, language, onExit }: { userId: number; lang
       .then(([p, ms]) => { setProfile(p); setModuleSettings(ms); })
       .catch(() => {
         try {
-          const cached = localStorage.getItem('lc-cached-settings');
+          // demoKey() isolates this offline cache in demo (issue #48) — a demo
+          // session never reads or overwrites the real instance's cached settings.
+          const cached = localStorage.getItem(demoKey('lc-cached-settings'));
           if (cached) setModuleSettings(JSON.parse(cached));
         } catch { /* ignore */ }
         setProfile({ id: userId, currentLevel: 0, assessedLevel: 0, curriculumPosition: 0, knownWords: [], stats: { totalPracticed: 0, streakDays: 0, lastPracticeDate: '' } } as ProfileData);
@@ -79,13 +82,15 @@ function LandingPage({ userId, onStart, onExit }: { userId: number; onStart: () 
   const t = useT();
   const [info, setInfo] = useState<{ fluency: number; totalKnown: number; level: number; aboveThreshold: number; targetChars: string[]; charRanks: Record<string, number>; charMastery: Record<string, number> } | null>(null);
   const [practiceChar, setPracticeChar] = useState<string | null>(null);
-  // Mirrors the in-practice auto-skip toggle (shared `wc_auto_skip` localStorage key).
-  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem('wc_auto_skip') === 'true');
+  // Mirrors the in-practice auto-skip toggle (shared `wc_auto_skip` localStorage
+  // key, demo-isolated via demoKey() — issue #48).
+  const autoSkipKey = demoKey('wc_auto_skip');
+  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(autoSkipKey) === 'true');
 
   const toggleAutoSkip = () => {
     const next = !autoSkip;
     setAutoSkip(next);
-    localStorage.setItem('wc_auto_skip', next ? 'true' : 'false');
+    localStorage.setItem(autoSkipKey, next ? 'true' : 'false');
   };
 
   const { dataLayer, isOffline } = useOffline();
@@ -101,8 +106,8 @@ function LandingPage({ userId, onStart, onExit }: { userId: number; onStart: () 
       if (Array.isArray(ranking)) for (const r of ranking) ranks[r.char] = r.rank;
       const threshold = parseInt((settings as Record<string, string>)['above_level_threshold'] || '30');
       setInfo({ fluency: d.fluency || 0, totalKnown: d.totalKnown || 0, level: d.level || 0, aboveThreshold: threshold, targetChars: d.targetChars || [], charRanks: ranks, charMastery: d.charMastery || {} });
-      // Cache for offline
-      try { localStorage.setItem('lc-cached-settings', JSON.stringify(settings)); } catch { /* ignore */ }
+      // Cache for offline (demo-isolated via demoKey — issue #48)
+      try { localStorage.setItem(demoKey('lc-cached-settings'), JSON.stringify(settings)); } catch { /* ignore */ }
     });
 
     const loadFromOffline = () => {
