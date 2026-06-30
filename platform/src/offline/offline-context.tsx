@@ -10,6 +10,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { OfflineDataLayer, type InitProgress } from './offline-data-layer.js';
 import type { Profile } from './user-store.js';
+import { isDemoMode, ensureDemoSeed } from './demo.js';
 import { setOfflineLayer } from '../../../modules/writing-challenge/src/utils/api.js';
 import { t } from '../i18n/index.ts';
 
@@ -101,6 +102,10 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     dl.initialize((p) => setDownloadProgress(p))
       .then(async () => {
         setOfflineLayer(dl);
+        // Demo mode: seed preset profiles into the isolated demo store (if not
+        // already at the current version) before resolving profiles, so the
+        // normal auto-select flow lands in a populated demo profile.
+        if (isDemoMode()) await ensureDemoSeed(dl);
         setProfiles(await dl.listProfiles());
         setSettings(await dl.getSettingsPrefs());
         // Auto-select the last-used profile (or the sole profile). Multiple

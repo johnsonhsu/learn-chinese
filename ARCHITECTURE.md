@@ -436,18 +436,60 @@ Python glyph scrub. Scripts: `npm test` (all), `npm run test:unit`
 
 **CI/CD — `.github/workflows/ci.yml`.** One job on `pull_request` and `push: master`:
 `npm ci` → unit tests → Python parity (`pip install opencc pytest`) → `npm run build -w
-platform` → **data-integrity gate** → `cloudflare/wrangler-action` deploy. The deploy
-branch is `github.head_ref || github.ref_name`, so a **PR deploys a preview** and a
-**merge to `master` deploys production** with the identical build + gate (prod mirrors
-preview). A failing step aborts before deploy, so bad content/code can't ship. Needs repo
-secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
+platform` → **data-integrity gate** → `cloudflare/wrangler-action` deploy → (PRs only) a
+sticky comment with the preview + `/?app&demo` URLs. A failing step aborts before the
+deploy, so bad content/code can never ship.
+
+Cloudflare decides preview-vs-production by comparing the deploy `--branch` to the
+project's **production branch**, which on this *direct-upload* (no Git-connection) Pages
+project is **`learning-chinese`** — NOT `master`. So the workflow passes
+`--branch=learning-chinese` on a `master` push (→ **production**, `learnchinese.hsu.mobi`)
+and `--branch=<PR head>` on a PR (→ a **preview** with its own
+`<branch>.learning-chinese-3g0.pages.dev` URL). Same build + gate both times — production
+just mirrors the preview flow. **One-time setup:** repo secrets `CLOUDFLARE_API_TOKEN`
+(Pages:Edit) + `CLOUDFLARE_ACCOUNT_ID`, and the CF project's production branch set to
+`learning-chinese`. (Token caveat: a non-ASCII char pasted into the token secret makes
+wrangler fail with a `ByteString` header error before any network call — regenerate +
+re-paste clean.)
 
 **Reproducible builds + seeds.** `bake-data.ts` reads each working DB if present, else a
 committed content-only **seed** (`seed/platform.db`, `seed/writing-challenge.db`) so CI
 can build without the gitignored working DBs (which hold the dev profile's progress).
 `npm run seed:dbs` regenerates the seeds, applying the same personal-data scrub `bake`
-does. `content.db` and `word-sets.db` are pure content and are committed at their working
-paths. There is **no** local auto-deploy — deploys happen only through CI.
+does. `content.db` and `word-sets.db` are pure content, committed at their working paths;
+`platform/public/stroke-data/` (hand-made Taiwan stroke overrides 為/說/齣…) is committed
+too, so CI bakes them in. There is **no** local auto-deploy — deploys happen only through CI.
+
+**Redeploying on a change** (no manual deploy — open a PR, eyeball its preview, merge):
+- **Code change** → PR → preview → merge to `master` → production. Automatic.
+- **Curriculum/content change** (edit `content.db` via the dev admin, or rebuild a module
+  DB): ALSO run **`npm run seed:dbs`** and commit the refreshed `seed/*.db` + `content.db`,
+  so CI builds the new content. The gate re-checks glyphs / stroke coverage / privacy.
+- **New stroke override**: drop `<char>.json` in `platform/public/stroke-data/`; the next
+  bake bundles it — then remove that char from the gate's `STROKE_ALLOWLIST` so coverage is
+  enforced going forward.
+- **Demo dataset change**: bump `DEMO_VERSION` in `platform/src/offline/demo.ts` (or change
+  the seed) so every returning demo visitor reseeds onto the new data.
+
+## 4.6 Demo / "try-it" mode
+
+`/?app&demo` boots the real local-first app pre-seeded with preset profiles — a no-install
+public trial (the marketing site links here). `?app` forces the app past the landing page
+(`shouldShowLanding` in `App.tsx`); `?demo` (read in `platform/src/offline/demo.ts`) does two
+things:
+
+1. **Isolated storage.** IndexedDB is per-**origin** (not per-path), so a `?demo` on the
+   real domain would otherwise share — and could clobber — an installed user's data.
+   Instead `user-store.ts` opens a SEPARATE DB, `learning-chinese-user-demo`, when `?demo`
+   is present. Seeding/eviction there can never touch a real user.
+2. **Seed + version-check.** `ensureDemoSeed()` (called from `OfflineProvider` right after
+   `dataLayer.initialize()`) synthesizes Beginner (~120 known chars) + Intermediate (~700)
+   profiles at runtime from the char ranking (`getCharRanking` + `seedKnownFromPlacement`),
+   stamped with a `__demoVersion` pref. A returning visitor on the current version keeps
+   their session; bumping `DEMO_VERSION` reseeds everyone onto the new canonical demo. No
+   bundled dataset to maintain. (A bare `/?demo` or `/try` would need a one-line
+   `shouldShowLanding` change or a `_redirects` rule — deliberately deferred to avoid
+   touching `App.tsx` while the theme refactor is in flight.)
 
 ---
 

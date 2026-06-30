@@ -380,16 +380,47 @@ Workbox 快取（資料層在 IndexedDB 中自行管理它們）；`/data/versio
 
 **CI/CD —— `.github/workflows/ci.yml`。** 單一 job，觸發於 `pull_request` 與 `push: master`：
 `npm ci` → 單元測試 → Python 對等測試（`pip install opencc pytest`）→ `npm run build -w platform`
-→ **資料完整性閘門** → `cloudflare/wrangler-action` 部署。部署分支為 `github.head_ref ||
-github.ref_name`，因此 **PR 部署 preview**、**合併到 `master` 部署 production**，兩者使用相同的
-建置 + 閘門（正式環境鏡像 preview）。任一步驟失敗都會在部署前中止，因此壞內容／程式碼無法出貨。
-需要 repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`。
+→ **資料完整性閘門** → `cloudflare/wrangler-action` 部署 →（僅 PR）留言 preview + `/?app&demo` 網址。
+任一步驟失敗都會在部署前中止，因此壞內容／程式碼無法出貨。
+
+Cloudflare 以部署的 `--branch` 是否等於專案的 **production 分支** 來判定 preview／production；此
+*direct-upload*（無 Git 連接）Pages 專案的 production 分支是 **`learning-chinese`**（不是 `master`）。
+因此 workflow 在 `master` push 時傳 `--branch=learning-chinese`（→ **production**，
+`learnchinese.hsu.mobi`），PR 時傳 `--branch=<PR head>`（→ 有獨立網址的 **preview**）。兩者相同的
+建置 + 閘門——正式環境只是鏡像 preview 流程。**一次性設定：** repo secrets `CLOUDFLARE_API_TOKEN`
+（Pages:Edit）+ `CLOUDFLARE_ACCOUNT_ID`，並把 CF 專案 production 分支設為 `learning-chinese`。
+（token 注意：貼進 token secret 的非 ASCII 字元會讓 wrangler 在送出前以 `ByteString` header 錯誤失敗
+——重新產生並貼上乾淨的 token。）
 
 **可重現建置 + seeds。** `bake-data.ts` 優先讀取存在的工作用 DB，否則讀取 committed 的僅含內容
 **seed**（`seed/platform.db`、`seed/writing-challenge.db`），讓 CI 不需 gitignore 掉的工作用 DB
 （內含開發者 profile 的進度）也能建置。`npm run seed:dbs` 會重新產生 seeds，並套用與 `bake` 相同的
-個人資料清理。`content.db` 與 `word-sets.db` 為純內容，直接 commit 在其工作路徑。**沒有**本機自動
-部署——部署只透過 CI 發生。
+個人資料清理。`content.db` 與 `word-sets.db` 為純內容，直接 commit 在其工作路徑；
+`platform/public/stroke-data/`（手作台灣筆順 override 為/說/齣…）也會 commit，讓 CI 一併打包。
+**沒有**本機自動部署——部署只透過 CI 發生。
+
+**變更後重新部署**（沒有手動部署——開 PR、看 preview、合併）：
+- **程式碼變更** → PR → preview → 合併到 `master` → production。自動。
+- **課程／內容變更**（用 dev admin 改 `content.db`，或重建模組 DB）：另外執行 **`npm run seed:dbs`**
+  並 commit 更新後的 `seed/*.db` + `content.db`，讓 CI 建置新內容；閘門會重新檢查字形／涵蓋率／隱私。
+- **新增筆順 override**：把 `<字>.json` 放進 `platform/public/stroke-data/`，下次 bake 會打包；
+  接著把該字從閘門的 `STROKE_ALLOWLIST` 移除，使涵蓋率被強制檢查。
+- **Demo 資料變更**：在 `platform/src/offline/demo.ts` 提升 `DEMO_VERSION`，讓每位回訪的 demo 訪客重新種子。
+
+## 4.6 Demo／「試用」模式
+
+`/?app&demo` 會啟動真正的 local-first app 並預先種入預設 profiles——免安裝的公開試用（行銷網站連到此）。
+`?app` 讓 app 略過行銷 landing（`App.tsx` 的 `shouldShowLanding`）；`?demo`（於 `platform/src/offline/demo.ts`
+讀取）做兩件事：
+
+1. **隔離儲存。** IndexedDB 以 **origin** 為界（非 path），所以真實網域上的 `?demo` 否則會與已安裝使用者
+   共用、甚至覆蓋其資料。改由 `user-store.ts` 在 `?demo` 時開啟獨立 DB `learning-chinese-user-demo`，
+   種子／清除永不觸及真實使用者。
+2. **種子 + 版本檢查。** `ensureDemoSeed()`（於 `OfflineProvider` 在 `initialize()` 後呼叫）以字頻排名
+   在執行期合成 Beginner（約 120 個已知字）+ Intermediate（約 700）profiles（`getCharRanking` +
+   `seedKnownFromPlacement`），並蓋上 `__demoVersion` pref。同版本的回訪者保留其 session；提升
+   `DEMO_VERSION` 則讓所有人重新種子。無需維護打包資料集。（純 `/?demo` 或 `/try` 需要改一行
+   `shouldShowLanding` 或加 `_redirects`——為避免在主題重構進行中動到 `App.tsx`，刻意延後。）
 
 ---
 

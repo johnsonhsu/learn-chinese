@@ -86,12 +86,15 @@ jobs:
           script: |
             const url = '${{ steps.deploy.outputs.deployment-url }}';
             const alias = '${{ steps.deploy.outputs.pages-deployment-alias-url }}';
+            const base = alias || url;
             const marker = '<!-- cf-preview -->';
             const body = [
               marker,
               '🔎 **Preview deploy** — updates on every push to this PR.',
               '',
-              `- Always-latest (this branch): ${alias || url}`,
+              `- 🎮 **Try the demo:** ${base}/?app&demo  (preset profiles)`,
+              `- App (no demo data): ${base}/?app`,
+              `- Always-latest (this branch): ${base}`,
               `- This exact build: ${url}`,
             ].join('\n');
             const { data: comments } = await github.rest.issues.listComments({
