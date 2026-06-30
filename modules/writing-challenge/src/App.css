@@ -994,6 +994,20 @@ canvas {
   transform: translateY(-1px);
 }
 .char-box-above { background: var(--seal-wash, #F3E0DB); border-color: var(--seal, #C0392B); color: var(--seal-deep, #97271C); box-shadow: none; }
+/* Done + user-skipped: placed AFTER the editorial .char-box base above so their
+   distinct colors win the cascade (the base was clobbering them by source order). */
+.char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
+.char-box-skipped { background: var(--paper-raised, #FBF8F0); border-color: var(--rule, #DAD2C2); color: var(--text-dim, #8A8377); box-shadow: none; }
+/* Stroke-result trio (pass=green → warn=orange → fail=red).
+   ORDER MATTERS: these MUST come AFTER .char-box-done because a COMPLETED char in the
+   live track (PracticePage) carries BOTH classes together, e.g. `char-box-done
+   char-box-fail`. All four are single-class selectors of equal specificity, so source
+   order decides — keeping the trio here lets pass/warn/fail win over the grey
+   .char-box-done so a completed char actually reads its result colour (previously the
+   later .char-box-done clobbered them and every completed tile rendered grey). The trio
+   only sets background/border/colour, so the done tile keeps its larger glyph
+   font-size/padding. In the Styleguide the trio renders stand-alone (no -done) and is
+   unchanged. */
 .char-box-pass { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); border-color: var(--success, #4F7A3A); color: var(--success, #4F7A3A); box-shadow: none; }
 .char-box-warn { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); color: var(--warning, #B5701C); box-shadow: none; }
 /* Fail = RED, routed through the themed --error token (NOT --seal). --seal is each
@@ -1003,10 +1017,6 @@ canvas {
    pass→warn→fail = green→orange→red signal. --error is a true red in EVERY theme.
    Same wash recipe as .char-box-pass/-warn above so the trio reads as one set. */
 .char-box-fail { background: color-mix(in srgb, var(--error, #B23B30) 16%, var(--paper-raised)); border-color: var(--error, #B23B30); color: var(--error, #B23B30); box-shadow: none; }
-/* Done + user-skipped: placed AFTER the editorial .char-box base above so their
-   distinct colors win the cascade (the base was clobbering them by source order). */
-.char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
-.char-box-skipped { background: var(--paper-raised, #FBF8F0); border-color: var(--rule, #DAD2C2); color: var(--text-dim, #8A8377); box-shadow: none; }
 
 /* Result tiles → paper with a colored hairline + tinted wash (no candy fills) */
 .sp-result-perfect   { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border: 1px solid var(--success, #4F7A3A); color: var(--ink, #1C1A17); box-shadow: none; }
