@@ -5162,6 +5162,7 @@ body[data-theme="gold"] {
   --ink: #F6ECCB;              /* warm cream "ink" — readable on navy */
   --ink-soft: #D8C89A;
   --ink-faint: #A99B6E;
+  --text: var(--ink);          /* warm cream — was inheriting the near-black :root default */
   --rule: #2E3F6E;             /* hairline on navy */
   --rule-strong: #41538A;
   --bg-input: #0E1838;
@@ -5199,6 +5200,7 @@ body[data-theme="silver"] {
   --ink: #EDF2F7;              /* near-white "ink" */
   --ink-soft: #C3CFD9;
   --ink-faint: #8E9CA8;
+  --text: var(--ink);          /* near-white — was inheriting the near-black :root default */
   --rule: #294049;
   --rule-strong: #3C5560;
   --bg-input: #0B1D23;
