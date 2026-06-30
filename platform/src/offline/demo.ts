@@ -24,7 +24,7 @@
  * The data is synthesized at runtime from the shipped char ranking (no bundled
  * dataset to maintain): a couple of profiles with a band of "known" chars.
  */
-import { setPref } from './user-store.js';
+import { setPref, deletePref } from './user-store.js';
 import { resetDemoDeviceTheme } from '../theme/theme-store.js';
 import type { OfflineDataLayer } from './offline-data-layer.js';
 
@@ -38,8 +38,11 @@ export { isDemoMode } from './demo-mode.js';
 const DEMO_VERSION = '1';
 
 // Preset profiles: name + how many of the top-ranked chars to mark "known".
-// Order matters — the LAST one is auto-selected on boot (setActiveProfile stamps
-// lastProfileId), so the demo lands in the Beginner profile.
+// setActiveProfile is called per preset only to SCOPE the seeded char-stats to
+// each profile id (seedKnownFromPlacement writes against the active userId); the
+// trailing lastProfileId stamp it leaves is cleared at the end of ensureDemoSeed
+// so the demo lands on the profile PICKER (issue #27 — show profile selection
+// first as a demo), NOT auto-entered into a profile. Order is now cosmetic.
 const PRESETS: { name: string; known: number }[] = [
   { name: 'Demo · Intermediate', known: 700 },
   { name: 'Demo · Beginner', known: 120 },
@@ -67,10 +70,17 @@ export async function ensureDemoSeed(dl: OfflineDataLayer): Promise<void> {
   const ranked = dl.getCharRanking().map((c) => c.char); // index 0 = rank 1
   for (const preset of PRESETS) {
     const p = await dl.createProfile(preset.name);
-    await dl.setActiveProfile(p.id);
+    await dl.setActiveProfile(p.id); // scope the seeded stats to THIS profile id
     await dl.seedKnownFromPlacement(ranked.slice(0, preset.known));
     await setPref(`placementDone:${p.id}`, true); // skip the placement eval in the demo
   }
+
+  // Land on the profile PICKER, not a profile (issue #27 — a deliberate demo-only
+  // divergence to showcase profile selection first). setActiveProfile above left
+  // lastProfileId pointing at the final preset; clear it so resolveAutoProfileId
+  // returns null with >1 profile → the picker shows. The real/installed app keeps
+  // its normal restore-last-profile behavior (it never runs this seed).
+  await deletePref('lastProfileId');
 
   await setPref('__demoVersion', DEMO_VERSION);
 }

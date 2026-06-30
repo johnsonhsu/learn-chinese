@@ -45,6 +45,23 @@ interface CharStatRow {
   recent_results: string;
 }
 
+/**
+ * Pure boot-time profile-resolution rule (extracted so it's unit-testable without
+ * IndexedDB; {@link OfflineDataLayer.resolveAutoProfileId} is the IO wrapper):
+ *  - the stored last id, if it still names an existing profile;
+ *  - else the only profile, when exactly one exists;
+ *  - else none (multiple profiles, no valid last → show the picker).
+ *
+ * Demo mode (issue #27) reaches the last branch on purpose: ensureDemoSeed seeds
+ * >1 preset and clears lastProfileId, so the demo lands on the profile picker.
+ */
+export function resolveAutoProfile(profileIds: number[], lastId: number | null): number | null {
+  if (profileIds.length === 0) return null;
+  if (lastId != null && profileIds.includes(lastId)) return lastId;
+  if (profileIds.length === 1) return profileIds[0];
+  return null;
+}
+
 function rowToCharStat(r: CharStatRow): CharStat {
   return {
     character: r.character,
@@ -280,18 +297,15 @@ export class OfflineDataLayer {
   }
 
   /**
-   * Resolve which profile (if any) to auto-select on boot:
-   *  - the stored lastProfileId, if it still exists;
-   *  - else the only profile, when exactly one exists;
-   *  - else none (multiple profiles, no valid last → show the picker).
+   * Resolve which profile (if any) to auto-select on boot. Reads IndexedDB then
+   * applies the pure {@link resolveAutoProfile} rule. In demo mode ensureDemoSeed
+   * deliberately clears lastProfileId with >1 preset profile, so this returns
+   * null and the picker shows (issue #27); the real app keeps its last profile.
    */
   async resolveAutoProfileId(): Promise<number | null> {
     const profiles = await listProfiles();
-    if (profiles.length === 0) return null;
     const last = await getPref<number>('lastProfileId');
-    if (last != null && profiles.some((p) => p.id === last)) return last;
-    if (profiles.length === 1) return profiles[0].id;
-    return null;
+    return resolveAutoProfile(profiles.map((p) => p.id), last);
   }
 
   // --- Profile management (device-local) ---

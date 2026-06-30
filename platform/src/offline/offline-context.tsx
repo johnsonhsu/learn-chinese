@@ -102,9 +102,12 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     dl.initialize((p) => setDownloadProgress(p))
       .then(async () => {
         setOfflineLayer(dl);
-        // Demo mode: seed preset profiles into the isolated demo store (if not
-        // already at the current version) before resolving profiles, so the
-        // normal auto-select flow lands in a populated demo profile.
+        // Demo mode: reseed preset profiles into the isolated demo store before
+        // resolving profiles. ensureDemoSeed deliberately leaves NO last-selected
+        // profile (issue #27 — show the profile picker first as a demo), so the
+        // resolveAutoProfileId step below returns null (>1 profile, no valid last)
+        // and the picker shows. The real/installed app never seeds, so it keeps
+        // its normal restore-last-profile behavior.
         if (isDemoMode()) await ensureDemoSeed(dl);
         setProfiles(await dl.listProfiles());
         setSettings(await dl.getSettingsPrefs());
