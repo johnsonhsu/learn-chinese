@@ -110,7 +110,13 @@
 .app-shell .ui-screen {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  /* The screen IS the centered content column (issue #5): the back control AND
+     the tile are children of ONE --content-width column, so the back arrow always
+     sits at the column's left edge — not the viewport's. `stretch` lets the tile
+     fill the column; the back pill opts out via align-self: flex-start below. */
+  align-items: stretch;
+  max-width: var(--content-width);
+  margin-inline: auto;
   box-sizing: border-box;
   width: 100%;
   /* NO forced viewport height. The screen is exactly as tall as its content — the
@@ -159,11 +165,12 @@
    the back-pill's 16px gap. No auto-margin centering and no forced height (that's
    what was overshooting the viewport). Overrides the index.css base margin ONLY
    inside .ui-screen; standalone <Card>/Styleguide uses keep the base. */
-.app-shell .ui-screen > .module-tile { margin-top: 0; margin-bottom: 24px; }
+.app-shell .ui-screen > .module-tile { width: 100%; max-width: none; margin: 0 0 24px; }
 
-/* Opt-in wider card for grid-style main screens (e.g. word-sets' 2-column
-   picker, which is cramped at the default 420px). */
-.app-shell .module-tile.ui-screen-card--wide { max-width: 600px; }
+/* Opt-in hook for grid-style main screens (e.g. word-sets' 2-column picker).
+   Same canonical column as the default tile now; kept as an explicit class so a
+   future grid screen can be widened in ONE place without per-screen literals. */
+.app-shell .module-tile.ui-screen-card--wide { max-width: var(--content-width); }
 
 /* ── CharTile — the ONE per-character practice tile (REDESIGNED) ────────────────
    Shared across My Characters (lg, on the paper page bg) and writing-challenge

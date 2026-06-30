@@ -118,7 +118,13 @@
   display: flex;
   flex-direction: column;
   min-height: 100svh;
-  padding: 0 0 8px;
+  /* The screen IS the centered content column (issue #5): header, card, and
+     keyboard all share one --content-width column at a 16px inset, so the back
+     arrow lands at the same left edge as every other screen. */
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding: 0 16px 8px;
 }
 
 /* Top row: the compact back arrow sits top-left; the in-game "Stop" + score
@@ -128,7 +134,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 8px 20px 12px;
+  padding: 8px 0 12px;
 }
 /* Right-hand group keeps Stop + score together against the right edge. */
 .app-shell--practice-english .practice-header-right {
@@ -165,7 +171,7 @@
   background: var(--paper-raised);
   border: 1px solid var(--rule);
   box-shadow: var(--shadow-md);
-  margin: 0 16px 18px;
+  margin: 0 0 18px;
   border-radius: var(--radius-lg);
   padding: 22px 18px 18px;
   display: flex;
