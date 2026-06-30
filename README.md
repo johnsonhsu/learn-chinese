@@ -205,6 +205,8 @@ pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip ins
 
 **Test discipline.** Treat the suite as a well-oiled machine: on **any** change, decide whether tests need to be added or updated and state that test impact in the issue/PR. The data-integrity gate blocks deploys on bad content automatically, but **unit + parity coverage is the contributor's job** — new engine logic or a fixed bug ships with its guarding test in the same PR.
 
+**Verification on every PR.** The PR template's **Verification** section is required on **every** PR (including docs-only ones, which merge on green with no human review). Record both *how I verified* — the checks actually run for this change (`npm run test:unit` always; `test:data`/`seed:dbs` for content; the glyph-parity pytest for glyphs; `npx vite build`, never `npm run build`; a named visual check on the preview's `?ui` Styleguide / `?app&demo` for UI/theme work) — and *how to verify (reviewer)*: a concrete preview reproduction (route + themes/elements + expected result), the "Review: …" one-liner our PRs already carry.
+
 ## Deployment
 
 Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`) and gated on the tests + data-integrity check:
