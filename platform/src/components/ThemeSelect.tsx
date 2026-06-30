@@ -7,13 +7,14 @@ import { PREMIUM_FEATURE } from '../theme/themes.ts';
 
 /**
  * Theme picker — reuses the shared {@link OptionSelect} (the extracted voice
- * dropdown UI). Lists ONLY the themes available in this context: the default
- * theme always, plus premium themes (gold/silver) when premium is unlocked
- * device-wide. Locked premium themes are NOT shown at all — there is no
- * lock badge and no redeem-on-select here.
+ * dropdown UI). Lists ONLY the themes available in this context: free themes
+ * always, plus each premium foil once its OWN unlock is present (Silver ← 9900,
+ * Gold ← 9901, both gated behind the 9000 premium prerequisite — so they appear
+ * INDEPENDENTLY). Locked premium themes are NOT shown at all — there is no lock
+ * badge and no redeem-on-select here.
  *
  * Unlocking premium happens elsewhere: under the Device ID in Device Settings,
- * via the {@link CodeEntry} keypad (code 9999), which unlocks premium for the
+ * via the {@link CodeEntry} keypad (9000 then 9900/9901), which unlocks for the
  * whole device. Pass a `refreshKey` that changes after such an unlock so this
  * selector re-derives its option list and the now-available themes appear.
  *

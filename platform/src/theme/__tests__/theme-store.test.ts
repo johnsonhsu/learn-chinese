@@ -104,12 +104,61 @@ describe('resolveEffectiveTheme', () => {
     expect(resolveEffectiveTheme(1)).toBe(DEFAULT_THEME_ID);
   });
 
-  it('renders a premium theme once premium is unlocked on the device', () => {
+  it('renders a premium theme once its per-theme unlock is present on the device', () => {
     setDeviceTheme('gold');
-    setUnlockedFeatures(['premium']);
+    setUnlockedFeatures(['theme-gold']);
     expect(isDevicePremiumUnlocked()).toBe(true);
     expect(isThemeAvailable(getTheme('gold'))).toBe(true);
     expect(resolveEffectiveTheme(1)).toBe('gold');
+  });
+
+  it('BACK-COMPAT: the legacy blanket "premium" feature renders a premium theme', () => {
+    setDeviceTheme('gold');
+    setUnlockedFeatures(['premium']); // retired code 9999 / pre-stored device
+    expect(isDevicePremiumUnlocked()).toBe(true);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(true);
+    expect(resolveEffectiveTheme(1)).toBe('gold');
+  });
+});
+
+describe('per-theme premium gating (issue #40)', () => {
+  it('Silver needs theme-silver; Gold stays hidden without theme-gold', () => {
+    setUnlockedFeatures(['theme-silver']);
+    expect(isThemeAvailable(getTheme('silver'))).toBe(true);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(false);
+  });
+
+  it('Gold needs theme-gold; Silver stays hidden without theme-silver', () => {
+    setUnlockedFeatures(['theme-gold']);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(true);
+    expect(isThemeAvailable(getTheme('silver'))).toBe(false);
+  });
+
+  it('the premium PREREQUISITE (9000) alone reveals nothing', () => {
+    // 9000 grants 'premium-prereq' — a distinct flag, NOT the legacy blanket
+    // 'premium'. So with only the prerequisite present, neither foil is shown.
+    setUnlockedFeatures(['premium-prereq']);
+    expect(isThemeAvailable(getTheme('silver'))).toBe(false);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(false);
+    expect(isDevicePremiumUnlocked()).toBe(false);
+  });
+
+  it('prerequisite + one per-theme key reveals only that theme', () => {
+    setUnlockedFeatures(['premium-prereq', 'theme-silver']);
+    expect(isThemeAvailable(getTheme('silver'))).toBe(true);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(false);
+  });
+
+  it('BOTH foils available once both per-theme keys are present', () => {
+    setUnlockedFeatures(['theme-silver', 'theme-gold']);
+    expect(isThemeAvailable(getTheme('silver'))).toBe(true);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(true);
+  });
+
+  it('no premium unlock → neither foil available', () => {
+    expect(isThemeAvailable(getTheme('silver'))).toBe(false);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(false);
+    expect(isDevicePremiumUnlocked()).toBe(false);
   });
 });
 
@@ -141,8 +190,11 @@ describe('backup round-trip', () => {
     expect(getProfileTheme(1)).toBe('sakura');
   });
 
-  it('promotes a legacy per-profile premium unlock to the device level', () => {
+  it('promotes a legacy per-profile premium unlock to the device level — and keeps BOTH foils', () => {
     importThemeState({ device: ROOT_THEME_ID, profileThemes: {}, profileUnlocks: { 1: ['premium'] } });
     expect(isDevicePremiumUnlocked()).toBe(true);
+    // Back-compat: a legacy blanket 'premium' device keeps Silver AND Gold.
+    expect(isThemeAvailable(getTheme('silver'))).toBe(true);
+    expect(isThemeAvailable(getTheme('gold'))).toBe(true);
   });
 });

@@ -1066,10 +1066,11 @@ function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin
 
       {showCodeModal && (
         <CodeEntry
-          // Device scope: redeem at device level. redeemCode returns the granted
-          // feature key (or null), which maps straight onto CodeResult.
-          onSubmit={(code) => ({ feature: redeemCode(code) })}
-          // A valid code → re-render gated sections immediately (no reload).
+          // Device scope: redeem at device level. redeemCode returns the
+          // granted / prerequisite-missing / unknown outcome — structurally a
+          // CodeResult, so it maps straight through.
+          onSubmit={(code) => redeemCode(code)}
+          // A granted code → re-render gated sections immediately (no reload).
           onUnlocked={() => setUnlockBump((n) => n + 1)}
           onClose={() => setShowCodeModal(false)}
         />
