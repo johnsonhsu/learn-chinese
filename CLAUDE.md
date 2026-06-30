@@ -1,0 +1,90 @@
+# CLAUDE.md — orientation for AI coding sessions
+
+Read this first. It's the distilled "don't re-learn it" guide for this repo. Authoritative
+deep docs: **[ARCHITECTURE.md](./ARCHITECTURE.md)** (esp. §4.5 testing/CI, §4.6 demo) and
+**[README.md](./README.md)** — keep those current (see *Conventions*).
+
+## What this is
+
+A **local-first PWA for learning Traditional Chinese (Taiwan focus, zhuyin not pinyin)**.
+Monorepo, React 19 + Vite, ships as static assets to **Cloudflare Pages**
+(`learnchinese.hsu.mobi`). **No runtime server** — curriculum ships baked into the client
+(sql.js + IndexedDB); a dev-only Express server exists for admin/curation. Per-profile
+progress lives entirely on-device in IndexedDB.
+
+## Repo map
+
+| Path | What |
+|------|------|
+| `shared/` | `@shared/character-stats` — **the smarts**, PURE logic: `mastery`, `char-ranker`, `char-knowledge`, `sentence-generator`, `zhuyin`, `content-db` (the importer; only this one uses better-sqlite3/opencc). |
+| `platform/` | The app. `App.tsx`, `offline/` (data layer, `user-store`, `demo`), `theme/`, `ui/` (shared kit), `scripts/bake-data.ts`, `server/` (**dev-only** Express :3000). |
+| `modules/` | Lazy-loaded modules: `writing-challenge`, `word-sets`, `copybook`, `my-characters`. |
+| `scripts/` | Python analysis + `bank-fix.py` (glyph scrub), `seed-dbs.ts`. |
+| `test/` | Cross-language fixtures + the one pytest (`test_glyph_canon.py`). |
+| `seed/` | Committed, scrubbed, content-only DBs so CI can build (see *Data*). |
+
+## Daily commands
+
+```bash
+npm run dev                  # Express + Vite dev server on :3000 (admin/curation + client)
+npm test                     # all Vitest
+npm run test:unit            # fast units (shared/ + platform/src)
+npm run test:data            # data-integrity gate (run AFTER a bake)
+npm -w platform run bake:data   # re-bake shipped DBs + version.json (NO deploy)
+npm run seed:dbs             # regenerate committed seed DBs after a content change
+pytest test/test_glyph_canon.py # Python glyph-parity (needs: pip install opencc pytest)
+```
+
+You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs kill; npm run dev` (background).
+
+## Deploy = GitHub Actions, automatic, NEVER manual
+
+- **Merge to `master` → production** (CI builds + gates + `wrangler pages deploy`). **PR → preview** with the URL commented on the PR. There is **no** manual deploy step.
+- The Pages project is **direct-upload** (no Git connection); its **production branch is `learning-chinese`, NOT `master`**. The workflow (`.github/workflows/ci.yml`) deploys `--branch=learning-chinese` on a master push (→ prod) and `--branch=<PR head>` on a PR (→ preview). Don't "fix" this to `master`.
+- The **data-integrity gate (`test:data`) blocks every deploy** — bad content/code can't ship.
+- ⚠️ **FOOTGUN:** a local PostToolUse hook in `.claude/settings.local.json` deploys `dist` to **prod** on any `npm run build`. It SHOULD be removed (CI owns deploys now; I can't edit settings.local.json — the harness blocks self-modification, so ask the user). **Until it's gone, do NOT run `npm run build` locally** — use `npm -w platform run bake:data` and/or `npx vite build` (in `platform/`) to verify, neither of which triggers the hook.
+
+## Testing (3 tiers)
+
+1. **Engine units** (`shared/src/__tests__`): `sentence-generator` (the **binding** invariant + seeded-RNG coverage), `mastery`, `char-knowledge`, `char-ranker`, `zhuyin`. Fake `DbQueryProvider`; `vi.setSystemTime` for time; seeded `Math.random`.
+2. **Glyph-canonicalization parity**: `canonicalizeTW()` (TS, `content-db.ts`) vs `bank-fix.py canon()` (Python) against ONE golden fixture `test/fixtures/glyph-canon.json` — they MUST agree.
+3. **Data-integrity gate** (`platform/test/data-integrity.test.ts`, run on baked output): no Simplified/undrawable glyphs, referential, **no personal data**, offline stroke coverage (with a documented `STROKE_ALLOWLIST`).
+
+## Data model + changing content
+
+- `content.db` (**committed**, platform-owned): `bank_sentences`, `tocfl_words`, `char_words` — THE curriculum.
+- `platform.db` (dictionary; gitignored) → committed scrubbed **`seed/platform.db`**. `writing-challenge.db` (module_settings; gitignored) → **`seed/writing-challenge.db`**. `word-sets.db` committed. CI builds from working DB if present, else the seed.
+- **To change curriculum**: edit via the dev admin → `npm run seed:dbs` → commit `content.db` + `seed/*` → PR. The gate re-verifies.
+- **Privacy**: `bake-data.ts` scrubs personal rows from snapshots. NEVER ship profiles/stats (a leak in the writing-challenge snapshot was the reason the gate exists).
+
+## CARDINAL RULES — do not break
+
+1. **台 (U+53F0) and 臺 (U+81FA): NEVER convert, either direction.** Both are valid Taiwan forms. (A blanket `臺→台` once destroyed the user's data — they were adamant.) They're shielded across the OpenCC pass.
+2. **`canonicalizeTW` and `bank-fix.py canon()` MUST stay in sync** (golden-fixture test enforces). `VARIANT_MAP` (汙→污, 秘→祕…) lives in BOTH.
+3. **Sentence selection's goal is practicing the target CHARS, not sentences.** Selection is **binding** — the chosen char MUST appear in the result; never silently substitute an easier one. Favor parity/coverage over variety.
+4. **HanziWriter leaks 2 global document listeners per `create()`.** REUSE one writer via `setCharacter()`/`quizSession`; **never remount `WritingCanvas` per character or via a per-char `key`.**
+5. **Stroke data**: bundled from `hanzi-writer-data` + hand-made Taiwan overrides in `platform/public/stroke-data/` (committed). Chars no dataset covers (currently 溼/痠/嬤/嚐) are in the gate's allowlist; source new ones from **animCJK** (`graphicsZhHant.txt`), then drop them from the allowlist.
+
+## Theme + demo
+
+- **Theme** (`platform/src/theme/`): registry in `themes.ts`. `DEFAULT_THEME_ID` = the default *selection* (currently `indigo`); `ROOT_THEME_ID` = the bare `:root` "Paper" look (`default`) which REMOVES `body[data-theme]`. Apply via `applyThemeToBody`. Resolution: `profileOverride ?? device ?? default`; premium themes gated by a device unlock.
+- **Demo "try it"** (`platform/src/offline/demo.ts`): visit **`/?app&demo`**. `?app` skips the marketing landing; `?demo` opens an ISOLATED IndexedDB (`learning-chinese-user-demo`) and seeds preset profiles at runtime. A `__demoVersion` stamp gates reseeding — **bump `DEMO_VERSION` to refresh the demo for everyone**. Storage is isolated so eviction never touches a real user.
+
+## Environment gotchas
+
+- A **stale invalid `GITHUB_TOKEN` env var** shadows the `gh`/`git` keyring login. Prefix git/gh commands with `GITHUB_TOKEN= GH_TOKEN=` so they use the keyring.
+- **Network commands** (`wrangler`, `gh`, internet `curl`) need the sandbox disabled (`dangerouslyDisableSandbox: true`).
+- macOS: no `timeout` binary; `cd` inside a compound command may prompt for permission.
+
+## Conventions
+
+- **LIVING DOCS**: when you change architecture / deploy / the UI kit / the smarts, update **README.md + ARCHITECTURE.md AND their zh-TW siblings** (`README.zh-TW.md`, `architecture.zh-TW.md`), which are cross-linked.
+- **User working style**: concise + direct; wants to discuss the *why* before building; prefers configurable settings over hardcoded values; **manually curates content** (don't trust LLM output into the bank); pushes back and expects you to. Don't agree just to agree.
+- Match surrounding code style; the shared UI kit (`platform/src/ui`) is composed by modules — don't fork tokens per-module.
+
+## Current state (2026-06-30)
+
+- **Tests + CI/CD** (PR #1) and **demo mode** (PR #2) are **merged to `master`; prod is live** via the auto-deploy-on-merge pipeline.
+- **Uncommitted in the working tree** (separate, in-flight work — leave it alone unless asked): a **theme refactor** (`App.tsx`, `theme-store.ts`, `themes.ts`, `Styleguide.tsx`, etc.) and **~1,733 new bank sentences** in `content.db`. Each ships via its own PR (content also needs `npm run seed:dbs`).
+- The **theme-resolution test** is written but staged to land with the theme refactor (it depends on that PR's `ROOT_THEME_ID`/`applyThemeToBody`).
+- **Open TODO**: remove the local auto-deploy hook (see *Deploy* footgun).
