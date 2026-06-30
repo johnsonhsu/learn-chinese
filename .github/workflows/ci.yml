@@ -86,16 +86,26 @@ jobs:
           script: |
             const url = '${{ steps.deploy.outputs.deployment-url }}';
             const alias = '${{ steps.deploy.outputs.pages-deployment-alias-url }}';
-            const base = alias || url;
+            // PR Link = the branch ALIAS (always-latest for this PR); Commit = the
+            // immutable per-commit deployment URL (this exact build). Both groups
+            // expose the same routes so a reviewer can pick latest vs pinned.
+            const prBase = alias || url;
             const marker = '<!-- cf-preview -->';
             const body = [
               marker,
               '🔎 **Preview deploy** — updates on every push to this PR.',
               '',
-              `- 🎮 **Try the demo:** ${base}/?app&demo  (preset profiles)`,
-              `- App (no demo data): ${base}/?app`,
-              `- Always-latest (this branch): ${base}`,
-              `- This exact build: ${url}`,
+              '**PR Link** — always-latest for this branch:',
+              `- 🎮 Try the demo: ${prBase}/?app&demo  (preset profiles)`,
+              `- App (no demo data): ${prBase}/?app`,
+              `- UI components (styleguide): ${prBase}/?ui`,
+              `- Marketing: ${prBase}`,
+              '',
+              '**Commit** — this exact build:',
+              `- 🎮 Try the demo: ${url}/?app&demo  (preset profiles)`,
+              `- App (no demo data): ${url}/?app`,
+              `- UI components (styleguide): ${url}/?ui`,
+              `- Marketing: ${url}`,
             ].join('\n');
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number,
