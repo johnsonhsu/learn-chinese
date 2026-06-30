@@ -654,6 +654,138 @@ at deploy time. The default model is `gemini-2.5-flash` (overridable via
 
 ---
 
+## 6.5 Feedback (siloed)
+
+> 中文版：[architecture.zh-TW.md「6.5 意見回饋（siloed）」](./architecture.zh-TW.md)
+
+The in-app feedback feature lets a user file a categorized report from anywhere in
+the app and gives the owner a triage view. Its single most important property is
+that it is **siloed**: the production endpoints are bound to a **dedicated D1
+database and R2 bucket that hold only feedback**, and **no app / user / content
+binding is present on the Function**, so app data is *physically* unreachable from
+the feedback code path. The dev mirror is siloed the same way (its own SQLite
+file). Nothing about the feature shares a connection, a file, or a code path with
+`platform.db` / `content.db` / the on-device user store.
+
+### The widget (`platform/src/FeedbackWidget.tsx`)
+
+A global floating 💬 button, bottom-right, mounted **once in the app shell**
+(`App.tsx`) so it is present across the app. It is intentionally **not** on the
+marketing landing page. It opens a dialog with: a **category** (`bug` /
+`suggestion` / `content` / `confusing` / `other`), a **severity** segment
+(`low` / `medium` / `high`), a free-text **message** (capped at 4000 chars), and
+an **include-screenshot** checkbox.
+
+- **Online-only.** Feedback submission needs the network; the send button is
+  disabled offline (an `online`/`offline` listener tracks `navigator.onLine`).
+- **Lazy screenshot pipeline.** The DOM-to-image library (`html-to-image`) is
+  **dynamically imported only when a screenshot is actually captured**, so it never
+  enters the offline app-shell critical path or precache. Capture renders
+  `document.body` to a downscaled JPEG (longest side ~900px-equivalent via
+  `pixelRatio`, starting at quality 0.7) and **steps quality down until it is under
+  a ~300 KB target**; if it still cannot fit it is dropped gracefully (feedback
+  still sends — a missing screenshot is never an error).
+- **No-PII context.** Alongside the message the widget captures only non-personal
+  context: the current **screen** (`body[data-screen]`), the active **module**, the
+  app **version** (`__CONTENT_VERSION__`), the **numeric profile id**, **theme**,
+  **language**, **viewport** size, **online** state, **user-agent**, and a
+  **timestamp**. No display name, no learning stats, no characters/sentences — app
+  and user data are never sent beyond the numeric profile id.
+
+### Production API — Cloudflare Pages Functions (`platform/functions/api/feedback/`)
+
+| Route | Method | Audience | What |
+|-------|--------|----------|------|
+| `/api/feedback` (`index.ts`) | `POST` | **public** | Submit. Validated + size-capped (shared helper) + per-IP rate-limited; row stored in D1, screenshot bytes in R2 (key `feedback/<id>.<ext>`), the row keeps only the R2 key. |
+| `/api/feedback` (`index.ts`) | `GET` | **admin** | List for triage (`?status=` filter, `?limit=`), plus per-status counts. Screenshots are omitted from the list payload. |
+| `/api/feedback/:id` (`[id].ts`) | `PATCH` | **admin** | Set one row's lifecycle status (`new` / `triaged` / `in-progress` / `resolved` / `wontfix`). |
+| `/api/feedback/:id/screenshot` (`[id]/screenshot.ts`) | `GET` | **admin** | Stream the row's screenshot image bytes from R2. |
+
+Like the Gemini proxy, these live outside `platform/tsconfig`'s include (so
+`tsc`/vite ignore them) and wrangler compiles them at deploy time.
+
+- **Why siloed.** The submit/admin Functions declare **only** the `FEEDBACK_DB`
+  (D1) and `FEEDBACK_R2` (R2) bindings plus the `FEEDBACK_ADMIN_SECRET`. There is
+  no binding to any app database, so the feedback endpoints cannot read or write
+  app/user/content data even in principle — siloing is enforced by the absence of a
+  binding, not by convention. Screenshots live in R2 (not inline in D1) to keep
+  rows small; if R2 is not bound the feedback still stores fine.
+- **Per-IP rate limiting.** The POST handler is rate-limited per `cf-connecting-ip`
+  using a small `rate_hits` D1 table (60-second sliding window, swept on each POST;
+  over the cap → HTTP 429). It is **best-effort** — a missing rate table or a
+  transient error never blocks a legitimate submission.
+- **Admin gating.** The `GET` / `PATCH` / screenshot routes are gated by a shared
+  secret (`FEEDBACK_ADMIN_SECRET`), supplied as the `x-feedback-admin-secret`
+  header (or `?secret=` for the screenshot `<img>`), compared constant-time-ish. If
+  the secret is unset the read/update routes are **closed (403), never open** —
+  fail-safe.
+- **Validation contract** is the portable helper `platform/server/feedback-shared.ts`
+  (no Node/Worker imports, used by both runtimes — same pattern as the copybook
+  Gemini helper). It enforces a known category + non-empty message, hard size caps
+  on every field, an 8 KB cap on the serialized context JSON, and accepts a
+  screenshot only if it looks like an `image/(png|jpeg|webp)` data URL within the
+  cap (otherwise dropped, never an error).
+
+### Schema (`platform/functions/migrations/0001_init.sql`)
+
+The D1 migration creates a single `feedback` table (`id`, `created_at`, `category`,
+`option`, `message`, `screen`, `context_json`, `screenshot_key` → the R2 key or
+`NULL`, `ua`, `app_version`, `profile_id` → numeric only, `status`) plus status /
+created-at indexes, and the `rate_hits` ledger table. The dev mirror builds the
+same shape (with an inline `screenshot` column instead of an R2 key).
+
+### Admin triage panel (`platform/src/admin/FeedbackPanel.tsx`)
+
+A **dev-only** panel under the Admin console (§8). The owner enters the admin
+secret once (kept in `localStorage`); the panel then reads the admin-gated
+endpoints to show feedback newest-first, with **filter chips by status** (and
+counts), inline **status changes** (`PATCH`), a per-row **no-PII context** line,
+and lazy-loaded **screenshot thumbnails** (click to enlarge) fetched via the
+screenshot route. Nothing app/user/content-related is reachable from it.
+
+### Dev Express mirror (`platform/server/feedback-*.ts`)
+
+So the whole submit → triage flow works locally with **zero Cloudflare
+provisioning**, the dev Express server (§7) mirrors the prod contract exactly:
+
+- `feedback-routes.ts` — the same four routes (`POST` public; `GET` / `PATCH` /
+  `:id/screenshot` admin-gated by `FEEDBACK_ADMIN_SECRET` from the dev `.env`), the
+  same validation, and an in-memory per-IP rate limiter.
+- `feedback-db.ts` — a **separate** `better-sqlite3` connection to
+  `platform/feedback.db`, physically distinct from `platform.db` / `content.db`.
+  No app code imports this module; it is the dev twin of the prod D1 database.
+- `feedback-shared.ts` — the shared validation/secret helper (above), used by both
+  dev and prod.
+
+### Provisioning runbook (one-time, prod — by the account owner)
+
+The siloed D1 / R2 / secret / Pages bindings are **not** created by the deploy
+pipeline; they are a one-time manual setup. (Until they exist, the prod feedback
+endpoints have nothing to bind to; the dev mirror needs none of this.)
+
+```bash
+# 1. Create the dedicated D1 database (holds ONLY feedback).
+npx wrangler d1 create feedback
+
+# 2. Apply the schema to it (creates the feedback + rate_hits tables).
+npx wrangler d1 execute feedback --remote \
+  --file=platform/functions/migrations/0001_init.sql
+
+# 3. Create the dedicated R2 bucket for screenshots.
+npx wrangler r2 bucket create learning-chinese-feedback
+
+# 4. Set the admin secret (any random string; gates the read/triage routes).
+npx wrangler pages secret put FEEDBACK_ADMIN_SECRET --project-name=learning-chinese
+```
+
+Then, in the Pages project (**Settings → Functions → bindings**), add the **D1
+binding `FEEDBACK_DB`** (→ the `feedback` database) and the **R2 binding
+`FEEDBACK_R2`** (→ the `learning-chinese-feedback` bucket), and **redeploy**. The
+bindings are deliberately limited to those two plus the secret — that absence is
+what makes the feature siloed.
+
+---
+
 ## 7. Dev server (development only)
 
 `platform/server/index.ts` runs an Express server (`:3000`) with Vite in

@@ -246,6 +246,11 @@ npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch
   ```
 
   (BYO per-profile keys work without this; the secret is the shared fallback.)
+- **Feedback feature** (the in-app 💬 widget) is **siloed** — a dedicated D1 + R2 +
+  admin secret with no app/user/content binding. Its one-time provisioning runbook
+  (`wrangler d1 create` / migration / `r2 bucket create` / `pages secret put
+  FEEDBACK_ADMIN_SECRET` / add Pages bindings → redeploy) lives in
+  [ARCHITECTURE.md §6.5](./ARCHITECTURE.md).
 
 ---
 
