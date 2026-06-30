@@ -234,6 +234,10 @@ npm install                  # 安裝所有 workspaces
 npm run dev                  # 在 http://localhost:3000 啟動 Express + Vite 開發伺服器
                              #   （完整開發伺服器：各模組的 API + admin UI）
 
+npm run dev:bank-admin       # 在 http://localhost:3100 啟動「獨立的句庫管理介面」
+                             #   （僅限開發、僅綁定 localhost；自己的程序，所以
+                             #    重啟 :3000 時策劃工作不中斷。連接埠：BANK_ADMIN_PORT）
+
 npm run build                # bake data + vite build（寫入 platform/dist）
 npm -w platform run preview  # 提供正式環境建置版本（vite preview，:4173）
 npm -w platform run bake:data  # 僅重新烘焙出貨的資料庫 / version.json
@@ -241,6 +245,11 @@ npm -w platform run bake:data  # 僅重新烘焙出貨的資料庫 / version.jso
 
 此 app 是本地優先的，因此其大部分功能完全不需要伺服器即可運作——開發伺服器（`:3000`）主要是用於
 admin／策劃以及產生烘焙後的資料。
+
+長時間策劃時，可改用「**獨立的句庫管理介面**」（`npm run dev:bank-admin`，預設 `:3100`），它在自己的程序中
+執行：只提供「句庫」分頁（含所有子分頁），並讀寫同一個 `content.db`，因此在改程式碼而重啟 `:3000` 時，
+匯入／瀏覽不會被中斷。兩個伺服器可同時執行（`content.db` 使用 WAL + `busy_timeout`，並行存取安全）。它僅
+綁定 localhost，且永遠不會部署到正式環境。提交 `content.db` 前請先停掉兩個伺服器（伺服器持有時不要提交）。
 
 **選用的額外項目：**
 
