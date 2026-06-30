@@ -87,7 +87,8 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 
 Substantive work flows through GitHub issues, not ad-hoc edits. The loop: **intake → triage → refine to Ready → execute → PR → review → merge (auto-deploy)**.
 
-- **Propose, don't auto-file.** For anything non-trivial, offer to open an issue and let the user confirm; do trivial ops (one-off tooling, lookups) inline. (User chose *propose → confirm*.)
+- **Roles — the main session is a DISPATCHER, not a worker** (and not the investigator/spec-writer). On a new request it does **not** read code, root-cause, spec, or implement. It hands the raw report to a background **intake agent** that runs the whole chain — investigate → root-cause → write the Definition-of-Ready spec → recommend the fix → create the Ready issue → dispatch a worker (→ PR) — then returns to the user fast and relays the ticket # + PR link. **Workers** implement one issue each. The human gate is **PR review** (never auto-merge); per-issue confirmation is not required — the agent chain is autonomous.
+- **Trivial vs tracked.** Only substantive work becomes an issue; trivial ops (one-off tooling, lookups, git housekeeping) are done inline, not filed.
 - **File via the `🤖 Task (agent-ready spec)` template** (`.github/ISSUE_TEMPLATE/task.md`). `gh issue create` does **not** auto-apply templates — reproduce the spec sections in the body yourself.
 - **Definition of Ready** (label `status:ready`): Goal, testable acceptance criteria, affected files, applicable cardinal-rule constraints, a test/verification plan, and out-of-scope — all filled, so a cold future session can execute without re-discovery. Missing detail → `status:needs-info`; discuss here or in issue comments.
 - **Labels (labels-only tracking):** type = `bug`/`enhancement`/`content`/`performance`; status = `status:{triage,needs-info,ready,in-progress,in-review,blocked}` (done = closed); optional `priority:p0–p2`.
