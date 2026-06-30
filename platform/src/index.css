@@ -5434,6 +5434,14 @@ body[data-theme="silver"] .app-shell .char-tile {
 }
 body[data-theme="gold"][data-screen="mychars"] .char-tile,
 body[data-theme="silver"][data-screen="mychars"] .char-tile {
+  /* Soften the 米字格 cross-hair on the bright foil glass. The shared `::before`
+     paints the grid in --ct-line; the tile-token default points that at --rule
+     (a DARK navy/petrol hairline tuned for the dark jewel field). On this near-
+     white glass face that dark line reads as a harsh, distracting cross, so here
+     we re-point --ct-line to a low-alpha --foil-edge tint — a whisper-quiet warm/
+     cool foil hairline that keeps the practice-cell signature without competing
+     with the glyph. (Gold/Silver-only, mychars-only; other themes untouched.) */
+  --ct-line: color-mix(in srgb, var(--foil-edge) 22%, transparent);
   border: 2px solid transparent;
   background:
     linear-gradient(155deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.14)) padding-box,
