@@ -18,7 +18,7 @@ progress lives entirely on-device in IndexedDB.
 |------|------|
 | `shared/` | `@shared/character-stats` — **the smarts**, PURE logic: `mastery`, `char-ranker`, `char-knowledge`, `sentence-generator`, `zhuyin`, `content-db` (the importer; only this one uses better-sqlite3/opencc). |
 | `platform/` | The app. `App.tsx`, `offline/` (data layer, `user-store`, `demo`), `theme/`, `ui/` (shared kit), `scripts/bake-data.ts`, `server/` (**dev-only** Express :3000). |
-| `modules/` | Lazy-loaded modules: `writing-challenge`, `word-sets`, `copybook`, `my-characters`. |
+| `modules/` | Lazy-loaded modules: `writing-challenge`, `word-sets`, `practice-english`, `copybook`, `my-characters`. |
 | `scripts/` | Python analysis + `bank-fix.py` (glyph scrub), `seed-dbs.ts`. |
 | `test/` | Cross-language fixtures + the one pytest (`test_glyph_canon.py`). |
 | `seed/` | Committed, scrubbed, content-only DBs so CI can build (see *Data*). |
@@ -42,7 +42,7 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 - **Merge to `master` → production** (CI builds + gates + `wrangler pages deploy`). **PR → preview** with the URL commented on the PR. There is **no** manual deploy step.
 - The Pages project is **direct-upload** (no Git connection); its **production branch is `learning-chinese`, NOT `master`**. The workflow (`.github/workflows/ci.yml`) deploys `--branch=learning-chinese` on a master push (→ prod) and `--branch=<PR head>` on a PR (→ preview). Don't "fix" this to `master`.
 - The **data-integrity gate (`test:data`) blocks every deploy** — bad content/code can't ship.
-- ⚠️ **FOOTGUN:** a local PostToolUse hook in `.claude/settings.local.json` deploys `dist` to **prod** on any `npm run build`. It SHOULD be removed (CI owns deploys now; I can't edit settings.local.json — the harness blocks self-modification, so ask the user). **Until it's gone, do NOT run `npm run build` locally** — use `npm -w platform run bake:data` and/or `npx vite build` (in `platform/`) to verify, neither of which triggers the hook.
+- A local PostToolUse hook in `.claude/settings.local.json` used to deploy `dist` to **prod** on any `npm run build` — it has been **removed** (CI owns deploys now). That file is machine-local + gitignored, so a fresh clone never has it. To verify a build without deploying, `npm -w platform run bake:data` and/or `npx vite build` (in `platform/`).
 
 ## Testing (3 tiers)
 
@@ -63,7 +63,7 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 2. **`canonicalizeTW` and `bank-fix.py canon()` MUST stay in sync** (golden-fixture test enforces). `VARIANT_MAP` (汙→污, 秘→祕…) lives in BOTH.
 3. **Sentence selection's goal is practicing the target CHARS, not sentences.** Selection is **binding** — the chosen char MUST appear in the result; never silently substitute an easier one. Favor parity/coverage over variety.
 4. **HanziWriter leaks 2 global document listeners per `create()`.** REUSE one writer via `setCharacter()`/`quizSession`; **never remount `WritingCanvas` per character or via a per-char `key`.**
-5. **Stroke data**: bundled from `hanzi-writer-data` + hand-made Taiwan overrides in `platform/public/stroke-data/` (committed). Chars no dataset covers (currently 溼/痠/嬤/嚐) are in the gate's allowlist; source new ones from **animCJK** (`graphicsZhHant.txt`), then drop them from the allowlist.
+5. **Stroke data**: bundled from `hanzi-writer-data` + hand-made Taiwan overrides in `platform/public/stroke-data/` (committed). Chars no dataset covers (currently 溼/痠/嬤/嚐/綑) are in the gate's allowlist; source new ones from **animCJK** (`graphicsZhHant.txt`), then drop them from the allowlist.
 
 ## Theme + demo
 
@@ -84,7 +84,7 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 
 ## Current state (2026-06-30)
 
-- **Tests + CI/CD** (PR #1) and **demo mode** (PR #2) are **merged to `master`; prod is live** via the auto-deploy-on-merge pipeline.
-- **Uncommitted in the working tree** (separate, in-flight work — leave it alone unless asked): a **theme refactor** (`App.tsx`, `theme-store.ts`, `themes.ts`, `Styleguide.tsx`, etc.) and **~1,733 new bank sentences** in `content.db`. Each ships via its own PR (content also needs `npm run seed:dbs`).
-- The **theme-resolution test** is written but staged to land with the theme refactor (it depends on that PR's `ROOT_THEME_ID`/`applyThemeToBody`).
-- **Open TODO**: remove the local auto-deploy hook (see *Deploy* footgun).
+- Merged to `master` (prod live via the auto-deploy-on-merge pipeline): **tests + CI/CD** (#1), **demo mode** (#2), this **orientation guide** (#3), and the **theme + landing overhaul** (#4). #4 shipped the new default theme **Indigo**, the landing menu/dock, the char-tile **status frame** (`CharTile`'s `.char-tile::after` ring — the old corner pip is gone), and the `content.db` recovery noted below. The theme-resolution test landed with it.
+- **Open PR (#6)**: a landing menu/bar refinement — bar always opaque, the wordmark appears on dock (no fly/shrink), distinct frosted scrim when the menu opens.
+- `content.db` carries **~11,200 bank sentences** (`npm run analyze-bank` reports remaining gaps).
+- ⚠️ **`content.db` was once committed CORRUPT** (no binary gitattribute → `integrity_check` failed at build). It was recovered with `sqlite3 platform/content.db ".recover"`, and **`.gitattributes` now marks `*.db binary`**. So: don't blind-`git checkout platform/content.db` (you can restore a bad blob over a good working copy), `.recover` it if it's ever reported "malformed", and never commit a `.db` while the dev server still holds it open (WAL).
