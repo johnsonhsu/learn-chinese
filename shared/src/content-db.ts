@@ -33,7 +33,7 @@ const VARIANT_MAP: Record<string, string> = { '汙': '污', '秘': '祕' };
  * the pass, then restore), then unify undrawable variant glyphs. Mirrors the scrub in
  * scripts/bank-fix.py so import and offline-scrub agree on one canonical form.
  */
-function canonicalizeTW(raw: string): string {
+export function canonicalizeTW(raw: string): string {
   // Shield 台/臺 behind private-use sentinels so OpenCC can't touch either (it would
   // force 台->臺); both are valid Taiwan forms we preserve verbatim. Then unify the
   // undrawable variant glyphs (汙->污 etc).

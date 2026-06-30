@@ -5,6 +5,10 @@ an existing canonical row, the source row is a duplicate and is DELETED instead.
 Plus a targeted grammar fix (id 3776 Cantonese 係 -> Mandarin 是). Backs up the DB
 first. Reports COUNTS only (no sentence text). Idempotent.
 Run from repo root: python3 scripts/bank-fix.py
+
+`canon()` is module-level + side-effect-free so the parity test
+(test/test_glyph_canon.py) can import it; the destructive DB pass only runs when
+this file is executed as a script (guarded by __main__).
 """
 import sqlite3, shutil, os, datetime
 import opencc
@@ -40,63 +44,69 @@ def canon(s):
         conv = conv.replace(k, v)
     return conv
 
-con = sqlite3.connect(DB)
-con.execute("PRAGMA wal_checkpoint(TRUNCATE);"); con.commit()
 
-stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-bkdir = f"modules/writing-challenge/.backup-bankfix-{stamp}"
-os.makedirs(bkdir, exist_ok=True)
-for ext in ("", "-wal", "-shm"):
-    if os.path.exists(DB + ext):
-        shutil.copy2(DB + ext, os.path.join(bkdir, os.path.basename(DB) + ext))
+def main():
+    con = sqlite3.connect(DB)
+    con.execute("PRAGMA wal_checkpoint(TRUNCATE);"); con.commit()
 
-rows = con.execute("SELECT id, sentence FROM bank_sentences").fetchall()
-total = len(rows)
-present = set(s for _, s in rows)   # sentences that will exist after the pass
-updates, deletes = [], []
-for rid, s in rows:
-    s = s or ""
-    conv = canon(s)
-    if conv == s:
-        continue
-    if conv in present:            # canonical form already exists -> this row is a dup
-        deletes.append(rid)
-        present.discard(s)
-    else:
-        present.discard(s); present.add(conv)
-        updates.append((rid, conv))
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    bkdir = f"modules/writing-challenge/.backup-bankfix-{stamp}"
+    os.makedirs(bkdir, exist_ok=True)
+    for ext in ("", "-wal", "-shm"):
+        if os.path.exists(DB + ext):
+            shutil.copy2(DB + ext, os.path.join(bkdir, os.path.basename(DB) + ext))
 
-# Deletes first, then updates -> avoids transient UNIQUE collisions.
-for rid in deletes:
-    con.execute("DELETE FROM bank_sentences WHERE id=?", (rid,))
-for rid, conv in updates:
-    con.execute("UPDATE bank_sentences SET sentence=? WHERE id=?", (conv, rid))
+    rows = con.execute("SELECT id, sentence FROM bank_sentences").fetchall()
+    total = len(rows)
+    present = set(s for _, s in rows)   # sentences that will exist after the pass
+    updates, deletes = [], []
+    for rid, s in rows:
+        s = s or ""
+        conv = canon(s)
+        if conv == s:
+            continue
+        if conv in present:            # canonical form already exists -> this row is a dup
+            deletes.append(rid)
+            present.discard(s)
+        else:
+            present.discard(s); present.add(conv)
+            updates.append((rid, conv))
 
-# Targeted grammar fix: id 3776 Cantonese 係 -> Mandarin 是
-g3776 = "not needed"
-r = con.execute("SELECT sentence FROM bank_sentences WHERE id=3776").fetchone()
-if r and "係" in (r[0] or ""):
-    newv = r[0].replace("係", "是")
-    dup = con.execute("SELECT 1 FROM bank_sentences WHERE sentence=? AND id<>3776", (newv,)).fetchone()
-    if dup:
-        con.execute("DELETE FROM bank_sentences WHERE id=3776"); g3776 = "deleted (dup)"
-    else:
-        con.execute("UPDATE bank_sentences SET sentence=? WHERE id=3776", (newv,)); g3776 = "fixed"
+    # Deletes first, then updates -> avoids transient UNIQUE collisions.
+    for rid in deletes:
+        con.execute("DELETE FROM bank_sentences WHERE id=?", (rid,))
+    for rid, conv in updates:
+        con.execute("UPDATE bank_sentences SET sentence=? WHERE id=?", (conv, rid))
 
-con.commit()
-con.execute("PRAGMA wal_checkpoint(TRUNCATE);"); con.commit()
+    # Targeted grammar fix: id 3776 Cantonese 係 -> Mandarin 是
+    g3776 = "not needed"
+    r = con.execute("SELECT sentence FROM bank_sentences WHERE id=3776").fetchone()
+    if r and "係" in (r[0] or ""):
+        newv = r[0].replace("係", "是")
+        dup = con.execute("SELECT 1 FROM bank_sentences WHERE sentence=? AND id<>3776", (newv,)).fetchone()
+        if dup:
+            con.execute("DELETE FROM bank_sentences WHERE id=3776"); g3776 = "deleted (dup)"
+        else:
+            con.execute("UPDATE bank_sentences SET sentence=? WHERE id=3776", (newv,)); g3776 = "fixed"
 
-after = con.execute("SELECT sentence FROM bank_sentences").fetchall()
-remaining = sum(1 for (s,) in after if canon(s) != (s or ""))
-newtotal = con.execute("SELECT COUNT(*) FROM bank_sentences").fetchone()[0]
-integ = con.execute("PRAGMA integrity_check;").fetchone()[0]
-con.close()
+    con.commit()
+    con.execute("PRAGMA wal_checkpoint(TRUNCATE);"); con.commit()
 
-print(f"converter:                {MODE}")
-print(f"backup:                   {bkdir}")
-print(f"rows:                     {total} -> {newtotal}")
-print(f"Simplified+variant fixed: {len(updates)} rows")
-print(f"dups removed (collided w/ existing canonical): {len(deletes)} rows")
-print(f"id 3776 係→是:            {g3776}")
-print(f"still differing:          {remaining} (should be 0)")
-print(f"integrity:                {integ}")
+    after = con.execute("SELECT sentence FROM bank_sentences").fetchall()
+    remaining = sum(1 for (s,) in after if canon(s) != (s or ""))
+    newtotal = con.execute("SELECT COUNT(*) FROM bank_sentences").fetchone()[0]
+    integ = con.execute("PRAGMA integrity_check;").fetchone()[0]
+    con.close()
+
+    print(f"converter:                {MODE}")
+    print(f"backup:                   {bkdir}")
+    print(f"rows:                     {total} -> {newtotal}")
+    print(f"Simplified+variant fixed: {len(updates)} rows")
+    print(f"dups removed (collided w/ existing canonical): {len(deletes)} rows")
+    print(f"id 3776 係→是:            {g3776}")
+    print(f"still differing:          {remaining} (should be 0)")
+    print(f"integrity:                {integ}")
+
+
+if __name__ == "__main__":
+    main()

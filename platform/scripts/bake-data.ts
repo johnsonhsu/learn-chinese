@@ -21,19 +21,32 @@ const platformRoot = join(__dirname, '..');
 const repoRoot = join(platformRoot, '..');
 const outDir = join(platformRoot, 'public', 'data');
 
+const seedDir = join(repoRoot, 'seed');
+
 interface Source {
   /** asset name the client fetches: /data/<name>.db */
   name: string;
   src: string;
+  /** Committed content-only fallback used when `src` is absent — i.e. CI, which
+   *  has no working DB. Produced by `npm run seed:dbs`. The personal-data scrub
+   *  below still runs, so working-DB and seed builds yield the same snapshot. */
+  seed?: string;
 }
 
 const sources: Source[] = [
-  { name: 'platform', src: join(platformRoot, 'platform.db') },
+  { name: 'platform', src: join(platformRoot, 'platform.db'), seed: join(seedDir, 'platform.db') },
   // Platform-owned curriculum content (bank_sentences, tocfl_words, char_words).
   { name: 'content', src: join(platformRoot, 'content.db') },
-  { name: 'writing-challenge', src: join(repoRoot, 'modules', 'writing-challenge', 'writing-challenge.db') },
+  { name: 'writing-challenge', src: join(repoRoot, 'modules', 'writing-challenge', 'writing-challenge.db'), seed: join(seedDir, 'writing-challenge.db') },
   { name: 'word-sets', src: join(repoRoot, 'modules', 'word-sets', 'word-sets.db') },
 ];
+
+/** Working DB if present (local dev), else the committed content-only seed (CI). */
+function resolveSource(src: string, seed?: string): string {
+  if (existsSync(src)) return src;
+  if (seed && existsSync(seed)) return seed;
+  throw new Error(`Source DB not found: ${src}${seed ? ` (and no seed at ${seed})` : ''}`);
+}
 
 // Build one stroke-data.json bundle (char -> hanzi-writer data) for every
 // dictionary character we have stroke data for, applying local Taiwan overrides.
@@ -46,7 +59,7 @@ function bakeStrokeData(): { size: number; hash: string } {
   const hwDir = hwCandidates.find((p) => existsSync(p));
   if (!hwDir) throw new Error('hanzi-writer-data not installed (npm i -w platform -D hanzi-writer-data)');
 
-  const db = new Database(join(platformRoot, 'platform.db'), { readonly: true });
+  const db = new Database(resolveSource(join(platformRoot, 'platform.db'), join(seedDir, 'platform.db')), { readonly: true });
   const chars = (db.prepare('SELECT character FROM dict_chars WHERE dictionary_id = 1').all() as { character: string }[])
     .map((r) => r.character);
   db.close();
@@ -82,15 +95,14 @@ async function bake(): Promise<void> {
 
   const files: Record<string, { size: number; hash: string }> = {};
 
-  for (const { name, src } of sources) {
-    if (!existsSync(src)) {
-      throw new Error(`Source DB not found: ${src}`);
-    }
+  for (const { name, src, seed } of sources) {
+    const source = resolveSource(src, seed);
+    if (source !== src) console.log(`  using seed for ${name} (no working DB)`);
     const dest = join(outDir, `${name}.db`);
     // Clean any stale snapshot first so backup() writes fresh.
     if (existsSync(dest)) rmSync(dest);
 
-    const db = new Database(src, { readonly: true });
+    const db = new Database(source, { readonly: true });
     await db.backup(dest); // consistent snapshot incl. WAL
     db.close();
 
@@ -113,8 +125,19 @@ async function bake(): Promise<void> {
     // just go stale — installs re-download on the next contentHash change.
     if (name === 'writing-challenge') {
       const sdb = new Database(dest);
+      // Curriculum content moved to content.db — drop the module's stale copies.
       for (const tbl of ['bank_sentences', 'char_words', 'tocfl_words']) {
         try { sdb.exec(`DROP TABLE IF EXISTS ${tbl};`); } catch { /* skip */ }
+      }
+      // Strip ALL personal/dev rows — the device keeps its own progress in the
+      // IndexedDB user-store, so the module snapshot ships module_settings only.
+      // (Without this, the dev profiles/sessions/stats leaked into production.)
+      for (const tbl of [
+        'profiles', 'character_stats', 'user_settings',
+        'practice_sessions', 'practice_sentences', 'session_history',
+        'active_lessons', 'lesson_history', 'activity_log',
+      ]) {
+        try { sdb.exec(`DELETE FROM ${tbl};`); } catch { /* table absent — skip */ }
       }
       sdb.exec('VACUUM;');
       sdb.close();

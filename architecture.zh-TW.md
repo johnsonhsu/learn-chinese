@@ -357,6 +357,42 @@ Workbox 快取（資料層在 IndexedDB 中自行管理它們）；`/data/versio
 
 ---
 
+## 4.5 測試與 CI/CD
+
+測試使用 **Vitest**（TypeScript，根目錄 `vitest.config.ts`）加上 Python 字形清理的**單一 pytest**。
+指令：`npm test`（全部）、`npm run test:unit`（`shared/` + `platform/src/`，快速）、
+`npm run test:data`（部署閘門）。共三層：
+
+- **純邏輯單元（`shared/src/__tests__`）**——引擎：`sentence-generator`（**綁定**不變量——所選目標字
+  必定出現在回傳文字中——加上以 seeded RNG 測 parity／涵蓋率）、`mastery`、`char-knowledge`、
+  `char-ranker`、`zhuyin`。`DbQueryProvider` 以記憶體假物件代替；`Date.now()` 以
+  `vi.setSystemTime` 控制；RNG 以 seeded `Math.random` stub 控制。
+- **字形正規化對等**——`canonicalizeTW()`（TS 匯入器，由 `content-db.ts` 匯出）與
+  `bank-fix.py canon()` 是同一條規則的兩個實作，**必須一致**。兩者都對同一份黃金樣本
+  （`test/fixtures/glyph-canon.json`）執行：保留 台/臺、`VARIANT_MAP` 統一、簡體→繁體、冪等。
+  `bank-fix.py` 具破壞性的流程以 `__main__` 包住，讓測試能匯入 `canon()`；Python 測試會
+  `pytest.importorskip("opencc")`，因此本機未裝 opencc 時自動略過。
+- **資料完整性部署閘門（`platform/test/data-integrity.test.ts`）**——對**烘焙後**的
+  `platform/public/data/*`（即出貨內容）執行：SQLite `integrity_check`；銀行句子無簡體／無法書寫的
+  字形（`canon(s) === s`）且參照完整；快照**不含個人資料**（`platform.db` 已清除使用者／統計，
+  `writing-challenge.db` 僅留 `module_settings`）；且銀行句子用到的每個課程字都有內建筆順資料
+  （可離線書寫），並附一份小而有記錄的 allowlist 收容無任何開放資料集涵蓋的字。見 §3.5／字形正規化說明。
+
+**CI/CD —— `.github/workflows/ci.yml`。** 單一 job，觸發於 `pull_request` 與 `push: master`：
+`npm ci` → 單元測試 → Python 對等測試（`pip install opencc pytest`）→ `npm run build -w platform`
+→ **資料完整性閘門** → `cloudflare/wrangler-action` 部署。部署分支為 `github.head_ref ||
+github.ref_name`，因此 **PR 部署 preview**、**合併到 `master` 部署 production**，兩者使用相同的
+建置 + 閘門（正式環境鏡像 preview）。任一步驟失敗都會在部署前中止，因此壞內容／程式碼無法出貨。
+需要 repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`。
+
+**可重現建置 + seeds。** `bake-data.ts` 優先讀取存在的工作用 DB，否則讀取 committed 的僅含內容
+**seed**（`seed/platform.db`、`seed/writing-challenge.db`），讓 CI 不需 gitignore 掉的工作用 DB
+（內含開發者 profile 的進度）也能建置。`npm run seed:dbs` 會重新產生 seeds，並套用與 `bake` 相同的
+個人資料清理。`content.db` 與 `word-sets.db` 為純內容，直接 commit 在其工作路徑。**沒有**本機自動
+部署——部署只透過 CI 發生。
+
+---
+
 ## 5. UI kit（`platform/src/ui`）
 
 每個模組都據以組合的共用設計基本元件（design primitives），而非自行重新實作那套「cartoon-candy」外觀。
