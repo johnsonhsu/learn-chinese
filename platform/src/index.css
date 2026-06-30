@@ -179,6 +179,14 @@ body {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Demo session only (body.demo-active, set by DemoBadge while mounted): reserve
+   space for the fixed top .demo-ribbon. The ribbon already absorbs the status-bar
+   inset itself, so #root clears the ribbon HEIGHT plus that inset in one offset —
+   the rule above is overridden (not added to) so the inset is never doubled. */
+body.demo-active #root {
+  padding-top: calc(var(--demo-ribbon-h, 38px) + env(safe-area-inset-top, 0px));
+}
+
 .loading {
   display: flex;
   align-items: center;
@@ -5026,6 +5034,99 @@ body[data-screen="result"]     { --screen-accent: #4F7A3A; }
   cursor: pointer;
   font-weight: 500;
   white-space: nowrap;
+}
+
+/* --- Demo-site ribbon (issue #27; redesigned PR #31): a slim, always-present
+   frosted strip pinned to the TOP of the public demo, telling visitors a refresh
+   resets progress. Built purely from the per-theme token contract (--paper-raised
+   / --rule / --ink / --seal …) so it reads as native chrome on Paper AND all six
+   themes — no per-[data-theme] rule. The `demo-active` body class (added by
+   DemoBadge while mounted) reserves matching top space on #root so the ribbon
+   never overlaps the header / landing menu / module screens beneath it.
+
+   Height token so the #root offset and the bar stay in lockstep. --safe-top folds
+   in the iOS status-bar inset (so the bar's content clears the notch and #root's
+   own inset isn't double-counted — see #root, which drops its inset while
+   demo-active). --- */
+:root { --demo-ribbon-h: 38px; }
+.demo-ribbon {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9997;            /* below the rare, actionable UpdateBanner (9999) */
+  /* Translucent lifted surface + blur → reads as a pane of the app's own glass,
+     not a stuck-on banner. The flat fallback (no backdrop-filter) is the same
+     token at full strength so it stays legible. */
+  background: var(--paper-raised, #FBF8F0);
+  border-bottom: 1px solid var(--rule, #DAD2C2);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(28, 26, 23, 0.10));
+  padding-top: env(safe-area-inset-top, 0px);
+  font-family: var(--font, inherit);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .demo-ribbon {
+    background: color-mix(in srgb, var(--paper-raised, #FBF8F0) 82%, transparent);
+    -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    backdrop-filter: saturate(1.4) blur(14px);
+  }
+}
+.demo-ribbon__inner {
+  height: var(--demo-ribbon-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: var(--content-width, 600px);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+/* The 朱印 seal chip — the one accent. A vermilion/seal pill carrying the short
+   "Demo" label; the seal tokens re-point per theme (gold on indigo, jade on
+   midnight, pink on sakura …) so the chip always matches the active accent. */
+.demo-ribbon__chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm, 10px);
+  background: var(--seal-wash, #F3E0DB);
+  color: var(--seal, #C0392B);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.demo-ribbon__seal {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--seal, #C0392B);
+  /* A soft, slow pulse — a quiet "live demo" cue. Removed under reduced-motion. */
+  animation: demo-seal-pulse 2.6s ease-in-out infinite;
+}
+@keyframes demo-seal-pulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%      { opacity: 0.45; transform: scale(0.82); }
+}
+.demo-ribbon__note {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink-soft, #56514A);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+@media (max-width: 380px) {
+  /* Phones: the chip carries the meaning; drop the long note rather than wrap. */
+  .demo-ribbon__note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-ribbon__seal { animation: none; }
 }
 
 /* --- Sentence-bank grid: full-window modal --- */

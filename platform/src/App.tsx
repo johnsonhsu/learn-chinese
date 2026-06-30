@@ -15,6 +15,7 @@ import {
 } from './theme/theme-store.ts';
 import { getTheme } from './theme/themes.ts';
 import UpdateBanner from './UpdateBanner.tsx';
+import DemoBadge from './DemoBadge.tsx';
 import { useAppUpdate } from './useAppUpdate.ts';
 import { OfflineProvider, useOffline } from './offline/offline-context.tsx';
 import { exportBackup, parseBackup, importBackupSelective, type BackupSummary } from './offline/backup.ts';
@@ -252,6 +253,7 @@ function AppInner() {
     return (
       <LanguageContext.Provider value={settings.language}>
         <UpdateBanner needRefresh={needRefresh} onUpdate={applyUpdate} onDismiss={() => setNeedRefresh(false)} />
+        <DemoBadge />
         {/* Settings panels take precedence so the WelcomePopup gear (0-profile
             first run) and the ProfilePicker gear both reach them. */}
         {showAdmin ? (
@@ -297,6 +299,7 @@ function AppInner() {
   return (
     <LanguageContext.Provider value={settings.language}>
       <UpdateBanner needRefresh={needRefresh} onUpdate={applyUpdate} onDismiss={() => setNeedRefresh(false)} />
+      <DemoBadge />
       {placementNeeded ? (
         // Power-user escape hatch: the onboarding gear opens the levers that
         // govern char ranking/selection without leaving onboarding (placementNeeded

@@ -9,6 +9,11 @@ export default {
   'loading.downloading': 'Downloading…',
   'loading.downloadingPct': 'Downloading… {pct}%',
 
+  // Demo-site badge (issue #27): shown on the public, always-fresh demo so
+  // visitors know progress is not saved and a refresh resets it.
+  'demo.badge': 'Demo',
+  'demo.note': 'Demo site — refresh resets progress',
+
   'user.whoLearning': "Who's learning today?",
   'user.newName': 'New user name',
   'user.create': 'Create',

@@ -9,13 +9,14 @@
  *  - charStats:    LEGACY v1 single-profile store, kept read-only for migration
  */
 
-// Demo mode (?demo) uses a SEPARATE IndexedDB so preset demo data and any
-// eviction/reseed can never touch a real (installed) user's progress, even on the
-// same origin. Decided once at module load; the `?demo` param persists per session.
-const IS_DEMO = (() => {
-  try { return new URLSearchParams(location.search).has('demo'); } catch { return false; }
-})();
-const USER_DB_NAME = IS_DEMO ? 'learning-chinese-user-demo' : 'learning-chinese-user';
+// Demo mode uses a SEPARATE IndexedDB so preset demo data and any eviction/reseed
+// can never touch a real (installed) user's progress, even on the same origin.
+// `isDemoMode()` is the single source of truth (see demo-mode.ts): it covers the
+// explicit `?demo` link AND a public browser `?app` load on the deployed host
+// (issue #27 demo-by-default). The installed PWA (standalone) and dev/LAN hosts
+// are NOT demo, so they keep the real `learning-chinese-user` jar.
+import { isDemoMode } from './demo-mode.js';
+const USER_DB_NAME = isDemoMode() ? 'learning-chinese-user-demo' : 'learning-chinese-user';
 const USER_DB_VERSION = 2;
 const LEGACY_STATS_STORE = 'charStats';
 const PROFILE_STATS_STORE = 'profileStats';
