@@ -1,7 +1,12 @@
+import { demoKey } from '@platform/offline/demo-key.ts';
+
 let enVoice: SpeechSynthesisVoice | null = null;
 
-const DEVICE_KEY = 'pe-en-voice';                  // device-wide default
-const userKey = (id: number) => `pe-en-voice-u${id}`; // per-profile override
+// DEMO ISOLATION (issue #48): same demoKey() routing as platform's utils/voices.ts
+// so this resolver and that writer agree on the key. In demo it reads the isolated
+// '-demo' variant; the real instance is never read or written.
+const DEVICE_KEY = demoKey('pe-en-voice');                  // device-wide default
+const userKey = (id: number) => demoKey(`pe-en-voice-u${id}`); // per-profile override
 
 // macOS "novelty"/legacy-robotic voices — never auto-pick or list these.
 const JUNK = new Set([

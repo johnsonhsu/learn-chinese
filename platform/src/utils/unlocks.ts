@@ -30,8 +30,18 @@
  * ('admin') no longer redeem. BACK-COMPAT: devices that already STORED 'premium'
  * or 'admin' keep working — the legacy 'premium' still ungates both foils (see
  * theme-store.isThemeAvailable), and 'admin' still drives the admin gate.
+ *
+ * DEMO ISOLATION (issue #48): unlocks are localStorage, NOT in the demo IndexedDB
+ * jar, so without namespacing a code redeemed in the demo would write the REAL
+ * device's 'lc-unlocks' (and demo would READ real unlocks) — a data-safety leak.
+ * The key routes through demoKey(): in a demo session it is 'lc-unlocks-demo',
+ * read/written in isolation and reset each demo load (resetDemoKeys); the real
+ * installed instance keeps 'lc-unlocks' untouched. Locked in at module load like
+ * theme-store's device-theme key — isDemoMode() is memoized for the page session.
  */
-const UNLOCKS_KEY = 'lc-unlocks';
+import { demoKey } from '../offline/demo-key.js';
+
+const UNLOCKS_KEY = demoKey('lc-unlocks');
 
 /**
  * What redeeming a single code does. `grant` is the feature key it adds to the

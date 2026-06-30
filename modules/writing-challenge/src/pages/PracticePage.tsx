@@ -8,6 +8,7 @@ import { getNextSentence, submitResult } from '../utils/api.ts';
 import type { NextSentenceResponse, SentenceResultResponse, CharAttemptResult, CharResult } from '../utils/api.ts';
 import { useT } from '../i18n/index.ts';
 import { useDebug } from '@platform/DebugOverlay.tsx';
+import { demoKey } from '@platform/offline/demo-key.ts';
 
 interface Props {
   userId: number;
@@ -39,6 +40,10 @@ export function PracticePage({
   autoSkipKey = 'wc_auto_skip',
   showBack = true,
 }: Props) {
+  // Demo-isolate the auto-skip key (issue #48). The prop is a base name (the WC
+  // default 'wc_auto_skip' or PlacementTest's 'placement:auto-skip'); demoKey()
+  // suffixes it in demo so the toggle never reads/writes the real instance's key.
+  const storedAutoSkipKey = demoKey(autoSkipKey);
   const t = useT();
   const [sentence, setSentence] = useState<NextSentenceResponse | null>(null);
   const [charIndex, setCharIndex] = useState(0);
@@ -50,7 +55,7 @@ export function PracticePage({
   const [level, setLevel] = useState(0);
   const [fluency, setFluency] = useState(0);
   const [totalKnown, setTotalKnown] = useState(0);
-  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(autoSkipKey) === 'true');
+  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(storedAutoSkipKey) === 'true');
   const [practiceChar, setPracticeChar] = useState<string | null>(null);
   const [liveMistakes, setLiveMistakes] = useState(0);
   const [liveUsedHelp, setLiveUsedHelp] = useState(false);
@@ -75,7 +80,7 @@ export function PracticePage({
   const toggleAutoSkip = () => {
     const next = !autoSkip;
     setAutoSkip(next);
-    localStorage.setItem(autoSkipKey, next ? 'true' : 'false');
+    localStorage.setItem(storedAutoSkipKey, next ? 'true' : 'false');
   };
 
   // Helper: is a char "above level" (red)?

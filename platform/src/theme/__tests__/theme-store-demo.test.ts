@@ -84,3 +84,29 @@ describe('device theme — DEMO path', () => {
     expect(localStorage.getItem(REAL_KEY)).toBe('gold'); // real PWA theme protected
   });
 });
+
+// PER-PROFILE THEME OVERRIDE isolation (issue #48). The override key is profile-id
+// keyed, and demo profile ids collide with real ones — so a demo theme picked for
+// profile 1 would otherwise stomp the real user's lc-theme-u1. It now routes
+// through demoKey() too, and resetDemoDeviceTheme() (→ resetDemoKeys) wipes it.
+describe('per-profile theme override — DEMO path (issue #48)', () => {
+  it('does NOT read the real per-profile theme, and writes only the -demo variant', async () => {
+    localStorage.setItem('lc-theme-u1', 'gold'); // real user's profile-1 override
+    const ts = await loadThemeStore(true);
+    // Demo ignores the real key (collision-proof).
+    expect(ts.getProfileTheme(1)).toBeNull();
+    ts.setProfileTheme(1, 'midnight');
+    expect(localStorage.getItem('lc-theme-u1-demo')).toBe('midnight');
+    expect(localStorage.getItem('lc-theme-u1')).toBe('gold'); // real override protected
+  });
+
+  it('resetDemoDeviceTheme() clears the per-profile demo override but not the real one', async () => {
+    localStorage.setItem('lc-theme-u1', 'gold'); // real
+    const ts = await loadThemeStore(true);
+    ts.setProfileTheme(1, 'sakura'); // demo-only
+    expect(localStorage.getItem('lc-theme-u1-demo')).toBe('sakura');
+    ts.resetDemoDeviceTheme();
+    expect(localStorage.getItem('lc-theme-u1-demo')).toBeNull(); // demo reset
+    expect(localStorage.getItem('lc-theme-u1')).toBe('gold'); // real protected
+  });
+});
