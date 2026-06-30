@@ -35,6 +35,29 @@ import { isDemoMode } from './demo-mode.js';
 export const DEMO_SUFFIX = '-demo';
 
 /**
+ * Base names of localStorage keys whose demo variant is a DELIBERATE in-session
+ * USER ACTION that must SURVIVE the always-fresh demo reset — they are preserved
+ * by {@link resetDemoKeys} (issue #63).
+ *
+ * WHY (issue #63 — the unlock kick-out). The always-fresh reset wipes demo
+ * progress + cosmetic demo state on every demo load, but a demo load also happens
+ * on the SW auto-reload that a navigation triggers in demo mode (useAppUpdate.ts:
+ * onNeedRefresh → updateServiceWorker(true)). So a code the visitor just redeemed
+ * (`lc-unlocks-demo`) would be wiped out from under them mid-session: the admin /
+ * premium reveal vanishes, and re-entering a chained code (e.g. 8001 after its
+ * 8000 prereq was wiped) is rejected as "Invalid code". An unlock is an explicit
+ * user action, not seeded progress — it must persist across the reset.
+ *
+ * Isolation is unchanged: these are still the `-demo` variants, never the real
+ * `lc-unlocks` key (#48), and `resetDemoKeys` is a no-op outside demo. A genuinely
+ * fresh demo visit (no prior demo unlock on this browser) still starts with the
+ * key absent → nothing unlocked. {@link unlocks} imports UNLOCKS_BASE_KEY from here
+ * so the preserved name can never drift from the key it actually writes.
+ */
+export const UNLOCKS_BASE_KEY = 'lc-unlocks';
+const PRESERVED_DEMO_KEYS = new Set([`${UNLOCKS_BASE_KEY}${DEMO_SUFFIX}`]);
+
+/**
  * The localStorage key to actually use for `base`: `<base>-demo` in a demo
  * session, `base` unchanged otherwise. A real/installed instance NEVER sees the
  * suffix, so demo reads/writes can never touch the real key. Safe for dynamic
@@ -45,11 +68,15 @@ export function demoKey(base: string): string {
 }
 
 /**
- * Clear every demo-scoped localStorage key (those ending in `-demo`). A NO-OP
- * outside demo mode, so it can never wipe a real installed instance's keys even
- * on the same origin. Called from ensureDemoSeed on each demo load to make all
- * demo-namespaced state (unlocks, themes, voices, gemini key, copybook, auto-skip)
- * always-fresh — the localStorage analogue of reseeding the demo IndexedDB jar.
+ * Clear every demo-scoped localStorage key (those ending in `-demo`), EXCEPT the
+ * {@link PRESERVED_DEMO_KEYS} (a code unlock the visitor made this session — see
+ * issue #63). A NO-OP outside demo mode, so it can never wipe a real installed
+ * instance's keys even on the same origin. Called from ensureDemoSeed on each demo
+ * load to make demo-namespaced state (themes, voices, gemini key, copybook,
+ * auto-skip) always-fresh — the localStorage analogue of reseeding the demo
+ * IndexedDB jar. Unlocks are intentionally exempt so the always-fresh reset (which
+ * also fires on the demo SW auto-reload) never kicks the user out of a feature
+ * they just unlocked.
  */
 export function resetDemoKeys(): void {
   if (!isDemoMode()) return;
@@ -57,7 +84,7 @@ export function resetDemoKeys(): void {
     const toRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k.endsWith(DEMO_SUFFIX)) toRemove.push(k);
+      if (k && k.endsWith(DEMO_SUFFIX) && !PRESERVED_DEMO_KEYS.has(k)) toRemove.push(k);
     }
     for (const k of toRemove) localStorage.removeItem(k);
   } catch {

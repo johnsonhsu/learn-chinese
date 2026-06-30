@@ -39,9 +39,12 @@
  * installed instance keeps 'lc-unlocks' untouched. Locked in at module load like
  * theme-store's device-theme key — isDemoMode() is memoized for the page session.
  */
-import { demoKey } from '../offline/demo-key.js';
+import { demoKey, UNLOCKS_BASE_KEY } from '../offline/demo-key.js';
 
-const UNLOCKS_KEY = demoKey('lc-unlocks');
+// Shared base name so the demo unlocks key that resetDemoKeys() PRESERVES (issue
+// #63 — an in-session unlock survives the always-fresh reset) can never drift from
+// the key we actually read/write here.
+const UNLOCKS_KEY = demoKey(UNLOCKS_BASE_KEY);
 
 /**
  * What redeeming a single code does. `grant` is the feature key it adds to the

@@ -52,7 +52,7 @@ describe('demoKey — DEMO path', () => {
     expect(demoKey('copybook:3')).toBe('copybook:3-demo');
   });
 
-  it('resetDemoKeys() clears every -demo key but leaves real keys byte-identical', async () => {
+  it('resetDemoKeys() clears the cosmetic/progress -demo keys but leaves real keys byte-identical', async () => {
     const { resetDemoKeys } = await loadDemoKey(true);
     // Real instance's keys (no suffix) — must be untouched.
     localStorage.setItem('lc-unlocks', JSON.stringify(['premium-prereq', 'theme-gold']));
@@ -66,7 +66,6 @@ describe('demoKey — DEMO path', () => {
       gemini: localStorage.getItem('lc-gemini-key-u1'),
     };
     // Demo-scoped state accrued during the session.
-    localStorage.setItem('lc-unlocks-demo', JSON.stringify(['admin']));
     localStorage.setItem('lc-theme-u1-demo', 'silver');
     localStorage.setItem('pe-en-voice-demo', 'Daniel');
     localStorage.setItem('lc-gemini-key-u1-demo', 'demo-secret');
@@ -74,8 +73,7 @@ describe('demoKey — DEMO path', () => {
 
     resetDemoKeys();
 
-    // Every -demo key gone.
-    expect(localStorage.getItem('lc-unlocks-demo')).toBeNull();
+    // Every cosmetic/progress -demo key gone.
     expect(localStorage.getItem('lc-theme-u1-demo')).toBeNull();
     expect(localStorage.getItem('pe-en-voice-demo')).toBeNull();
     expect(localStorage.getItem('lc-gemini-key-u1-demo')).toBeNull();
@@ -85,5 +83,20 @@ describe('demoKey — DEMO path', () => {
     expect(localStorage.getItem('lc-theme-u1')).toBe(realBefore.theme);
     expect(localStorage.getItem('pe-en-voice')).toBe(realBefore.voice);
     expect(localStorage.getItem('lc-gemini-key-u1')).toBe(realBefore.gemini);
+  });
+
+  it('resetDemoKeys() PRESERVES the demo unlocks key — an in-session unlock survives the always-fresh reset (issue #63)', async () => {
+    const { resetDemoKeys, UNLOCKS_BASE_KEY, DEMO_SUFFIX } = await loadDemoKey(true);
+    const demoUnlocksKey = `${UNLOCKS_BASE_KEY}${DEMO_SUFFIX}`; // 'lc-unlocks-demo'
+    // A code unlock the visitor just made this session, plus cosmetic demo state.
+    localStorage.setItem(demoUnlocksKey, JSON.stringify(['admin-prereq', 'admin']));
+    localStorage.setItem('lc-theme-u1-demo', 'silver');
+
+    resetDemoKeys(); // the SW auto-reload / ensureDemoSeed path
+
+    // Unlock survives → the user is NOT kicked out of admin.
+    expect(localStorage.getItem(demoUnlocksKey)).toBe(JSON.stringify(['admin-prereq', 'admin']));
+    // Cosmetic demo state still resets (always-fresh otherwise unchanged).
+    expect(localStorage.getItem('lc-theme-u1-demo')).toBeNull();
   });
 });

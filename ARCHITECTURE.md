@@ -498,6 +498,21 @@ things:
    `shouldShowLanding` change or a `_redirects` rule — deliberately deferred to avoid
    touching `App.tsx` while the theme refactor is in flight.)
 
+**Demo-scoped localStorage + the always-fresh reset.** Settable localStorage channels
+(unlocks, themes, voices, the Gemini key, copybook text, the auto-skip toggle) are NOT in
+the demo IndexedDB jar, so they route their base name through `demoKey()`
+(`offline/demo-key.ts`) to the isolated `<base>-demo` variant in demo mode; `resetDemoKeys()`
+(called from `ensureDemoSeed`) wipes those `-demo` keys so the demo is always-fresh. **One
+exception (issue #63):** the demo **unlocks** key (`lc-unlocks-demo`) is **preserved** by
+`resetDemoKeys` — a code the visitor redeemed this session is a deliberate user action, and
+in demo mode the always-fresh reset *also* fires on the SW auto-reload a navigation triggers
+(`useAppUpdate.ts` `onNeedRefresh`), so wiping unlocks would kick the user out of admin /
+re-hide premium mid-session and reject the next chained code as "Invalid code". The exemption
+is the single `PRESERVED_DEMO_KEYS` set in `demo-key.ts`, sharing `UNLOCKS_BASE_KEY` with
+`utils/unlocks.ts` so the names can't drift; isolation is unchanged (still the `-demo`
+variant, never the real `lc-unlocks`), and a genuinely fresh demo browser still starts with
+nothing unlocked.
+
 ---
 
 ## 5. UI kit (`platform/src/ui`)
