@@ -109,14 +109,19 @@ export const THEMES: Theme[] = [
 ];
 
 /** The DEFAULT SELECTION for a new device/profile — what the picker starts on.
- *  "Indigo" (the landing look), applied like any theme via `body[data-theme]`. */
-export const DEFAULT_THEME_ID = 'indigo';
+ *  "Indigo" (the landing look), applied like any theme via `body[data-theme]`.
+ *  Typed as `string` (not the literal) so it composes with the other id-typed
+ *  values and so callers may legitimately compare it against ROOT_THEME_ID
+ *  (these two are config knobs that COULD be set equal). */
+export const DEFAULT_THEME_ID: string = 'indigo';
 
 /** The id whose tokens ARE :root — applied by REMOVING `body[data-theme]` (the
  *  editorial "Paper" baseline). Kept DISTINCT from DEFAULT_THEME_ID so the
  *  default selection can be a real applied theme (Indigo) while the cascade
- *  still has a no-attribute fallback. */
-export const ROOT_THEME_ID = 'default';
+ *  still has a no-attribute fallback. Typed as `string` so the "are these two
+ *  configured equal?" guards in callers type-check instead of being flagged as
+ *  a provably-false literal comparison (TS2367). */
+export const ROOT_THEME_ID: string = 'default';
 
 /** Feature key (in utils/unlocks.ts CODE_FEATURES) that ungates premium themes. */
 export const PREMIUM_FEATURE = 'premium';
