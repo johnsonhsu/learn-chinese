@@ -56,7 +56,8 @@ learning-chinese/
     ├── writing-challenge/      在銀行句子上做手寫 / 筆順練習
     ├── word-sets/              詞彙分類
     ├── practice-english/       英文克漏字拼字遊戲
-    └── copybook/               自帶文字逐字書寫 + Gemini 產生
+    ├── copybook/               自帶文字逐字書寫 + Gemini 產生
+    └── my-characters/          逐字進度儀表板（統計表格 + 字塊網格）
 ```
 
 每個模組都是自己的 workspace，含有 `module.json`、`src/`（前端），以及選用的 `server/`
@@ -107,7 +108,7 @@ learning-chinese/
 | `dbFile`        | （選用）模組自己的 SQLite 檔，烘焙以供離線使用                 |
 | `order`         | 主畫面上的排序順序                                             |
 
-`practice-english` 與 `copybook` 省略 `dbFile`（它們讀取共用的銀行／本身沒有出貨的 DB）。
+`practice-english`、`copybook` 與 `my-characters` 省略 `dbFile`（它們讀取共用的銀行／裝置上進度，本身沒有出貨的 DB）。
 
 ### 前端自動探索（`platform/src/App.tsx`）
 
@@ -124,7 +125,7 @@ const manifestModules = import.meta.glob('../../modules/*/module.json', { eager:
 Manifests 會依一個明確的允許集合（allow-set）過濾，並依 `order` 排序：
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
 ```
 
 只有在此集合中的模組才會出現在主畫面上。它是一個「完全在裝置上運作」模組的納入清單（inclusion list）

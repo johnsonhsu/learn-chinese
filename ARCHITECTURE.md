@@ -57,7 +57,8 @@ learning-chinese/
     ├── writing-challenge/      handwriting / stroke practice on bank sentences
     ├── word-sets/              vocabulary categories
     ├── practice-english/       English cloze spelling game
-    └── copybook/               bring-your-own-text verbatim writing + Gemini gen
+    ├── copybook/               bring-your-own-text verbatim writing + Gemini gen
+    └── my-characters/          per-character progress dashboard (stats table + tile grid)
 ```
 
 Each module is its own workspace with `module.json`, `src/` (front-end), and
@@ -110,8 +111,8 @@ Each module ships a manifest, e.g. `modules/writing-challenge/module.json`:
 | `dbFile`        | (optional) the module's own SQLite file, baked for offline use |
 | `order`         | sort order on the home screen                                  |
 
-`practice-english` and `copybook` omit `dbFile` (they read the shared bank /
-have no shipped DB of their own).
+`practice-english`, `copybook`, and `my-characters` omit `dbFile` (they read the
+shared bank / on-device progress and have no shipped DB of their own).
 
 ### Front-end auto-discovery (`platform/src/App.tsx`)
 
@@ -128,7 +129,7 @@ const manifestModules = import.meta.glob('../../modules/*/module.json', { eager:
 Manifests are filtered against an explicit allow-set and sorted by `order`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
 ```
 
 Only modules in this set appear on the home screen. It's an inclusion list of

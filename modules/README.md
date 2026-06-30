@@ -7,7 +7,7 @@
 A **module** is a self-contained learning activity that the platform discovers,
 lists on the home screen, and mounts. Modules share the platform's profiles,
 language, UI kit, and on-device data layer; they don't manage any of that
-themselves. This doc covers the four existing modules, the module contract, and
+themselves. This doc covers the five existing modules, the module contract, and
 how to add a new one.
 
 See also: [../ARCHITECTURE.md](../ARCHITECTURE.md) (the module system end-to-end)
@@ -15,7 +15,7 @@ and [../platform/src/ui/README.md](../platform/src/ui/README.md) (the UI kit).
 
 ---
 
-## The four existing modules
+## The five existing modules
 
 ### writing-challenge (✍️) — `modules/writing-challenge/`
 The flagship. Stroke-by-stroke handwriting practice on bank sentences, driven by
@@ -62,6 +62,16 @@ a Taiwan-Traditional sentence with Gemini.
   only). Backs both the dev Express route (`server/index.ts`) and the prod
   Cloudflare Pages Functions (`platform/functions/api/copybook/`).
 - No shipped DB.
+
+### my-characters (📊) — `modules/my-characters/`
+Your personal progress dashboard. Shows every character you've practiced as a
+stats table and a tile grid (mastery / retention scores, known vs learning),
+with a tap-to-practice drill.
+- `src/App.tsx` — the stats-table ↔ grid views, with `<CharTile>` and the shared
+  `<PracticeModal>`.
+- Reads on-device char stats + rankings via `useOffline()` (`@platform/offline`)
+  and scores them with the shared mastery engine (`@shared/character-stats/mastery`).
+- No shipped DB, no server routes — pure consumer of on-device progress.
 
 ---
 
@@ -149,7 +159,7 @@ the same portable helper your dev route uses, as copybook does (see
 The platform only lists modules in the allow-set in `platform/src/App.tsx`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
 ```
 
 Add your module's `name` here once it works fully on-device.
