@@ -131,6 +131,9 @@ export default function Styleguide() {
   // is inspectable per-theme — the regression in #38 was light-text-on-white.
   const [demoName, setDemoName] = useState('小明');
   const [demoAge, setDemoAge] = useState('7');
+  const [demoProfile, setDemoProfile] = useState('新使用者');
+  const [demoSettingsName, setDemoSettingsName] = useState('顯示名稱');
+  const [demoKey, setDemoKey] = useState('');
 
   // THEME PREVIEW — drive body[data-theme] directly. Open on the app's DEFAULT
   // selection (Indigo) so the inspector reflects what new users actually see;
@@ -248,7 +251,7 @@ export default function Styleguide() {
       {/* ── TEXT INPUTS ─────────────────────────────────────────────────── */}
       <Section
         title="Text input"
-        desc="Typed text and the input fill must always move together with the theme — both read theme tokens (background: var(--bg-input); color: var(--text)). The onboarding/welcome name + age fields use .welcome-popup-input; the shared kit uses .fb-* (.fb-select/.fb-textarea). Type here and switch themes: text stays legible on every theme (Paper white, Indigo navy, gold/silver dark) — no light-on-light or dark-on-dark. This specimen exists so the #38 invisibility class of bug is catchable from the inspector."
+        desc="Typed text and the input fill must always move together with the theme — both read theme tokens (background: var(--bg-input); color: var(--text)). The onboarding/welcome name + age fields use .welcome-popup-input; the profile-switcher 'new profile' field is .user-create input; the Settings display-name + Gemini-key fields are .settings-name-row input; the shared kit uses .fb-* (.fb-select/.fb-textarea). Type here and switch themes: text stays legible on every theme (Paper white, Indigo navy, gold/silver dark) — no light-on-light or dark-on-dark. This specimen exists so the #38 invisibility class of bug is catchable from the inspector — the first pass missed .user-create/.settings-name-row because a later hardcoded background:#fff rule overrode their token fill."
       >
         <div className="sg-row sg-row--wrap">
           <Specimen label=".welcome-popup-input (profile name)">
@@ -276,6 +279,40 @@ export default function Styleguide() {
                 onChange={(e) => setDemoAge(e.target.value)}
                 placeholder="Age"
               />
+            </div>
+          </Specimen>
+          <Specimen label=".user-create input (new-profile name)">
+            <div className="user-create">
+              <input
+                type="text"
+                value={demoProfile}
+                onChange={(e) => setDemoProfile(e.target.value)}
+                placeholder="Add a profile…"
+              />
+              <button type="button">Create</button>
+            </div>
+          </Specimen>
+          <Specimen label=".settings-name-row input (Settings display name)">
+            <div className="settings-name-row">
+              <input
+                type="text"
+                value={demoSettingsName}
+                onChange={(e) => setDemoSettingsName(e.target.value)}
+                placeholder="Display name…"
+              />
+            </div>
+          </Specimen>
+          <Specimen label=".settings-name-row input (Settings Gemini key)">
+            <div className="settings-name-row">
+              <input
+                type="password"
+                autoComplete="off"
+                spellCheck={false}
+                value={demoKey}
+                onChange={(e) => setDemoKey(e.target.value)}
+                placeholder="AIza…"
+              />
+              <button type="button" className="lever-pill" style={{ flex: '0 0 auto' }}>Test</button>
             </div>
           </Specimen>
           <Specimen label=".fb-textarea (shared kit pattern)">

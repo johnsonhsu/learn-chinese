@@ -3529,8 +3529,17 @@ body[data-screen="profile"]:not([data-theme]) .user-btn {
 .icon-btn { border-color: var(--rule-strong); }
 
 /* --- Clean inputs --- */
+/* Theme-token fill + text so typed text and the input fill always move together
+   with the theme (cardinal rule: canonical token layer, no per-screen forks).
+   Hardcoding `background:#fff` here used to win over the per-component rules
+   (.user-create input / .settings-name-row input, both earlier in the cascade,
+   both already var(--bg-input)/var(--text)) — under the dark default Indigo theme
+   --ink is a warm cream, so cream-text-on-white was invisible: #38 broke the
+   profile-switcher "new profile" name field and Settings' display-name + Gemini-
+   key fields. `var(--text)` resolves to `var(--ink)` in every theme, so the
+   colour is unchanged; only the fill is now theme-aware. */
 .user-create input, .tpl-input, .settings-name-row input, .merge-field__edit textarea, .lever-range input[type="range"] {
-  background: #fff; color: var(--ink); border: 1px solid var(--rule-strong);
+  background: var(--bg-input); color: var(--text); border: 1px solid var(--rule-strong);
 }
 .tpl-chip { background: #fff; border: 1px solid var(--rule-strong); color: var(--ink-soft); font-weight: 600; }
 
