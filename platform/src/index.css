@@ -49,6 +49,13 @@
   --warning: #B5701C;            /* muted ochre */
   --danger: var(--seal);
 
+  /* — LAYOUT: canonical content-column widths (issue #5) —
+     ONE source of truth for page width. Replaces the old per-screen scatter
+     (420 / 460 / 480 / 600 / full-bleed). Every page-level container routes
+     through these so screens read at one consistent width. */
+  --content-width: 600px;          /* standard content/learning column */
+  --content-width-narrow: 460px;   /* focused onboarding + settings forms */
+
   /* Wood frame tones (canvas border) — quieted to paper/ink so the writing pad
      reads as a framed slot, not a cartoon woodcut. */
   --wood: #C7BCA6;
@@ -258,7 +265,7 @@ body {
   min-height: 100svh;
   gap: 0;
   padding: 12px 24px max(24px, env(safe-area-inset-bottom));
-  max-width: 460px;
+  max-width: var(--content-width-narrow);
   margin: 0 auto;
 }
 
@@ -432,7 +439,7 @@ body {
   align-items: center;
   gap: 16px;
   padding: 60px 20px;
-  max-width: 480px;
+  max-width: var(--content-width-narrow);
   margin: 0 auto;
 }
 
@@ -689,7 +696,7 @@ body {
 
 /* Settings page */
 .settings-page {
-  max-width: 420px;
+  max-width: var(--content-width-narrow);
   margin: 0 auto;
   padding: 0 20px 40px;
 }
@@ -3713,9 +3720,9 @@ body[data-screen="profile"]:not([data-theme]) .user-btn {
 .app-shell .module-tile {
   box-sizing: border-box;
   width: 100%;
-  /* 600px is the DEFAULT module main-tile width for all modules (overridable via
-     a ModuleScreen class if ever needed — we don't). Keeps the 4 modules uniform. */
-  max-width: 600px;
+  /* The canonical content column, shared by every page (see --content-width in
+     :root). Keeps all four module main screens uniform with the rest of the app. */
+  max-width: var(--content-width);
   margin: 10px auto 24px;
   background: var(--paper-raised);
   border: 1px solid var(--rule);

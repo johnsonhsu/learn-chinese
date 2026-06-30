@@ -165,7 +165,11 @@
   background: var(--paper-raised);
   border: 1px solid var(--rule);
   box-shadow: var(--shadow-md);
-  margin: 0 16px 18px;
+  /* Cap + CENTER the cloze card on the canonical column (was margin:0 16px →
+     full-width and left-aligned on wide screens). calc keeps the 16px phone gap. */
+  max-width: var(--content-width);
+  width: calc(100% - 32px);
+  margin: 0 auto 18px;
   border-radius: var(--radius-lg);
   padding: 22px 18px 18px;
   display: flex;

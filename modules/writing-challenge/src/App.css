@@ -16,7 +16,7 @@
   padding: 12px 16px;
   padding-bottom: env(safe-area-inset-bottom, 16px);
   width: 100%;
-  max-width: 480px;
+  max-width: var(--content-width);
   margin: 0 auto;
 }
 

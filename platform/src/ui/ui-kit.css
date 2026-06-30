@@ -161,9 +161,10 @@
    inside .ui-screen; standalone <Card>/Styleguide uses keep the base. */
 .app-shell .ui-screen > .module-tile { margin-top: 0; margin-bottom: 24px; }
 
-/* Opt-in wider card for grid-style main screens (e.g. word-sets' 2-column
-   picker, which is cramped at the default 420px). */
-.app-shell .module-tile.ui-screen-card--wide { max-width: 600px; }
+/* Opt-in hook for grid-style main screens (e.g. word-sets' 2-column picker).
+   Same canonical column as the default tile now; kept as an explicit class so a
+   future grid screen can be widened in ONE place without per-screen literals. */
+.app-shell .module-tile.ui-screen-card--wide { max-width: var(--content-width); }
 
 /* ── CharTile — the ONE per-character practice tile (REDESIGNED) ────────────────
    Shared across My Characters (lg, on the paper page bg) and writing-challenge
