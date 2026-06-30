@@ -22,10 +22,23 @@ import {
   type Theme,
 } from './themes.js';
 import { isFeatureUnlocked, setUnlockedFeatures } from '../utils/unlocks.js';
+import { isDemoMode } from '../offline/demo-mode.js';
 
 // Device-level theme selection. Reuses the historical localStorage key so an
-// existing gold/silver device keeps its selection across this refactor.
-const DEVICE_THEME_KEY = 'lc-gold-mode';
+// existing gold/silver device keeps its selection across the theme refactor.
+//
+// DEMO ISOLATION (issue #27 demo-by-default): the device theme is the ONE bit of
+// theme state that lives in localStorage, NOT in the demo IndexedDB jar that the
+// always-fresh reset wipes — so without isolation a theme picked in the demo
+// would survive a refresh (and, worse, a shared key would let the demo overwrite
+// the INSTALLED PWA's real theme on the same origin). Mirror user-store's jar
+// choice: in demo mode the device theme reads/writes a SEPARATE `-demo` key,
+// reset on each demo load (see resetDemoDeviceTheme); the real installed/non-demo
+// path keeps using the historical 'lc-gold-mode' untouched. Decided once at
+// module load — isDemoMode() is memoized and fixed for the page session.
+const REAL_DEVICE_THEME_KEY = 'lc-gold-mode';
+const DEMO_DEVICE_THEME_KEY = 'lc-gold-mode-demo';
+const DEVICE_THEME_KEY = isDemoMode() ? DEMO_DEVICE_THEME_KEY : REAL_DEVICE_THEME_KEY;
 // Per-profile theme override, keyed by profile id. Empty/absent → use device.
 const profileThemeKey = (profileId: number) => `lc-theme-u${profileId}`;
 
@@ -50,6 +63,23 @@ export function setDeviceTheme(id: string): void {
     else localStorage.setItem(DEVICE_THEME_KEY, id);
   } catch {
     /* storage blocked — selection simply won't persist this session */
+  }
+}
+
+/**
+ * Reset the DEMO device theme to the default selection (always-fresh, issue #27).
+ * Clears ONLY the isolated `lc-gold-mode-demo` key, so a theme picked while trying
+ * the demo is wiped on the next demo load — matching how the demo IndexedDB jar is
+ * reseeded. The real installed PWA's 'lc-gold-mode' is NEVER touched, even on the
+ * same origin. Called from ensureDemoSeed; a no-op (and never writes the real key)
+ * outside demo mode. Keep this paired with demo.ts's reset.
+ */
+export function resetDemoDeviceTheme(): void {
+  if (!isDemoMode()) return;
+  try {
+    localStorage.removeItem(DEMO_DEVICE_THEME_KEY);
+  } catch {
+    /* storage blocked — nothing persisted to clear */
   }
 }
 

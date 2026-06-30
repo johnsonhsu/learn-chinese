@@ -15,12 +15,17 @@
  *     EVERY load: in-session practice accrues and shows normally, but a refresh
  *     wipes it. `DEMO_VERSION` remains the identity of the canonical seed (bump
  *     it when the preset itself changes); the reset is unconditional now, so the
- *     stamp is written for diagnostics rather than gating reseed.
+ *     stamp is written for diagnostics rather than gating reseed. The reset also
+ *     covers theme state: per-profile overrides live in the demo jar and reset
+ *     with it, and the DEVICE theme (a localStorage key, NOT in the jar) is reset
+ *     via resetDemoDeviceTheme() — which clears only the isolated demo key, never
+ *     the installed PWA's real 'lc-gold-mode'.
  *
  * The data is synthesized at runtime from the shipped char ranking (no bundled
  * dataset to maintain): a couple of profiles with a band of "known" chars.
  */
 import { setPref } from './user-store.js';
+import { resetDemoDeviceTheme } from '../theme/theme-store.js';
 import type { OfflineDataLayer } from './offline-data-layer.js';
 
 // Re-exported so existing imports (`offline-context`, etc.) keep working while
@@ -52,6 +57,12 @@ export async function ensureDemoSeed(dl: OfflineDataLayer): Promise<void> {
   // Wipe to canonical state. Safe: demo mode uses an isolated IndexedDB, so this
   // only ever clears demo profiles (incl. any default profile init seeded).
   for (const p of await dl.listProfiles()) await dl.deleteProfile(p.id);
+
+  // Reset the DEVICE theme too — it lives in a localStorage key (the isolated
+  // demo key in demo mode), NOT in the jar deleteProfile just cleared, so it
+  // would otherwise survive the refresh. Touches only the demo key; the real
+  // installed-PWA theme is untouched.
+  resetDemoDeviceTheme();
 
   const ranked = dl.getCharRanking().map((c) => c.char); // index 0 = rank 1
   for (const preset of PRESETS) {
