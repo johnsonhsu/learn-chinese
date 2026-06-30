@@ -1,0 +1,8 @@
+{
+  "name": "copybook",
+  "displayName": "Copybook",
+  "displayNameZh": "字帖",
+  "icon": "📝",
+  "apiPrefix": "/api/copybook",
+  "order": 4
+}

@@ -1,0 +1,121 @@
+/* --- My Characters Page ---
+   Moved out of platform/src/index.css. The .char-tile rules stay in the shared
+   ui-kit.css (CharTile is the shared kit primitive); these are the page-specific
+   layout + stat-tile rules. Tokens (--gold, --font-display, --radius-sm…) and
+   the lc-fade-in keyframe are platform globals available in the bundled CSS. */
+
+.my-chars-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.my-chars-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.my-chars-header h2 {
+  flex: 1;
+}
+
+/* --- Unified stat tiles (shared by grid + table views) ---
+   Candy 3D treatment: solid color face + darker "lip" via box-shadow: 0 Npx 0
+   <dark> (matches .module-tile / .btn-primary). One distinct accent per stat,
+   composed entirely from canonical :root tokens. Tight, high-contrast, vivid. */
+.mc-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+  animation: lc-fade-in 0.4s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mc-stats { animation: none; }
+}
+/* Phones: wrap the 5 tiles to 3-then-2 so values stay legible. */
+@media (max-width: 460px) {
+  .mc-stats { grid-template-columns: repeat(3, 1fr); }
+}
+
+.mc-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 12px 6px 11px;
+  border: none;
+  border-top: 2px solid var(--mc-accent, var(--seal));
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  text-align: center;
+  min-width: 0;
+}
+
+.mc-stat-icon {
+  font-size: 14px;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: none;
+  opacity: 0.7;
+}
+
+/* Ledger figure: editorial serif numerals in ink. */
+.mc-stat-value {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 1;
+  color: var(--ink-faint);
+}
+
+/* Per-stat accent = ONE muted top rule each (no candy faces). */
+.mc-stat-gold   { --mc-accent: var(--seal); }
+.mc-stat-green  { --mc-accent: var(--green); }
+.mc-stat-teal   { --mc-accent: var(--teal); }
+.mc-stat-orange { --mc-accent: var(--orange); }
+.mc-stat-purple { --mc-accent: var(--purple); }
+
+.my-chars-section { margin-bottom: 20px; }
+.my-chars-section h3 {
+  font-size: 12px; color: var(--ink-faint); font-weight: 700; margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.14em;
+}
+
+/* 6-column table on a phone: tighten padding so it fits without forcing scroll. */
+.my-chars-table th, .my-chars-table td { padding: 7px 9px; }
+.my-chars-table .ud-ret { font-family: monospace; }
+
+/* Per-character tile grid. The tiles themselves are the shared <CharTile> from
+   the kit (ui-kit.css `.app-shell .char-tile`) — the canonical cream/success
+   look now lives there and is reused by writing-challenge + word-sets. */
+.my-chars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+/* The grid now sits on the warm-paper screen background, so the shared CharTile's
+   default ink (sumi on paper) already reads. No per-page ink override is needed —
+   the tiles match writing-challenge / word-sets exactly (one family). */
+
+/* My Characters — page heading reads ink-on-paper (the page bg is now paper). */
+.my-chars-header h2 { color: var(--ink); font-family: var(--font-serif); font-weight: 600; }
+.my-chars-header .back-btn { color: var(--ink-soft); }

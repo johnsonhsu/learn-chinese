@@ -1,0 +1,1387 @@
+/* Writing Challenge module styles — sp- prefix */
+/* Mobile-first: iPhone (375px) baseline, iPad (768px) larger */
+
+.sp-page-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-muted, #888);
+}
+
+/* Assessment */
+.sp-assessment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.sp-center-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.sp-center-card h2 {
+  font-weight: 400;
+  color: var(--text, #ddd);
+}
+
+.sp-center-card p {
+  color: var(--text-muted, #888);
+}
+
+.sp-result-level {
+  font-size: 48px;
+  color: var(--accent, #4a90d9);
+  font-weight: 500;
+}
+
+/* Practice result stats */
+.sp-result-stats, .sp-coverage-row {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.sp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg-raised, #1e1e1e);
+  border: 1px solid var(--border, #333);
+  border-radius: 8px;
+  min-width: 70px;
+}
+
+.sp-stat-value {
+  font-size: 22px;
+  color: var(--text, #ddd);
+  font-weight: 500;
+}
+
+.sp-stat-label {
+  font-size: 11px;
+  color: var(--text-dim, #666);
+  margin-top: 2px;
+}
+
+/* Word info */
+/* Char intro */
+.sp-intro-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.sp-intro-char {
+  font-size: 48px;
+  color: var(--text, #ddd);
+}
+
+.sp-intro-zhuyin {
+  font-size: 20px;
+  color: var(--text-muted, #888);
+}
+
+.sp-show-btn {
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border, #444);
+  background: var(--bg-raised, #2a2a2a);
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-show-btn.active {
+  border-color: var(--accent, #4a90d9);
+  background: var(--accent-bg, #1a2a3a);
+}
+
+.sp-practice-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.sp-hint-btn {
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border, #444);
+  background: var(--bg-raised, #2a2a2a);
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sp-word-info {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.sp-word-char {
+  font-size: 28px;
+  color: var(--text, #ddd);
+  font-weight: 500;
+}
+
+.sp-word-def {
+  font-size: 13px;
+  color: var(--text-muted, #888);
+}
+
+.sp-word-level {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--accent, #4a90d9);
+  color: #fff;
+  margin-left: auto;
+}
+
+/* Word progress dots */
+.sp-word-progress {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 6px 0;
+}
+
+.sp-word-dot {
+  padding: 4px 10px;
+  border: 1px solid var(--border, #444);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-dim, #555);
+  white-space: nowrap;
+}
+
+.sp-word-dot.active {
+  border-color: var(--accent, #4a90d9);
+  color: var(--text, #fff);
+  background: var(--accent-bg, #1a2a3a);
+}
+
+.sp-word-dot.done {
+  border-color: var(--border, #333);
+  color: var(--text-muted, #aaa);
+}
+
+.sp-btn-primary {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 16px 36px;
+  min-height: 44px;
+  border: none;
+  background: var(--grad-primary, #4a90d9);
+  color: #fff;
+  border-radius: var(--radius, 14px);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  box-shadow: var(--shadow-glow);
+  transition: transform var(--transition, 0.18s), box-shadow var(--transition, 0.18s);
+}
+
+.sp-btn-primary:hover { transform: translateY(-2px); }
+.sp-btn-primary:active { transform: translateY(0) scale(0.98); }
+.sp-btn-primary:disabled { opacity: 0.5; box-shadow: none; }
+
+.sp-btn-secondary {
+  font-size: 16px;
+  padding: 12px 28px;
+  min-height: 44px;
+  border: 1px solid var(--border, #444);
+  background: var(--bg-raised, #2a2a2a);
+  color: var(--text-muted, #aaa);
+  border-radius: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+}
+
+.sp-btn-secondary:active { background: var(--bg, #1a1a1a); }
+
+/* Practice level indicator */
+.sp-practice-level {
+  align-self: flex-start;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--grad-fluency, linear-gradient(135deg, #22d3ee, #5b8cff, #8b5cff));
+  padding: 6px 16px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-glow, 0 6px 22px rgba(91,140,255,0.35));
+}
+
+/* Sentence done screen */
+.sp-sentence-done-level {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.sp-sentence-done-stats {
+  font-size: 14px;
+  color: var(--text-muted, #aaa);
+}
+
+.sp-sentence-done-chars {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sp-result-char {
+  font-size: 30px;
+  font-weight: 600;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: none;
+  color: var(--text, #e6e8ee);
+  background: var(--bg-raised, #181b24);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.4)), inset 0 1px 0 rgba(255,255,255,0.06);
+  padding-bottom: 4px;
+  animation: sp-tile-pop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Result = a tinted, glowing 3D tile (char stays readable in both themes) */
+.sp-result-perfect {
+  background: linear-gradient(160deg, color-mix(in srgb, #4caf50 30%, var(--bg-raised)), var(--bg-raised));
+  box-shadow: 0 5px 16px rgba(76,175,80,0.42), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+.sp-result-correct {
+  background: linear-gradient(160deg, color-mix(in srgb, #ff9800 28%, var(--bg-raised)), var(--bg-raised));
+  box-shadow: 0 5px 16px rgba(255,152,0,0.38), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+.sp-result-incorrect {
+  background: linear-gradient(160deg, color-mix(in srgb, #f44336 26%, var(--bg-raised)), var(--bg-raised));
+  box-shadow: 0 5px 16px rgba(244,67,54,0.34), inset 0 1px 0 rgba(255,255,255,0.10);
+}
+
+/* User skip: flat, muted */
+.sp-result-userskip,
+.sp-result-skip {
+  color: var(--text-muted, #888);
+  box-shadow: none;
+}
+
+/* Auto skip: dimmest */
+.sp-result-autoskip {
+  color: var(--text-muted, #888);
+  box-shadow: none;
+  opacity: 0.55;
+}
+
+/* ⭐ reward token on a perfect character */
+.sp-token {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-size: 13px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4));
+  animation: sp-token-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.18s both;
+  z-index: 2;
+}
+
+/* Perfect-sentence celebration banner */
+.sp-celebrate {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--grad-success, linear-gradient(135deg, #34d399, #059669));
+  padding: 8px 22px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-glow-success, 0 6px 22px rgba(52,211,153,0.4));
+  animation: sp-celebrate-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.sp-celebrate-spark {
+  display: inline-block;
+  animation: sp-spark 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes sp-tile-pop {
+  from { opacity: 0; transform: scale(0.6) translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes sp-token-pop {
+  from { opacity: 0; transform: scale(0); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes sp-celebrate-in {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes sp-spark {
+  from { transform: scale(1) rotate(-10deg); }
+  to { transform: scale(1.25) rotate(10deg); }
+}
+
+/* Rank corner indicator */
+.sp-result-char {
+  position: relative;
+  overflow: hidden;
+}
+
+.sp-rank-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 12px 12px 0;
+  border-color: transparent;
+}
+
+.sp-rank-corner-below { border-right-color: #4a90d9; }
+.sp-rank-corner-target { border-right-color: #4caf50; }
+.sp-rank-corner-above { border-right-color: #f44336; }
+
+.sp-sentence-done-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.sp-landing-autoskip {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+/* Landing page */
+.sp-landing-fluency {
+  font-size: 14px;
+  color: var(--text-muted, #aaa);
+}
+
+.sp-landing-fluency::after {
+  content: '';
+}
+
+.sp-center-card .sp-landing-fluency + .sp-landing-known {
+  margin-top: -8px;
+}
+
+.sp-landing-known {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--accent, #4a90d9);
+}
+
+.sp-landing-targets {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-landing-targets-label {
+  font-size: 13px;
+  color: var(--text-muted, #888);
+}
+
+.sp-landing-targets-chars {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* "Next up" tiles are now the shared kit <CharTile size="sm"> — its look lives
+   in ui-kit.css (`.app-shell .char-tile`). Only the row container + label
+   styling (.sp-landing-targets / .sp-landing-targets-chars / -label) stays here. */
+
+.sp-landing-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* Word definition */
+.sp-word-definition {
+  font-size: 15px;
+  color: var(--text, #e6e8ee);
+  text-align: center;
+  padding: 8px 18px;
+  line-height: 1.4;
+  background: var(--bg-raised, #181b24);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.4));
+}
+
+/* Practice top row */
+.sp-practice-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.sp-practice-settings {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sp-autoskip-toggle {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border: none;
+  background: var(--bg-raised, #2a2a2a);
+  color: var(--text-muted, #888);
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.4));
+  transition: transform var(--transition, 0.18s);
+}
+.sp-autoskip-toggle:active { transform: scale(0.95); }
+
+.sp-autoskip-toggle.active {
+  color: #fff;
+  background: var(--grad-primary, #4a90d9);
+  box-shadow: var(--shadow-glow, 0 6px 22px rgba(91,140,255,0.35));
+}
+
+.sp-new-sentence-btn, .sp-report-btn {
+  font-size: 18px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--tile-edge, rgba(255,255,255,0.14));
+  background: var(--bg-raised, #2a2a2a);
+  color: var(--text, #e6e8ee);
+  border-radius: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+  transition: transform var(--transition, 0.18s);
+}
+.sp-new-sentence-btn:active, .sp-report-btn:active { transform: scale(0.9); }
+
+.sp-report-btn { font-size: 14px; transition: background 0.3s, color 0.3s; }
+.sp-report-btn.reported { background: #4caf50; color: #fff; border-color: #4caf50; }
+
+/* Progress bar */
+.sp-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--border, #333);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sp-progress-fill {
+  height: 100%;
+  background: var(--accent, #4a90d9);
+  transition: width 0.3s ease;
+}
+
+.sp-progress-text {
+  font-size: 13px;
+  color: var(--text-muted, #888);
+}
+
+/* Character scroll bar */
+.sp-char-scroll {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 16px 16px;
+  scrollbar-width: none;
+  align-items: center;
+}
+
+.sp-char-scroll::-webkit-scrollbar { display: none; }
+
+.char-box {
+  flex-shrink: 0;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 46%),
+    var(--chip-upcoming, #3b9bff);
+  box-shadow:
+    0 2px 6px rgba(0,0,0,0.35),
+    inset 0 2px 0 rgba(255,255,255,0.55),
+    inset 0 -3px 5px rgba(0,0,0,0.22);
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform var(--transition, 0.18s), box-shadow var(--transition, 0.18s);
+}
+
+.char-box-active {
+  color: #3a2208;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 46%),
+    var(--grad-primary, #4a90d9);
+  font-size: 24px;
+  font-weight: 800;
+  padding: 12px 18px;
+  box-shadow:
+    var(--shadow-glow, 0 2px 10px rgba(242,169,62,0.3)),
+    inset 0 2px 0 rgba(255,255,255,0.65),
+    inset 0 -3px 5px rgba(0,0,0,0.18);
+  transform: translateY(-2px) scale(1.06);
+}
+
+.char-box-done {
+  color: var(--text, #e6e8ee);
+  background: var(--bg-raised-2, #20242f);
+  border-color: var(--tile-edge, rgba(255,255,255,0.14));
+  font-size: 22px;
+  padding: 10px 16px;
+}
+
+.char-box-warn {
+  background: linear-gradient(160deg, color-mix(in srgb, #ff9800 30%, var(--bg-raised)), var(--bg-raised));
+  box-shadow: 0 4px 14px rgba(255,152,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.char-box-fail {
+  background: linear-gradient(160deg, color-mix(in srgb, #f44336 28%, var(--bg-raised)), var(--bg-raised));
+  box-shadow: 0 4px 14px rgba(244,67,54,0.34), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.char-box-pass {
+  background: linear-gradient(160deg, color-mix(in srgb, #4caf50 32%, var(--bg-raised)), var(--bg-raised));
+  box-shadow: 0 4px 16px rgba(76,175,80,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.sp-result-char {
+  position: relative;
+}
+
+.sp-result-char .mastery-bar {
+  position: absolute;
+  bottom: 2px;
+  left: 4px;
+  right: 4px;
+  width: auto;
+  margin: 0;
+}
+
+/* Above-level / auto-skipped — a muted RED pill signalling "above your level" */
+.char-box-above {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 46%),
+    var(--chip-above, #bb4a41);
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 -3px 6px rgba(0,0,0,0.25);
+  opacity: 0.9;
+}
+
+.char-box-skipped {
+  border-color: var(--border, #333);
+  color: var(--text-dim, #555);
+}
+
+/* Top bar */
+.sp-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.sp-audio-btn {
+  font-size: 26px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--tile-edge, rgba(255,255,255,0.14));
+  background: var(--bg-raised, #2a2a2a);
+  border-radius: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+  transition: transform var(--transition, 0.18s);
+}
+.sp-audio-btn:active { transform: scale(0.9); }
+
+.sp-sentence-hint {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-dim, #666);
+  text-align: center;
+}
+
+.sp-skip-btn {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 18px;
+  border: 1px solid var(--tile-edge, rgba(255,255,255,0.14));
+  background: var(--bg-raised, #2a2a2a);
+  color: var(--text, #e6e8ee);
+  border-radius: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+  transition: transform var(--transition, 0.18s);
+}
+.sp-skip-btn:active { transform: scale(0.92); }
+
+/* Canvas wrapper */
+.canvas-wrapper {
+  border: 9px solid var(--wood, #7a4e28);
+  border-radius: 18px;
+  background: var(--bg-input, #182c20);
+  aspect-ratio: 1;
+  box-shadow:
+    0 10px 28px rgba(0,0,0,0.55),
+    inset 0 0 0 1px rgba(0,0,0,0.4),
+    inset 0 2px 2px rgba(255,220,170,0.22);
+  overflow: hidden;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Cline x1='50%25' y1='0' x2='50%25' y2='100%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='0' y1='50%25' x2='100%25' y2='50%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='0' y1='0' x2='100%25' y2='100%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='100%25' y1='0' x2='0' y2='100%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3C/svg%3E");
+  background-size: 100% 100%;
+}
+
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.quiz-status {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 16px;
+  color: var(--text-muted, #aaa);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.quiz-mistakes {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 14px;
+  color: var(--error, #e57373);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.char-flash {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 200px;
+  color: rgba(255, 255, 255, 0.85);
+  z-index: 4;
+  pointer-events: none;
+  font-family: "Noto Serif TC", "Source Han Serif TC", serif;
+  animation: flash-in 0.3s ease-out;
+}
+
+@keyframes flash-in {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Picker — fills entire available space */
+.sp-picker {
+  height: calc(100svh - 50px);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sp-picker-user-level {
+  text-align: center;
+  padding: 6px 0;
+  font-size: 14px;
+  color: var(--text-muted, #aaa);
+  flex-shrink: 0;
+}
+
+.sp-picker-grid {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+  padding: 0;
+}
+
+/* Each word column */
+.sp-picker-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 12px 6px;
+  margin: 4px;
+  border: 1px solid var(--border, #333);
+  border-radius: 12px;
+  background: var(--bg-raised, #1e1e1e);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  overflow-y: auto;
+}
+
+.sp-picker-col:hover {
+  border-color: var(--accent, #4a90d9);
+}
+
+.sp-picker-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sp-picker-char {
+  font-size: clamp(28px, 8vw, 48px);
+  color: var(--text, #ddd);
+  line-height: 1.2;
+}
+
+.sp-picker-badges {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.sp-picker-level {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--accent, #4a90d9);
+  color: #fff;
+}
+
+.sp-picker-rank {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--border, #333);
+  color: var(--text-muted, #888);
+}
+
+.sp-picker-char-def {
+  font-size: 11px;
+  color: var(--text-dim, #666);
+  font-style: italic;
+  text-align: center;
+}
+
+.sp-picker-divider {
+  width: 60%;
+  height: 1px;
+  background: var(--border, #333);
+  margin: 4px auto;
+}
+
+.sp-picker-words {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.sp-picker-word {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.sp-picker-word-text {
+  font-size: 14px;
+  color: var(--text, #ddd);
+}
+
+.sp-picker-word-def {
+  font-size: 10px;
+  color: var(--text-dim, #666);
+  font-style: italic;
+}
+
+/* Action column — width = min(button height, 10vw)
+   Button height = available height / 3
+   Available height ≈ 100svh - 50px (header) - 12px (padding)
+   So each button ≈ (100svh - 62px) / 3 */
+.sp-picker-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: min(calc((100svh - 62px) / 3), 10vw);
+  min-width: 36px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.sp-picker-action-btn {
+  flex: 1;
+  width: 100%;
+  border: 1px solid var(--border, #444);
+  background: var(--bg-raised, #2a2a2a);
+  color: var(--text-muted, #aaa);
+  border-radius: 0;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+}
+
+.sp-picker-action-btn:first-child {
+  border-radius: 0;
+}
+
+.sp-picker-action-btn:last-child {
+  border-radius: 0;
+}
+
+.sp-picker-action-btn:hover {
+  border-color: var(--accent, #4a90d9);
+  color: var(--text, #ddd);
+}
+
+.sp-picker-action-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* Portrait: stack vertically */
+@media (orientation: portrait) {
+  .sp-picker {
+    height: auto;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .sp-picker-grid {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .sp-picker-col {
+    flex-direction: row;
+    gap: 16px;
+    padding: 16px 20px;
+    text-align: left;
+    justify-content: flex-start;
+    margin: 0;
+  }
+
+  .sp-picker-char {
+    font-size: 40px;
+    min-width: 50px;
+  }
+
+  .sp-picker-words {
+    align-items: flex-start;
+  }
+
+  .sp-picker-word {
+    flex-direction: row;
+    gap: 6px;
+    align-items: baseline;
+  }
+
+  .sp-picker-word-def {
+    white-space: normal;
+  }
+
+  .sp-picker-actions-col {
+    flex-direction: row;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .sp-picker-action-btn {
+    height: 44px;
+    border-radius: 10px !important;
+  }
+}
+
+/* ====================================================================
+   EDITORIAL THEME — practice screen (ink on paper)
+   ==================================================================== */
+
+/* Canvas keeps a contrasting drawing surface inside a hairline-framed slot.
+   A soft ledger-grey ground reads as ink-paper, framed by a thin rule. */
+.canvas-wrapper {
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  border-radius: var(--radius, 12px);
+  background-color: #2B2925;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* English prompt = quiet paper card */
+.sp-word-definition {
+  background: var(--paper-raised, #FBF8F0);
+  color: var(--ink, #1C1A17);
+  border: 1px solid var(--rule, #DAD2C2);
+  border-radius: var(--radius, 12px);
+  font-weight: 600;
+  padding: 8px 18px;
+  box-shadow: none;
+}
+
+/* Char-scroll tiles → quiet paper chips with hairline borders. The state colors
+   live in the ink palette: celadon=upcoming, seal=above, green=pass, ochre=warn. */
+.char-box {
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  color: var(--ink, #1C1A17);
+  text-shadow: none;
+  box-shadow: none;
+}
+.char-box-active {
+  background: var(--ink, #1C1A17);
+  color: var(--paper, #F3EEE2);
+  border-color: var(--ink, #1C1A17);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+.char-box-above { background: var(--seal-wash, #F3E0DB); border-color: var(--seal, #C0392B); color: var(--seal-deep, #97271C); box-shadow: none; }
+.char-box-pass { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); border-color: var(--success, #4F7A3A); color: var(--success, #4F7A3A); box-shadow: none; }
+.char-box-warn { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); color: var(--warning, #B5701C); box-shadow: none; }
+.char-box-fail { background: var(--seal-wash, #F3E0DB); border-color: var(--seal, #C0392B); color: var(--seal-deep, #97271C); box-shadow: none; }
+
+/* Result tiles → paper with a colored hairline + tinted wash (no candy fills) */
+.sp-result-perfect   { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border: 1px solid var(--success, #4F7A3A); color: var(--ink, #1C1A17); box-shadow: none; }
+.sp-result-correct   { background: color-mix(in srgb, var(--teal, #4E7C76) 14%, var(--paper-raised)); border: 1px solid var(--teal, #4E7C76); color: var(--ink, #1C1A17); box-shadow: none; }
+.sp-result-incorrect { background: var(--seal-wash, #F3E0DB); border: 1px solid var(--seal, #C0392B); color: var(--ink, #1C1A17); box-shadow: none; }
+
+/* Primary action button → flat ink */
+.sp-btn-primary {
+  background: var(--ink, #1C1A17);
+  color: var(--paper, #F3EEE2);
+  border: none;
+  border-radius: var(--radius, 12px);
+  font-weight: 700;
+  box-shadow: none;
+  transition: background 0.16s ease, transform 0.1s ease;
+}
+.sp-btn-primary:hover { transform: none; background: #000; }
+.sp-btn-primary:active:not(:disabled) { transform: translateY(1px); }
+
+/* Control + utility buttons → hairline paper chips */
+.sp-show-btn, .sp-hint-btn, .sp-audio-btn, .sp-skip-btn,
+.sp-new-sentence-btn, .sp-report-btn, .sp-autoskip-toggle, .sp-btn-secondary {
+  background: var(--paper-raised, #FBF8F0);
+  color: var(--ink, #1C1A17);
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  box-shadow: none;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.1s ease;
+}
+.sp-show-btn:active, .sp-hint-btn:active, .sp-audio-btn:active, .sp-skip-btn:active,
+.sp-new-sentence-btn:active, .sp-report-btn:active, .sp-autoskip-toggle:active {
+  transform: translateY(1px);
+}
+/* Active toggles fill with ink (the on-state reads instantly). */
+.sp-show-btn.active, .sp-autoskip-toggle.active {
+  background: var(--ink, #1C1A17); border-color: var(--ink, #1C1A17); color: var(--paper, #F3EEE2); box-shadow: none;
+}
+.sp-report-btn.reported { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); color: var(--success, #4F7A3A); border-color: var(--success, #4F7A3A); box-shadow: none; }
+
+/* Text sitting on the paper page bg → ink */
+.sp-center-card h2, .sp-landing-title, .sp-result-level, .sp-practice-progress { color: var(--ink, #1C1A17); }
+.sp-center-card h2, .sp-landing-title { font-family: var(--font-serif); font-weight: 600; }
+.sp-center-card p { color: var(--ink-soft, #56514A); }
+.sp-top-bar { color: var(--ink, #1C1A17); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-btn-primary, .sp-show-btn, .sp-hint-btn, .sp-audio-btn, .sp-skip-btn,
+  .sp-new-sentence-btn, .sp-report-btn, .sp-autoskip-toggle { transition: none; }
+  .sp-btn-primary:active, .sp-show-btn:active, .sp-hint-btn:active, .sp-audio-btn:active { transform: none; }
+}
+
+/* ===== Session-done / landing screen — sits on the paper bg, so ink text ===== */
+.sp-landing-fluency, .sp-sentence-done-stats {
+  color: var(--ink-soft, #56514A); font-weight: 600;
+}
+/* "Next up" lives INSIDE the paper landing card. The char tiles are the shared
+   kit <CharTile size="sm">. */
+.sp-landing-targets { margin-top: 4px; }
+.sp-landing-targets-label { color: var(--ink-faint, #8A8377); font-weight: 700; }
+.sp-landing-known { color: var(--ink, #1C1A17); font-family: var(--font-serif); font-weight: 600; }
+.sp-sentence-done-level { color: var(--ink, #1C1A17); font-family: var(--font-serif); font-weight: 600; }
+.sp-landing-title, .sp-center-card h2, .sp-result-level { color: var(--ink, #1C1A17); }
+.sp-center-card p { color: var(--ink-soft, #56514A); }
+
+/* Practice-done result chars → paper tiles, calligraphic char, mastery strip
+   flush to the bottom edge. (Landing "Next up" tiles use the shared <CharTile>.) */
+.sp-result-char {
+  background: var(--paper-raised, #FBF8F0);
+  color: var(--ink, #1C1A17);
+  border: 1px solid var(--rule, #DAD2C2);
+  border-radius: var(--radius, 12px);
+  box-shadow: var(--shadow-sm);
+  padding-bottom: 0;
+  font-family: var(--font-han, serif);
+  font-weight: 500;
+  overflow: hidden;
+  width: 56px; height: 56px;
+}
+.sp-result-char .mastery-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; width: auto; margin: 0;
+  height: 4px; border-radius: 0; background: var(--rule, #DAD2C2); overflow: hidden;
+}
+
+/* Stop = hairline paper button, matching Next Session */
+.sp-btn-primary { font-weight: 700; }
+.sp-btn-secondary {
+  font-weight: 600;
+  background: var(--paper-raised, #FBF8F0); color: var(--ink, #1C1A17);
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  border-radius: var(--radius, 12px);
+  box-shadow: none;
+  transition: border-color 0.16s ease, transform 0.1s ease;
+}
+.sp-btn-secondary:active { transform: translateY(1px); }
+
+/* Practice screen: drop the redundant F25 fluency pill (the back arrow replaces it) */
+.sp-practice-level { display: none; }
+/* Back arrow (top-left) shares the line with the settings controls (right).
+   The hidden fluency pill is the only other child, so space-between pins the
+   compact back to the left and the auto-skip/refresh group to the right. */
+.sp-practice-top { justify-content: space-between; }
+
+/* Top-row controls — equal height; auto-skip toggle reads ink=ON, paper=OFF */
+.sp-autoskip-toggle, .sp-new-sentence-btn, .sp-report-btn {
+  height: 44px; min-height: 44px; border-radius: var(--radius, 12px);
+  box-shadow: none;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.1s ease;
+}
+.sp-new-sentence-btn, .sp-report-btn { width: 44px; font-size: 18px; }
+.sp-autoskip-toggle {
+  width: auto; padding: 0 16px; font-size: 13px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--paper-raised, #FBF8F0); color: var(--ink, #1C1A17); border: 1px solid var(--rule-strong, #C7BCA6);
+}
+.sp-autoskip-toggle.active {
+  background: var(--ink, #1C1A17); color: var(--paper, #F3EEE2); border-color: var(--ink, #1C1A17); box-shadow: none;
+}
+.sp-autoskip-toggle:active, .sp-new-sentence-btn:active, .sp-report-btn:active {
+  transform: translateY(1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-autoskip-toggle, .sp-new-sentence-btn, .sp-report-btn { transition: none; }
+  .sp-autoskip-toggle:active, .sp-new-sentence-btn:active, .sp-report-btn:active { transform: none; }
+}
+
+/* ====================================================================
+   PRACTICE SCREEN — cohesive cartoon-candy layout (mirrors
+   practice-english's .practice-card / .practice-prompt-row): the prompt +
+   zhuyin tiles + writing pad + control buttons ALL live in ONE cream tile.
+   Restyle only — every handler/state class is kept.
+   ==================================================================== */
+
+/* Calm the overall vertical rhythm so the screen breathes like practice-english. */
+.sp-assessment { gap: 16px; padding: 8px 16px; }
+
+/* ── Prompt card: the single cream candy tile. It now wraps the prompt
+   (audio + meaning), the zhuyin char tiles, the writing pad, AND the control
+   button row — one container, one purple border + 3D drop. ── */
+.sp-prompt-card {
+  width: 100%;
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule, #DAD2C2);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-md);
+  padding: 18px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 🔊 audio sits neatly to the left of the English meaning. */
+.sp-prompt-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The English meaning now reads as plain text inside the card (the old free-
+   floating pill treatment is dropped here — the card IS the container). */
+.sp-prompt-card .sp-prompt-meaning {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--text, #2D1B00);
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  text-align: left;
+}
+
+/* Char tiles tucked inside the card, flush with the panel padding so the row of
+   zhuyin pills reads as part of the prompt (not a separate scattered strip). */
+.sp-prompt-card .sp-char-scroll {
+  padding: 6px 2px 8px;
+  gap: 8px;
+  margin: 0 -2px;
+}
+
+/* ── Writing area: canvas sits cleanly INSIDE the cream tile ── */
+.sp-canvas-frame {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* The pad lives on cream now, so drop the old heavy cream-card border + 3D drop
+   (that would be cream-on-cream). Keep just the dark drawing surface with a thin
+   purple hairline + a soft inset shadow so it reads as a recessed slot in the tile. */
+.sp-canvas-frame .canvas-wrapper {
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  border-radius: var(--radius, 12px);
+  box-shadow:
+    inset 0 1px 6px rgba(0,0,0,0.3);
+}
+
+/* ── Control row: hint / peek / skip — tidy, centered candy buttons at the
+   bottom of the tile (a little breathing room above so it isn't cramped). ── */
+.sp-top-bar {
+  justify-content: center;
+  gap: 14px;
+  margin-top: 2px;
+}
+.sp-hint-btn, .sp-show-btn, .sp-skip-btn, .sp-top-bar .sp-audio-btn {
+  width: 64px;
+  height: 56px;
+  min-height: 56px;
+  font-size: 26px;
+  border-radius: var(--radius, 14px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+/* The skip button carries a short glyph, so let it size like the others. */
+.sp-skip-btn { font-size: 24px; padding: 0; font-weight: 800; }
+
+/* The 🔊 in the prompt row: cream candy square, sized to anchor the meaning text. */
+.sp-prompt-row .sp-audio-btn {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  font-size: 26px;
+  border-radius: var(--radius, 14px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Visible keyboard focus on every control (quality floor). */
+.sp-hint-btn:focus-visible, .sp-show-btn:focus-visible, .sp-skip-btn:focus-visible,
+.sp-audio-btn:focus-visible, .sp-autoskip-toggle:focus-visible,
+.sp-new-sentence-btn:focus-visible {
+  outline: 2px solid var(--seal, #C0392B);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+/* Hover only on devices with a real pointer (iOS sticky-hover fix). */
+@media (hover: hover) {
+  .sp-hint-btn:hover, .sp-show-btn:hover, .sp-skip-btn:hover,
+  .sp-audio-btn:hover, .sp-new-sentence-btn:hover {
+    border-color: var(--ink, #1C1A17);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-hint-btn, .sp-show-btn, .sp-skip-btn, .sp-audio-btn { transition: none; }
+  .sp-hint-btn:hover, .sp-show-btn:hover, .sp-skip-btn:hover, .sp-audio-btn:hover,
+  .sp-new-sentence-btn:hover { transform: none; }
+}
+
+/* ====================================================================
+   LANDING SCREEN — MIGRATED to the shared UI kit (Phase 1).
+   The page wrapper, cream card, title, and primary button now come from
+   <ModuleScreen> + <Button variant="primary"> (platform/src/ui). What remains
+   below is ONLY writing-challenge's module-specific landing CONTENT: the metric
+   chips, the auto-skip toggle position, and the target-char grid.
+
+   Removed (now provided by the kit):
+     • .sp-landing            → ModuleScreen's `.ui-screen` page wrapper
+     • .sp-landing-card       → ModuleScreen's card (`.module-tile .ui-screen-card`)
+     • .sp-landing-card-title → ModuleScreen's `.module-tile-title`
+     • .sp-landing-start interaction rules → Button's `.ui-btn--primary`
+   ==================================================================== */
+
+/* Row of vivid metric tiles — candy 3D idiom (solid color face + matching dark
+   "lip" via box-shadow: 0 Npx 0 <edge>), mirroring the My Characters `.mc-stat`
+   tiles. One distinct :root-token accent per tile, white high-contrast value,
+   uppercase label. Tight, engaging — no more pale low-contrast cream chips. */
+.sp-landing-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.sp-landing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 12px 8px 11px;
+  border: none;
+  border-top: 2px solid var(--sp-stat-accent, var(--seal));
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  text-align: center;
+  min-width: 0;
+}
+
+.sp-landing-stat-icon {
+  font-size: 15px;
+  line-height: 1;
+  margin-bottom: 2px;
+  filter: none;
+  opacity: 0.7;
+}
+
+/* Ledger-style figure: editorial serif numerals, ink. */
+.sp-landing-stat-value {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-shadow: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-landing-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  opacity: 1;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+/* Per-stat accent = ONE muted top rule each (no candy faces). */
+.sp-landing-stat-teal   { --sp-stat-accent: var(--teal, #4E7C76); }
+.sp-landing-stat-purple { --sp-stat-accent: var(--purple, #5E5670); }
+.sp-landing-stat-gold   { --sp-stat-accent: var(--seal, #C0392B); }
+
+/* Tighten the landing's vertical rhythm: the kit card's default 22px gap left
+   the screen feeling airy/spacey (the same complaint as My Characters). 16px is
+   calmer; the action group (Start + Auto Skip) is then pulled even closer so it
+   reads as one block, killing the dead space. */
+.sp-landing-card.ui-screen-card { gap: 16px; }
+
+/* Size override for the kit's <Button variant="primary"> on this screen: full
+   width + a touch larger. The candy 3D look, hover lift, :active compression,
+   focus ring, and reduced-motion handling all come from the kit's
+   `.ui-btn--primary` — only sizing is module-specific here. Scoped under
+   `.ui-screen-card` (0,2,0) so it out-ranks the kit base `.app-shell .ui-btn`. */
+.ui-screen-card .sp-landing-start {
+  width: 100%;
+  font-size: 20px;
+  padding: 18px 30px;
+}
+
+/* The auto-skip toggle is the secondary half of the action group: it hugs the
+   Start button above it (−10px, so they pair) and goes full-width to match it,
+   for a clean two-row action stack instead of a small floating pill. Keeps the
+   green=ON / white=OFF candy semantics from the shared `.sp-autoskip-toggle`. */
+.sp-landing-card .sp-landing-autoskip {
+  margin-top: -4px;
+  width: 100%;
+}
+.sp-landing-card .sp-landing-autoskip .sp-autoskip-toggle {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  font-size: 14px;
+}
+
+/* Target-character grid (now a child of the kit's card). Full width inside it,
+   with a hairline divider above so "Next up" reads as its own footer section. */
+.ui-screen-card .sp-landing-targets {
+  width: 100%;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 2px dashed color-mix(in srgb, var(--border, #5A1A96) 28%, transparent);
+}
+.sp-landing-card .sp-landing-targets-label {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text-muted, #6B4C20);
+}

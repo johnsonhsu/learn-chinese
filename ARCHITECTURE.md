@@ -1,0 +1,701 @@
+# Architecture
+
+> 繁體中文: [architecture.zh-TW.md](./architecture.zh-TW.md)
+
+> Living doc — kept current as the app changes. Refresh on significant changes/deploys.
+
+This is the technical architecture of the Learning Chinese PWA: an offline-first,
+local-first Traditional-Chinese (Taiwan / zhuyin-bopomofo) practice app that ships
+as static assets to Cloudflare Pages. There is **no runtime server** in
+production — the deployed app is the built front-end plus a couple of Cloudflare
+Pages Functions for the Gemini proxy. A local Express server exists only on the
+dev machine, for development, admin/curation, and producing the shipped data.
+
+---
+
+## 1. Monorepo layout
+
+npm workspaces (`workspaces: ["shared", "platform", "modules/*"]`):
+
+```
+learning-chinese/
+├── shared/                 @shared/character-stats — pure cross-cutting logic
+│   └── src/
+│       ├── index.ts            Node DB access (better-sqlite3) for the dev server
+│       ├── content-db.ts       platform-owned CURRICULUM CONTENT accessor (content.db) — §3.5
+│       ├── mastery.ts          mastery / retention scoring (pure, no Node)
+│       ├── char-ranker.ts      frequency+TOCFL char ranking (pure)
+│       ├── char-knowledge.ts   "known" criteria, level, target-char window (pure)
+│       ├── sentence-generator.ts  parity char selection + bank-sentence scoring (pure)
+│       ├── zhuyin.ts           pinyin→zhuyin conversion + disambiguation
+│       └── types.ts            DbQueryProvider, RankedChar, CharStat, …
+│
+├── platform/               the host app (PWA shell, offline layer, UI kit, admin)
+│   ├── src/
+│   │   ├── App.tsx             module system, screen routing, settings, theme apply
+│   │   ├── main.tsx            React entry; imports the UI kit stylesheet once
+│   │   ├── index.css           canonical :root design tokens + global styles + theme blocks
+│   │   ├── LandingPage.tsx     marketing/install landing (?landing) — §9
+│   │   ├── LandingReadData.ts  ranking + situation paragraphs for the landing read-along
+│   │   ├── theme/              theme registry + resolution/storage — §5.5
+│   │   ├── ui/                 the shared UI kit (@platform/ui) — see ui/README.md
+│   │   ├── offline/            local-first data layer (sql.js + IndexedDB)
+│   │   ├── admin/              curation panels (dev-only, or admin-code unlocked — §8)
+│   │   ├── components/         shared cross-module widgets (PracticeModal, CodeEntry, ThemeSelect, …)
+│   │   ├── i18n/               platform-level en / zh-TW strings
+│   │   └── utils/              speech, voices, device-id, geminiKey, unlocks (code-gated features)
+│   ├── functions/api/copybook/ Cloudflare Pages Functions (Gemini proxy)
+│   ├── scripts/bake-data.ts    bake shipped DBs + version.json
+│   ├── server/index.ts         dev-only Express + Vite middleware server (:3000)
+│   ├── server/content-admin.ts dev-only content/bank curation routes (/api/content) — §8.4
+│   ├── vite.config.ts          build, PWA, module aliases, __CONTENT_VERSION__
+│   ├── platform.db             canonical platform SQLite (dictionary, stats schema)
+│   ├── content.db              canonical CURRICULUM content (bank_sentences, tocfl_words, char_words)
+│   └── public/data/            baked output: *.db, stroke-data.json, version.json
+│
+└── modules/                self-contained learning activities
+    ├── writing-challenge/      handwriting / stroke practice on bank sentences
+    ├── word-sets/              vocabulary categories
+    ├── practice-english/       English cloze spelling game
+    └── copybook/               bring-your-own-text verbatim writing + Gemini gen
+```
+
+Each module is its own workspace with `module.json`, `src/` (front-end), and
+optionally `server/` (dev-only Express routes). The `shared` package is consumed
+both by the Node dev server (via `src/index.ts`, which opens `platform.db` with
+better-sqlite3) and by the browser (via the pure sub-path exports like
+`@shared/character-stats/mastery`, which carry no Node dependencies).
+
+### Path aliases
+
+- `@platform/*` → `platform/src/*` (e.g. `@platform/ui/index.ts`,
+  `@platform/offline/offline-context.tsx`, `@platform/components/...`). Wired in
+  `platform/vite.config.ts` and `platform/tsconfig.app.json`.
+- `@modules/<name>` → `modules/<name>/src/index.ts` (auto-discovered in
+  `vite.config.ts` by scanning `../modules/*/src/index.ts`).
+- `@shared/character-stats` and its sub-paths → the `shared` package's `exports`
+  map (`./mastery`, `./types`, `./char-ranker`, `./char-knowledge`,
+  `./sentence-generator`, `./zhuyin`, `./content-db`).
+
+---
+
+## 2. The module system
+
+Modules are discovered and wired up **entirely at build time** — there is no
+server round-trip to learn what modules exist.
+
+### `module.json` manifest
+
+Each module ships a manifest, e.g. `modules/writing-challenge/module.json`:
+
+```json
+{
+  "name": "writing-challenge",
+  "displayName": "Writing Challenge",
+  "displayNameZh": "寫字挑戰",
+  "icon": "✍️",
+  "apiPrefix": "/api/writing-challenge",
+  "dbFile": "writing-challenge.db",
+  "order": 1
+}
+```
+
+| Field           | Purpose                                                         |
+|-----------------|----------------------------------------------------------------|
+| `name`          | stable id; matches the folder, used for glob/registry keys     |
+| `displayName`   | English label on the home grid                                 |
+| `displayNameZh` | Traditional-Chinese label                                      |
+| `icon`          | emoji shown on the module card                                 |
+| `apiPrefix`     | where the dev server mounts this module's Express routes       |
+| `dbFile`        | (optional) the module's own SQLite file, baked for offline use |
+| `order`         | sort order on the home screen                                  |
+
+`practice-english` and `copybook` omit `dbFile` (they read the shared bank /
+have no shipped DB of their own).
+
+### Front-end auto-discovery (`platform/src/App.tsx`)
+
+The platform finds modules with two `import.meta.glob` calls:
+
+```ts
+// Lazy React components — the module's runtime entry.
+const moduleImports = import.meta.glob<ModuleExport>('../../modules/*/src/index.ts');
+
+// Manifests — read eagerly at build time, no server needed.
+const manifestModules = import.meta.glob('../../modules/*/module.json', { eager: true });
+```
+
+Manifests are filtered against an explicit allow-set and sorted by `order`:
+
+```ts
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook']);
+```
+
+Only modules in this set appear on the home screen. It's an inclusion list of
+fully-on-device modules — **not** a back-button exclusion list (see §5).
+
+### Runtime entry: `src/index.ts` default export
+
+Each module's `src/index.ts` default-exports a React component receiving
+`ModuleProps`:
+
+```ts
+interface ModuleProps {
+  userId: number;       // the active profile id
+  language: Language;   // 'zh-TW' | 'en' — UI language, owned by the platform
+  onExit?: () => void;  // return to the home / module picker
+}
+```
+
+`App.tsx` lazy-loads the chosen module and renders it inside an app shell:
+
+```tsx
+<div className={`app-shell app-shell--${activeModule}`}>
+  <ModuleComponent userId={user.id} language={language} onExit={onBack} />
+</div>
+```
+
+The platform threads its exit handler in as `onExit`. It does **not** draw a back
+button or maintain any per-module exclusion list — back is module-owned (§5).
+
+### Server side (dev only): `server/index.ts` `routes`
+
+When the dev Express server boots, `platform/server/module-loader.ts` scans
+`modules/*`, reads each `module.json`, dynamically imports `server/index.ts`, and
+collects `{ manifest, routes, initDb }`. Each module's `routes` (an Express
+`Router`) is mounted at its `apiPrefix`, and `initDb()` is called once at startup:
+
+```ts
+for (const mod of modules) {
+  app.use(mod.manifest.apiPrefix, mod.routes);
+}
+```
+
+A module's server contract is therefore: `export const routes = Router()` and
+`export function initDb() {…}`. In production these routes do not run; a module
+that needs an online capability uses a Cloudflare Pages Function instead (§6).
+
+---
+
+## 3. Local-first data
+
+The deployed app runs **entirely client-side**. All practice happens against
+SQLite databases loaded into the browser with [sql.js](https://github.com/sql-js/sql.js)
+(WASM), while per-device user progress lives in IndexedDB.
+
+```
+                 build time                          runtime (browser)
+  canonical DBs ──bake-data.ts──▶ public/data/*.db ──fetch──▶ IndexedDB cache
+  (platform.db,                   + version.json              │
+   *.db per module)                                           ▼
+                                                       sql.js (WASM) in memory
+                                                              │
+                                  DbQueryProvider ◀───────────┘
+                                       │
+        @shared/character-stats (ranker, knowledge, mastery, generator)
+                                       │
+                                  React UI
+```
+
+### sql.js + `DbQueryProvider`
+
+`platform/src/offline/sql-db.ts` initializes sql.js (the WASM is bundled with the
+app via `sql.js/dist/sql-wasm.wasm?url`, so it works fully offline — no CDN) and
+wraps a `Database` in a `DbQueryProvider` — the small `queryAll / queryOne / run`
+interface (`shared/src/types.ts`) shared by **both** the browser (sql.js) and the
+dev server (better-sqlite3). All the pure shared logic is written against this
+interface, so the same ranking / selection code runs identically in both places.
+
+### The offline data layer
+
+`platform/src/offline/offline-data-layer.ts` (`OfflineDataLayer`) is the heart of
+the runtime. On `initialize()` it:
+
+1. Boots sql.js.
+2. Loads the four shipped DBs (`platform`, `content`, `writing-challenge`,
+   `word-sets`) — from IndexedDB if cached, else downloads them from
+   `/data/<name>.db` and stores them (`db-store.ts`). The curriculum content
+   (`bank_sentences`, `tocfl_words`, `char_words`) lives in **`content.db`** (§3.5),
+   not in the writing-challenge module DB.
+3. Loads the offline stroke-data bundle (`stroke-data.ts`).
+4. Resolves the single local device user and exposes profiles, char stats,
+   rankings, levers (settings), level, target chars, and `generateNextSentence`.
+
+`OfflineProvider` / `useOffline` (`offline-context.tsx`) wrap this and expose it
+to the whole app, rendering nothing until `isReady`.
+
+### Stroke rendering — `WritingCanvas` + hanzi-writer (do NOT remount per char)
+
+`components/WritingCanvas.tsx` renders the offline stroke data with
+[hanzi-writer](https://github.com/chanind/hanzi-writer). **hanzi-writer has no
+`destroy()`, and every `HanziWriter.create()` permanently leaks two global
+`document` listeners** (`mouseup`/`touchend`). So the canvas creates each
+`HanziWriter` **once** and drives character changes imperatively via
+`writer.setCharacter()` + re-`quiz()` on the persistent instance:
+
+- **Gotcha: do NOT remount `WritingCanvas` via a per-character React `key`.** The
+  old per-character `key` remount (in the practice pages / `PracticeModal`) was
+  removed because it re-ran `create()` — leaking a listener pair on **every**
+  character advance. The create effect now keys only off structural config
+  (size / mode / leniency), and cleanup calls `cancelQuiz()` so abandoned quizzes'
+  leaked global listeners no-op instead of hijacking the live canvas.
+- A new **`quizSession`** prop lets the parent request a fresh quiz of the *same*
+  glyph (a must-repeat after a fail, or a duplicate consecutive character) — cases
+  a plain `character` diff would miss — without recreating the writer.
+- **Exception:** `PlacementTest.tsx` intentionally keeps its `key={seq}` remount.
+  That seam re-runs the placement page's mount effect to fetch the next item and
+  reset page state (PracticePage-level work with no imperative reload hook), and it
+  fires once **per item** (~10× in one-time onboarding, not per character), so the
+  writer churn is negligible.
+
+### Per-device storage
+
+- **Content** (dictionary, sentence bank, TOCFL words, word sets, stroke data):
+  read-only, shipped, cached in IndexedDB database `learning-chinese-dbs` → object
+  store `databases`. The cached content version is tracked in the `metadata` store.
+- **User data** (profiles, per-char stats, prefs, lever overrides): per-device,
+  never uploaded. The baked `platform.db` snapshot is **scrubbed** of all personal
+  rows at bake time (§4) so a fresh install starts blank; existing devices keep
+  their own progress in IndexedDB.
+- Backup/restore is a manual JSON export/import (`offline/backup.ts`), with
+  selective per-profile restore in Device Settings. The backup also carries
+  device-level feature unlocks and the theme state (§5.5), so the chosen look and
+  any premium unlock travel with the account.
+
+#### Connection hygiene (memory-leak fixes)
+
+Both IndexedDB stores and the in-memory sql.js heaps are long-lived and easy to
+leak — these are deliberate fixes, not incidental:
+
+- **One pooled `IDBDatabase` per store.** `offline/user-store.ts` and
+  `offline/db-store.ts` each **memoize a single open connection** (a cached
+  `dbPromise`) and reuse it across every helper. Previously each call opened — and
+  never closed — a fresh `IDBDatabase`, so hot paths (`recordAttempt` →
+  `putProfileCharStats`, `getPref`/`setPref`) accumulated open connections. The
+  cache is dropped on `onversionchange` (after `close()`, so a same-origin upgrade
+  isn't blocked) and on `onclose`, and a rejected open is never cached, so the next
+  call reopens cleanly.
+- **sql.js close-before-reopen.** `OfflineDataLayer.refreshFromServer()` now
+  **`.close()`s the old `platform`/`module`/`content` `Database`s before reopening**
+  them on the refreshed bytes. Each `openDatabase` allocates a fresh ~18 MB WASM
+  heap, so reassigning without closing leaked the previous heaps on every
+  content refresh.
+
+> **Cloud sync is PLANNED, not built.** Today the only cross-device transfer is the
+> manual JSON backup/restore above. There is an offline mutation queue
+> (`offline/sync-queue.ts`) scaffolded for a future sync, but no server endpoint
+> consumes it and nothing uploads user data in production.
+
+---
+
+## 3.5 Curriculum content — platform-owned `content.db`
+
+The **curriculum content** — the practice sentence bank (`bank_sentences`), the
+TOCFL word list (`tocfl_words`), and its per-character index (`char_words`) — is
+**platform-owned**, living in its own canonical DB **`platform/content.db`**.
+It used to live inside `modules/writing-challenge/writing-challenge.db`; it was
+extracted so every module is a pure *consumer* of one shared curriculum
+(writing-challenge drills it, practice-english reads it for cloze, the dev admin
+curates it).
+
+- **The accessor** is `shared/src/content-db.ts`, exported as
+  `@shared/character-stats/content-db`. It opens `content.db` with
+  better-sqlite3 (Node side only — dev server + scripts), idempotently ensures the
+  schema, and exposes the bank CRUD (`addBankSentences`, `getAllBankSentences`,
+  `searchBankSentences`, `updateBankSentence`, `deleteBankSentence(s)`,
+  `restoreBankFromBaked`, …) plus the TOCFL helpers (`getTocflWords`,
+  `getCharTocflLevels`, `getCharZhuyin`).
+- **Consumers:** the dev content-admin routes (`platform/server/content-admin.ts`,
+  §8.4) and the writing-challenge dev server (`server/word-selector.ts`,
+  `import-tocfl.ts`, `tag-grammar.ts`) all read/write content **only** through this
+  accessor or by opening `content.db` directly — never the module DB.
+- **Shipping:** the bake (§4) snapshots `content.db` to `/data/content.db`; the
+  offline data layer loads it as the `content` DB. The **writing-challenge snapshot
+  is stripped** of `bank_sentences`, `char_words`, and `tocfl_words` (it now carries
+  only its own `module_settings` + dev-only per-profile tables).
+- **Progress stays separate.** Per-profile progress (char stats, settings, lever
+  overrides) is **not** here — it lives in `platform.db` + the on-device IndexedDB
+  user-store and is untouched by content extraction.
+
+### Glyph normalization — one canonical Taiwan-Traditional form
+
+Both the **on-import** path (`content-db.ts` `canonicalizeTW()`, run by
+`addBankSentences`) and the **offline scrub** (`scripts/bank-fix.py` `canon()`)
+share the *same* normalization so the bank only ever stores one canonical glyph
+per character:
+
+1. **Simplified → Traditional (Taiwan standard)** via OpenCC (`cn`→`tw` in JS,
+   `s2tw` in Python), so Simplified leakage from generators can never enter the
+   bank.
+2. **台 and 臺 are BOTH preserved — never converted.** OpenCC would force 台→臺,
+   so both are shielded behind private-use sentinels (`U+E000` / `U+E001`) across
+   the OpenCC pass and restored verbatim afterward. Both are valid Taiwan forms.
+3. **Undrawable variant glyphs are unified to their ranked + drawable canonical
+   form** via a shared `VARIANT_MAP` (`汙→污`, `祕←秘`): the variant is in neither
+   the char ranking nor the hanzi-writer stroke data, so the app literally cannot
+   draw it — it is folded into the canonical form that *is* ranked and drawable.
+
+`bank-fix.py` additionally collapses rows that collide after canonicalization
+(deleting the duplicate), is idempotent, backs up the DB first, and reports counts
+only. It runs against `platform/content.db`.
+
+---
+
+## 4. Bake / deploy data pipeline
+
+`platform/scripts/bake-data.ts` (run via `npm -w platform run bake:data`, and
+automatically as the first half of `build`) produces the shipped content:
+
+1. **Snapshot DBs** — for each source (`platform.db`, **`content.db`**,
+   `writing-challenge.db`, `word-sets.db`) it uses better-sqlite3's online
+   `backup()` API (so WAL content is included and the snapshot is consistent even
+   while the dev server is running) into `public/data/<name>.db`.
+2. **Scrub the platform snapshot** — deletes `character_stats`, `users`, and
+   `user_settings`, then `VACUUM`s, so the deployed app ships **content only**,
+   never anyone's progress.
+3. **Strip content from the writing-challenge snapshot** — drops
+   `bank_sentences`, `char_words`, and `tocfl_words` then `VACUUM`s, because that
+   curriculum is platform-owned and ships in `content.db` (§3.5). The module DB then
+   carries only its own `module_settings` (+ dev-only per-profile tables); old
+   cached module DBs simply go stale and re-download on the next `contentHash`.
+4. **Bake stroke data** — builds `public/data/stroke-data.json`, a single bundle
+   mapping every dictionary char → its hanzi-writer stroke data, applying local
+   Taiwan stroke-variant overrides from `public/stroke-data/`. This is what makes
+   handwriting practice work offline.
+5. **Write `version.json`** with two distinct fingerprints:
+
+```jsonc
+{
+  "version":     "<sha256(contentHash + builtAt)>",  // per-BUILD, always unique
+  "contentHash": "<sha256 of the per-file hashes>",   // data-only fingerprint
+  "files":       { "platform": { size, hash }, … },
+  "builtAt":     "<ISO timestamp>"
+}
+```
+
+### `version` vs `contentHash` — why two
+
+- **`contentHash`** changes **only when the baked data changes**. The offline
+  layer gates the (~18 MB) DB re-download on `contentHash` — so a code-only deploy
+  does **not** force every device to re-download databases. Old `version.json`
+  files without `contentHash` fall back to `version`.
+- **`version`** folds a fresh build timestamp into the content hash, so **every**
+  build/deploy gets a distinct value — even when data and code are unchanged. This
+  is what `vite.config.ts` bakes into the bundle as the `__CONTENT_VERSION__`
+  global, and what the device-vs-server compare + the Settings "update available"
+  display read. Referencing it in the JS makes the bundle byte-change on any
+  deploy, so the service worker's update detection (and the "new version" banner)
+  fires correctly.
+
+```
+                bake-data.ts
+                     │
+       ┌─────────────┼──────────────────┐
+       ▼             ▼                   ▼
+  contentHash    version           __CONTENT_VERSION__ (vite define)
+  (data only)    (per build)             │
+       │             │                    └── baked into JS bundle
+       ▼             ▼                        → SW update banner fires per deploy
+  gates DB      device-vs-server
+  re-download   compare + Settings display
+```
+
+The PWA service worker (`vite-plugin-pwa`, `registerType: 'prompt'`) precaches the
+app shell + the sql.js WASM and **waits** rather than swapping silently, so the
+app can show a "new version available" banner. The `/data/*` assets are
+intentionally **not** Workbox-cached (the data layer manages them in IndexedDB);
+`/data/version.json` is uncached so liveness/version pokes hit the network.
+
+---
+
+## 5. UI kit (`platform/src/ui`)
+
+The shared design primitives every module composes instead of re-implementing the
+"cartoon-candy" look. See **`platform/src/ui/README.md`** for the full details;
+in brief:
+
+- `<Button variant="primary|secondary|ghost">` — the 3D candy button.
+- `<ModuleScreen title onBack? backLabel? children>` — the standard module
+  MAIN-screen shell (back pill + cream card + title). The back pill renders
+  **only when `onBack` is given**.
+- `<Card>` — the cream-panel look outside a full screen.
+- `<BackButton>` — the **unified** standalone back pill for non-main screens
+  (one component every module reuses instead of bespoke back buttons).
+- `<CharTile>` — the shared character tile (rank/level/mastery bar/recent-result
+  dots/ribbon), reused by My Characters, the "next up" chips, and word-set lists;
+  also themed (§5.5).
+- Barrel: `import { Button, ModuleScreen, Card, BackButton, CharTile } from '@platform/ui/index.ts'`.
+
+**Design tokens are a single source of truth**: all colors/sizes/fonts are CSS
+custom properties on `:root` in `platform/src/index.css` (cream surfaces
+`#FFF8E0`, purple borders `#5A1A96`, deep-teal `--bg`, `--font`, `--radius`,
+`--shadow3d`, etc.). Modules use `var(--token)` and must not fork or re-declare
+them. The kit's stylesheet `ui-kit.css` is imported **once** by `main.tsx`;
+modules never import it. Its selectors are `.app-shell`-prefixed so they survive a
+module's scoped CSS reset.
+
+**Back is module-owned.** The platform passes `onExit` and draws no back button
+itself; each screen decides whether to show a back (by passing `onBack` to
+`<ModuleScreen>` or rendering `<BackButton>`). There is no platform back-button
+exclusion list.
+
+---
+
+## 5.5 Theming (`platform/src/theme`)
+
+A registry-driven theming system layers an optional alternate skin over the
+default look. Six themes ship today — **Default**, the two premium foils **Gold**
+(warm foil) and **Silver** (cool platinum), and three FREE skins **Midnight**
+(墨夜, an ink-dark mode), **Sakura** (櫻花, a warm blush light theme), and
+**Matcha** (抹茶, a sage-green light theme) — and adding another is a single
+registry entry.
+
+- **The contract + catalogue** is `theme/themes.ts`: a `THEME_TOKENS` allow-list
+  (the named CSS custom properties a theme may set — backgrounds, foil family,
+  tile face/frame/glyph, button family, text family/scale/weight, and the
+  module-selection `arrangement`) plus the `THEMES` registry (`id`, `name`,
+  `premium`, `arrangement`). **Default** sets no tokens — the `:root` editorial
+  values stand in, so the default look is byte-identical to pre-theming.
+- **Token values live in CSS**, not the registry: each non-default theme is a
+  `body[data-theme="<id>"] { … }` block — either inline in `index.css` (Gold/Silver)
+  or in a standalone `theme/theme-<id>.css` file imported in `main.tsx`
+  (Midnight/Sakura/Matcha), which keeps the larger free skins out of the global
+  stylesheet while still winning the cascade (imported after `index.css`). Either
+  way it is purely additive over the default look and scoped behind the
+  `data-theme` attribute so it can never leak into it. The cascade,
+  `::before/::after`, media queries, and animations all work natively.
+- **Application** (`App.tsx`): the effective theme id is written to a single
+  `<body data-theme="<id>">` attribute (removed entirely for `default`). This
+  **replaced the old ad-hoc `data-premium` overlay** (and the one-anointed-device
+  `isGoldDevice()` / `GOLD_DEVICE_ID` gate) — both are gone.
+- **Resolution + storage** (`theme/theme-store.ts`): two levels mirroring how
+  English-voice selection works —
+  - **Device theme** — one selection for the whole device (`localStorage`
+    `lc-gold-mode`, reused from the legacy key so existing devices keep their
+    pick), shared by every profile.
+  - **Profile override** — optional per-profile selection
+    (`localStorage` `lc-theme-u<id>`); `null`/absent → inherit the device theme.
+  - **Effective theme = `profileOverride ?? deviceTheme ?? 'default'`**
+    (`resolveEffectiveTheme`), with a safety net: if the resolved theme is premium
+    but premium isn't unlocked **on this device**, it falls back to `default` (so a
+    revoked unlock or a restored backup never renders a gated look the user can't
+    reach).
+- **Premium gating.** Gold/Silver are the **only** `premium: true` themes; they
+  unlock via **code 9999** (§5.6 below) at the **device level only** —
+  `utils/unlocks.ts` `lc-unlocks`, redeemed under the Device ID in Device Settings,
+  applying to every profile. Midnight/Sakura/Matcha are `premium: false`, so they
+  are always available — no code required. There is **no per-profile unlock**: a
+  profile can only *override* the theme among themes already available device-wide
+  (`isDevicePremiumUnlocked()` / `isThemeAvailable()` in `theme-store.ts`). The
+  theme selectors (`components/ThemeSelect.tsx`) therefore list **only the AVAILABLE
+  themes** — Default plus the three free skins always, plus Gold/Silver once premium
+  is unlocked; locked premium skins are **not shown at all** (no lock badge, no
+  redeem-on-select). The **Profile
+  Picker** shows a per-profile crown (`👑` gold / `♔` silver) only when that
+  profile's *own* override is Gold/Silver — a profile that merely inherits a premium
+  *device* theme (no override) gets none.
+- **Backup.** Theme state — the device theme and per-profile overrides — is
+  serialized into the JSON backup (`exportThemeState` / `importThemeState`) so the
+  chosen look travels with the account. The device premium unlock travels in the
+  backup's feature-unlock set (`lc-unlocks`), merged additively on restore (never
+  dropped). On restore, the safety net in `resolveEffectiveTheme` means a premium
+  selection without its unlock simply falls back to `default`.
+
+---
+
+## 5.6 Code-entry keypad (`platform/src/components/CodeEntry.tsx`)
+
+A reusable on-screen **4-digit numeric keypad** for redeeming short feature codes.
+It renders a 0–9 pad (plus backspace) and a 4-slot progress indicator, auto-submits
+the moment the 4th digit lands, then shows an **auto-dismissing results modal**
+(~2.2s, tap also closes). Physical keyboard input works too (0–9 / Backspace /
+Escape).
+
+The keypad is **provider-agnostic** — it doesn't know what a code means. The caller
+passes `onSubmit(code)`, which redeems the code in its own scope and returns a
+`{ feature }` outcome; the keypad maps that to a localized message + emoji and fires
+`onUnlocked(feature)`. Codes live in one place, `utils/unlocks.ts`
+`CODE_FEATURES`:
+
+- **`8888` → `admin`** — unlocks the Admin console (§8).
+- **`9999` → `premium`** — unlocks the Gold/Silver themes (§5.5).
+
+Used by **Device Settings** (device-scope redeem via `redeemCode`, → `lc-unlocks`)
+and by the theme unlock flow.
+
+---
+
+## 6. Cloudflare Pages Functions — the Gemini proxy
+
+The only server-side code in production. The copybook module's "Generate" button
+needs to call Gemini, which the browser cannot do directly (CORS) and which must
+not expose the key. Two Pages Functions live in `platform/functions/api/copybook/`:
+
+- `generate.ts` → `POST /api/copybook/generate` — generates one validated
+  Taiwan-Traditional sentence.
+- `test-key.ts` → `POST /api/copybook/test-key` — probes whether a user-supplied
+  Gemini key is valid (a free models-list GET; no generate quota spent).
+
+Both **reuse the same portable helper** `modules/copybook/server/gemini.ts`
+(dependency-free, uses global `fetch`), which also backs the dev Express route in
+`modules/copybook/server/index.ts`. No logic is duplicated.
+
+```
+browser (copybook "Generate")
+   │  POST /api/copybook/generate  { targetChar, knownChars, level, rankCeiling, apiKey? }
+   ▼
+Cloudflare Pages Function (functions/api/copybook/generate.ts)
+   │  apiKey = client BYO key  ||  env.GEMINI_API_KEY (encrypted Pages secret)
+   ▼
+modules/copybook/server/gemini.ts → Google Gemini generateContent
+   │  validate: Traditional-only (reject Simplified leaks), contains target char,
+   │  6–15 Han chars; retry up to 3×
+   ▼
+{ sentence } | { error }
+```
+
+The key is BYO per-profile (sent transiently in the request, stored only on the
+device) and/or the Pages secret `GEMINI_API_KEY`. Keys are used for the single
+request and never logged or persisted server-side. These functions live outside
+`platform/tsconfig`'s include, so `tsc`/vite ignore them; wrangler compiles them
+at deploy time. The default model is `gemini-2.5-flash` (overridable via
+`GEMINI_MODEL`).
+
+---
+
+## 7. Dev server (development only)
+
+`platform/server/index.ts` runs an Express server (`:3000`) with Vite in
+middleware mode. It loads module servers, serves the shared platform routes
+(dictionary browse, char stats, char ranks, DB snapshots for the PWA), and powers
+the admin/curation UI. **None of this runs in production** — it exists to develop
+the app and to produce/curate the data that gets baked and shipped.
+
+---
+
+## 8. Admin & device settings
+
+There are two distinct settings surfaces, reached from different screens and with
+different audiences:
+
+- **Device Settings** — the account-wide / device-wide screen on the pre-profile
+  launch screen. Always available, ships in production.
+- **Admin console** — the curation/debugging back office. Talks to the dev Express
+  server's `/api/admin/*`, `/api/content/*`, and module routes, which **do not
+  exist** in the production (Pages-only) deployment. Its entry button renders under
+  `import.meta.env.DEV` **or** when the `admin` feature has been unlocked (code
+  `8888`, §5.6) — so it can be opened on a production build, but the routes it
+  drives only resolve against the dev server.
+
+### 8.1 Device Settings (`DeviceSettings` in `platform/src/App.tsx`)
+
+Reached by the gear button on the **Profile Picker** (and on the first-run
+`WelcomePopup` when there are no profiles yet) — i.e. *before* a profile is
+chosen, because everything here is device- or account-level rather than
+per-profile. Back returns to the picker. Sections, top to bottom:
+
+| Section | What it does | Notes / gating |
+|---------|--------------|----------------|
+| **Language** | App UI language toggle (`繁體中文` / `English`). Writes account `settings.language`. | Always shown. |
+| **Theme** (`settings.theme`) | **Device-level** theme selector (`ThemeSelect`, scope=`device`) — the default look for every profile. Default is free; **Gold/Silver are premium** and listed **only after** premium is unlocked device-wide (code `9999`, redeemed under the Device ID below) — locked skins aren't shown here at all. Persists via `setDeviceTheme` → `localStorage` `lc-gold-mode`. | Always shown, on every device. Resolution + storage: §5.5. (Replaced the old gold-device-only "Premium" toggle.) |
+| **Backup & Restore** | **Back up now** exports a JSON of all profiles + prefs + theme state + unlocks (`exportBackup`). **Restore from file** parses a backup (`parseBackup`) and opens a modal for **selective** per-profile restore plus an optional "include prefs" toggle (`importBackupSelective`); reloads on success. | User data is per-device and never uploaded (§3); this manual JSON file is the only transfer path. |
+| **App version** (`settings.update`) | **Update app now** clears caches + reloads (`onForceUpdate`), enabled only when the origin is reachable (a no-store `GET /data/version.json` poke; disabled offline, with a Retry link). Shows **Device version** (`__CONTENT_VERSION__`, baked at build), **Server version** (from the same poke) with an up-to-date / update-available note, and the **Device ID** (read-or-create UUID in `localStorage` `lc-device-id`; tap to copy — for support). Also holds the **Enter code** link → the `CodeEntry` keypad (§5.6) for redeeming `8888` (admin) / `9999` (premium) at device scope. | Versions are truncated to 8 chars for display. See §4 for `version` vs `contentHash`. |
+| **Advanced settings** (`settings.advanced`) | **Writing Challenge** → opens the **Levers** panel (§8.2). **Practice English** → opens the device **English voice** panel (§8.3). | These two are always shown. |
+| *(gated buttons)* | **UI Components** → the Styleguide (dev-only). **Admin** → the Admin console (§8.4). | Styleguide renders only under `import.meta.env.DEV`; **Admin** renders under `import.meta.env.DEV` **or** when the `admin` feature is unlocked (code `8888`). |
+
+Note: the **per-profile** settings screen (`AppSettings`, reached from the home
+screen once a profile is active) is separate and holds display name, a per-profile
+**Theme** override (`ThemeSelect`, scope=`profile`, with a "use device" inherit
+option), that profile's English voice override, the per-profile **Gemini API key**
+field + **Test** button (probes the key via `POST /api/copybook/test-key` — the
+proxy, since the browser can't call Gemini directly; key stored only on-device in
+`localStorage` `lc-gemini-key-u<id>`), and "Retake placement".
+
+### 8.2 Levers panel (`platform/src/LeversPanel.tsx`)
+
+The in-app, on-device twin of the writing-challenge engine settings the Mac admin
+exposes. Shipped (Mac-baked) values are the defaults; edits here are stored as
+**per-device overrides** (`offline-data-layer.setLeverOverride`) that persist
+across content updates and ride along in backups. Each overridden lever shows a
+badge + reset (↺); "Reset all" restores defaults. Only **live** levers are shown,
+grouped: **Character selection** (parity_*), **Ranking** (`freq_model`,
+`rank_freq_weight`), **Level & targets** (`level_known_pct`, `target_*`,
+`above_level_threshold`), **"Known" criteria** (`known_*`), **Mastery scoring**
+(`weight_*`, `correct_weight`, `streak_cap`, `decay_*`), and **Stroke
+recognition** (`stroke_leniency`, `strokes_per_fail`). Also reachable as a
+power-user escape hatch from the placement test's gear (Back returns to the test).
+
+### 8.3 English voice panel (`platform/src/EnglishVoicePanel.tsx`)
+
+Sets the **device-wide default** Web-Speech voice for the Practice-English module
+(`getDeviceVoice` / `setDeviceVoice`, with preview). Each profile can override it
+in their own per-profile settings.
+
+### 8.4 Admin console (`platform/src/admin/AdminPage.tsx`) — dev-server backed
+
+Opened from the Admin button in Device Settings (shown under `import.meta.env.DEV`
+or once the `admin` feature is unlocked via code `8888`). All the routes it calls
+are served by the **dev Express server only**, so even on a code-unlocked
+production build the panels have no backend to talk to. A header **Debug Overlay**
+toggle (gear) reads/writes the platform setting `debug_overlay` via
+`/api/platform-settings`. Note the content/curation routes now live under
+`/api/content/admin/*` (platform-owned content, §3.5 / §8.4-routes), while
+per-profile/module routes stay under `/api/writing-challenge/*`. Five top-level
+tabs:
+
+| Tab | Shows / does | Data & dev API |
+|-----|--------------|----------------|
+| **Users** (`UsersPanel`) | Lists device profiles (id, name, language, theme, created); delete a user (confirm). Click a row → detail with an **Overview** tab and a **Stroke Practice** tab: per-character mastery table (rank, TOCFL level, today/retention score bars, seen, P/C/I, streaks, avg ms, recent-result dots), sortable; plus level/totals summary. | `/api/admin/users`, `DELETE /api/admin/users/:id`; detail pulls `/api/writing-challenge/admin/user-stats`, `/settings`, `/debug-info` (per-profile/module) plus `/api/content/admin/char-tocfl-levels` and `/api/content/admin/char-ranking` (platform content). Scores computed client-side via `@shared/character-stats/mastery`. |
+| **Modules** (`ModulesPanel`) | Enable/disable each installed module (toggle); click a module → its own admin (Stroke Practice or Word Sets; others show "No settings"). | `/api/admin/modules`, `PATCH /api/admin/modules/:name`. |
+| **Dictionary** (`DictionaryPanel`) | Browse imported dictionaries (char/word/link/stroke counts). Drill into a dict: **Chars** (grid w/ stroke count + TOCFL, animated + static hanzi-writer preview on click, sorted by **Frequency** or **Blended** rank), **Words** (table), **TOCFL only** filter, search, pagination. | `/api/dictionaries`, `…/chars`, `…/words`, `…/char/:id`; blended sort uses `/api/content/admin/char-ranking`. |
+| **SQL** (`SqlBrowser`) | Raw SQL browser over the platform DB + each module DB. Sidebar lists DBs and tables (click a table → `SELECT * … LIMIT 50`); textarea runs arbitrary SQL (Cmd/Ctrl+Enter); results or error shown. | `/api/admin/databases`, `POST /api/admin/sql/tables`, `POST /api/admin/sql/query`. **Arbitrary SQL against local dev DBs** — another reason this is dev-only. |
+| **Sentence Bank** (`SentenceBankPanel`) | Coverage dashboard for the platform-owned sentence bank (`content.db`, §3.5) against the ranked char list. Sub-tabs: **Summary** (good/neutral/needs-attention health cards w/ clickable gap chars), **Bands** (P1–P6 coverage bars), **Grid** (per-char coverage heat grid), **Gaps** (under-target table), **Prompt** (builds a gap-filling generation prompt — adjustable count / chars-to-target / char-pool — to copy out, **plus a "Generate with Gemini" button**), **Import** (paste `中文 \| English` pairs; client pre-filters ≤6-CJK sentences; reports added/filled/skipped — and the server canonicalizes each on import, §3.5). | `/api/content/admin/char-coverage`, `…/bank-sentences` (GET/POST). **"Generate with Gemini" → `POST /api/content/admin/ai-generate`, which exists only on the dev server** and needs `GEMINI_API_KEY` in the dev `.env` (or a per-profile key saved in `localStorage`, picked up as a BYO fallback). |
+
+The module-level admin screens are: **Stroke Practice** (`StrokePracticeAdmin`) —
+the full writing-challenge engine settings (stroke recognition, the mastery
+scoring formula + weights, "known" criteria, word selection / ranking, target
+words, parity selection) **plus an embedded full Sentence-Bank editor**
+(`SentenceBankEditor`: dump/import-file/export, restore shipped default, clear all,
+inline edit + bulk-delete grid, and a character-coverage modal). And **Word Sets**
+(`WordSetsAdmin`) — create/delete vocabulary categories and add words to them via
+dictionary search or manual entry, with drag-free up/down reordering.
+
+> **Dev vs prod, in one line:** Device Settings, the Levers panel, and the English
+> voice panel ship and run in production. The Admin console's *button* can be opened
+> in production (dev build, or code `8888` unlock), but the routes behind it —
+> `/api/admin/*`, `/api/writing-challenge/admin/*`, `/api/content/admin/*` (the
+> platform-owned content/bank curation), `/api/dictionaries`, and
+> `/api/platform-settings` — are served **only by the dev Express server** (§7), so
+> the console is non-functional without it; in production only the copybook Gemini
+> Pages Functions (§6) exist server-side.
+
+---
+
+## 9. Marketing / install landing (`platform/src/LandingPage.tsx`)
+
+A standalone marketing page shown **only to browser-tab visitors on the real
+domain** — its single job is to drive a PWA install so setup happens in the
+installed (standalone) app where on-device data persists correctly.
+`shouldShowLanding()` in `App.tsx` routes to it: `?landing` forces it, `?app`
+forces the real app, and otherwise it shows on non-dev hosts when **not** running
+standalone. It's pure presentation — no data layer, no offline boot — and is
+lazy-loaded so it never weighs on the app shell.
+
+- **Visual identity** — a bold, dark **VCASS-style** treatment: a deep **navy
+  field (`#073464`)**, warm cream text, one bronze/gold accent, a single bright
+  full-bleed band, and heavy uppercase display type. The hero states the app's
+  **read + write** positioning plainly (寫 / 讀 米字格 cells).
+- **The read-along coverage demo** — the centerpiece: a lined notebook holding a
+  real Taiwan paragraph that "writes itself in" on scroll. A coverage slider sets
+  how many of the most-common characters you "know"; the live frequency ranking
+  (`LandingReadData.ts` — `RANKED` chars in frequency order) lights up the
+  readable characters and shows a % coverage. **Situation tabs** (school / bank /
+  shopping / doctor / news / restaurant) swap the paragraph, and a **Custom** tab
+  lets visitors paste their own Traditional text to check against the level.
+- **Fonts.** The paperpad renders its Chinese in a handwritten Brush 楷 face — the
+  **LXGW WenKai TC web font** (jsDelivr, unicode-range-subset slices) with a
+  system-Kaiti fallback. Web fonts are fine *here* because the landing is online;
+  the offline app shell deliberately does **not** depend on a web font.
+- **Install flow** — captures `beforeinstallprompt` (Chrome/Android/desktop) and
+  fires `prompt()` from the CTA; iOS Safari (no such event) is sniffed and routed
+  to the manual Share → Add to Home Screen steps, so the CTA is never dead.

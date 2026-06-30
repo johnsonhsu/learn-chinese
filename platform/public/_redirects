@@ -1,0 +1,3 @@
+# SPA fallback: serve index.html for any path that isn't a real static file.
+# (Cloudflare Pages serves existing files — /assets/*, /data/*, /sw.js — first.)
+/*    /index.html    200

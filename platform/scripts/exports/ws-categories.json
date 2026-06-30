@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name_zh": "數字",
+    "name_en": "Numbers",
+    "icon": "🔢",
+    "color": "#ff9800",
+    "sort_order": 0,
+    "created_at": "2026-04-05 22:00:17"
+  },
+  {
+    "id": 2,
+    "name_zh": "顏色",
+    "name_en": "Colors",
+    "icon": "🎨",
+    "color": "#e91e63",
+    "sort_order": 0,
+    "created_at": "2026-04-05 22:00:17"
+  },
+  {
+    "id": 3,
+    "name_zh": "方向",
+    "name_en": "Directions",
+    "icon": "🧭",
+    "color": "#4caf50",
+    "sort_order": 0,
+    "created_at": "2026-04-05 22:00:17"
+  }
+]

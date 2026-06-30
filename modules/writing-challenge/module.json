@@ -1,0 +1,9 @@
+{
+  "name": "writing-challenge",
+  "displayName": "Writing Challenge",
+  "displayNameZh": "寫字挑戰",
+  "icon": "✍️",
+  "apiPrefix": "/api/writing-challenge",
+  "dbFile": "writing-challenge.db",
+  "order": 1
+}

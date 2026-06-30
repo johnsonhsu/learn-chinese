@@ -1,0 +1,16 @@
+{
+  "name": "學中文 - Learn Chinese",
+  "short_name": "學中文",
+  "description": "Chinese character writing practice",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#073464",
+  "theme_color": "#073464",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon.svg", "type": "image/svg+xml", "sizes": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

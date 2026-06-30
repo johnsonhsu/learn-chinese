@@ -1,0 +1,126 @@
+[
+  {
+    "key": "stroke_leniency",
+    "value": "1.5"
+  },
+  {
+    "key": "strokes_per_fail",
+    "value": "3"
+  },
+  {
+    "key": "correct_weight",
+    "value": "0.6"
+  },
+  {
+    "key": "weight_recent",
+    "value": "70"
+  },
+  {
+    "key": "weight_overall",
+    "value": "10"
+  },
+  {
+    "key": "weight_streak",
+    "value": "20"
+  },
+  {
+    "key": "streak_cap",
+    "value": "3"
+  },
+  {
+    "key": "decay_per_day",
+    "value": "1"
+  },
+  {
+    "key": "decay_mode",
+    "value": "scaled"
+  },
+  {
+    "key": "lookahead",
+    "value": "0.2"
+  },
+  {
+    "key": "exposure_threshold",
+    "value": "80"
+  },
+  {
+    "key": "skip_constraint",
+    "value": "25"
+  },
+  {
+    "key": "rank_freq_weight",
+    "value": "50"
+  },
+  {
+    "key": "rank_level_weight",
+    "value": "50"
+  },
+  {
+    "key": "associated_level_range",
+    "value": "2"
+  },
+  {
+    "key": "debug_overlay",
+    "value": "true"
+  },
+  {
+    "key": "sentences_per_word",
+    "value": "2"
+  },
+  {
+    "key": "max_associated_words",
+    "value": "5"
+  },
+  {
+    "key": "max_word_level",
+    "value": ""
+  },
+  {
+    "key": "freq_model",
+    "value": "book"
+  },
+  {
+    "key": "known_retention_min",
+    "value": "80"
+  },
+  {
+    "key": "known_recency_days",
+    "value": "30"
+  },
+  {
+    "key": "known_recent_enabled",
+    "value": "true"
+  },
+  {
+    "key": "known_retention_enabled",
+    "value": "true"
+  },
+  {
+    "key": "known_recency_enabled",
+    "value": "true"
+  },
+  {
+    "key": "known_recent_good",
+    "value": "3"
+  },
+  {
+    "key": "known_recent_window",
+    "value": "4"
+  },
+  {
+    "key": "above_level_threshold",
+    "value": "30"
+  },
+  {
+    "key": "target_lookback_pct",
+    "value": "2"
+  },
+  {
+    "key": "target_lookahead_pct",
+    "value": "10"
+  },
+  {
+    "key": "target_include_gaps",
+    "value": "true"
+  }
+]

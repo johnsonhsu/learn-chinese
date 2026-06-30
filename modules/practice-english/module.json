@@ -1,0 +1,8 @@
+{
+  "name": "practice-english",
+  "displayName": "Practice English",
+  "displayNameZh": "英文練習",
+  "icon": "🔤",
+  "apiPrefix": "/api/practice-english",
+  "order": 3
+}

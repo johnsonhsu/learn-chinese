@@ -1,0 +1,98 @@
+[
+  {
+    "id": 1,
+    "trad": "我喜歡和朋友在外玩",
+    "english": "I like playing with friends outside",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 2,
+    "trad": "他們在外面一起玩",
+    "english": "They are playing together outside",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 3,
+    "trad": "你今天吃飽了嗎？",
+    "english": "Have you eaten today?",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 4,
+    "trad": "她在房間安靜地看書",
+    "english": "She is quietly reading a book in the room",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 5,
+    "trad": "爸爸今天在家工作",
+    "english": "Dad is working at home today",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 6,
+    "trad": "他們決定一起去店裡",
+    "english": "They decided to go to the store together",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 7,
+    "trad": "我知道這個問題答案",
+    "english": "I know the answer to this question",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 8,
+    "trad": "我覺得這本書很有趣",
+    "english": "I feel this book is very interesting",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 9,
+    "trad": "我覺得這個問題很簡單",
+    "english": "I think this question is very easy",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 10,
+    "trad": "我計劃晚上看書",
+    "english": "I plan to read a book tonight",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 11,
+    "trad": "他堅持想法不改變",
+    "english": "He insisted on his opinion and refused to change",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 12,
+    "trad": "我現在在寫中文作業",
+    "english": "I am writing Chinese homework now",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 13,
+    "trad": "他因為犯錯而道歉",
+    "english": "He apologized because he made a mistake",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 14,
+    "trad": "錯誤假設導致錯誤結論",
+    "english": "Incorrect assumptions led to wrong conclusions",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 15,
+    "trad": "控制情緒非常重要",
+    "english": "Emotional control is extremely important",
+    "created_at": "2026-04-05 06:28:10"
+  },
+  {
+    "id": 16,
+    "trad": "持續努力終於成功",
+    "english": "Continuous effort finally led to success",
+    "created_at": "2026-04-05 06:28:10"
+  }
+]

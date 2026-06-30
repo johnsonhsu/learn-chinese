@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Learn Chinese</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#073464">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="學中文">
+    <!-- SEO / social description -->
+    <meta name="description" content="Read and write real Taiwan Chinese — Traditional characters in frequency order, 15 minutes a day. Free, offline, no account, no ads.">
+    <!-- Open Graph (Facebook, iMessage, WhatsApp, Slack, Discord, LinkedIn, …) -->
+    <meta property="og:title" content="Read and write real Taiwan Chinese">
+    <meta property="og:description" content="Learn to read &amp; write Traditional characters in frequency order, 15 minutes a day. Free, offline, no account, no ads.">
+    <meta property="og:image" content="https://learnchinese.hsu.mobi/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="讀 寫 — Read and write real Taiwan Chinese">
+    <meta property="og:url" content="https://learnchinese.hsu.mobi/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Learn Chinese">
+    <meta property="og:locale" content="zh_TW">
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Read and write real Taiwan Chinese">
+    <meta name="twitter:description" content="Learn to read &amp; write Traditional characters in frequency order, 15 minutes a day. Free, offline, no account, no ads.">
+    <meta name="twitter:image" content="https://learnchinese.hsu.mobi/og-image.png">
+    <meta name="twitter:image:alt" content="讀 寫 — Read and write real Taiwan Chinese">
+    <!-- Favicons: modern SVG first (scales crisp), 32px PNG fallback for older browsers.
+         Brand mark = inked brush 學 ("learn", Traditional) on a warm cream paper
+         tile, with a vermilion 印章 seal (reversed 中) in the bottom-right corner. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <!-- iOS home-screen icon: dedicated opaque 180x180 (iOS adds its own rounding/mask) -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <!-- Warm the jsDelivr connection for the landing page's handwriting web font
+         (LXGW WenKai TC, brush/楷). This is ONLY a connection hint — it does NOT
+         fetch the font or block the installed app shell. The actual font stylesheet
+         is injected at runtime by LandingPage (the online marketing page only); the
+         installed PWA never loads it and stays fully offline on system fonts. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

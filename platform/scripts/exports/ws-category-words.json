@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "category_id": 1,
+    "word": "一",
+    "definition": "one",
+    "zhuyin": "ㄧ",
+    "pinyin": "yī",
+    "sort_order": 0
+  },
+  {
+    "id": 2,
+    "category_id": 1,
+    "word": "二",
+    "definition": "two",
+    "zhuyin": "ㄦˋ",
+    "pinyin": "èr",
+    "sort_order": 1
+  },
+  {
+    "id": 3,
+    "category_id": 1,
+    "word": "三",
+    "definition": "three",
+    "zhuyin": "ㄙㄢ",
+    "pinyin": "sān",
+    "sort_order": 2
+  },
+  {
+    "id": 4,
+    "category_id": 1,
+    "word": "四",
+    "definition": "four",
+    "zhuyin": "ㄙˋ",
+    "pinyin": "sì",
+    "sort_order": 3
+  },
+  {
+    "id": 5,
+    "category_id": 1,
+    "word": "五",
+    "definition": "five",
+    "zhuyin": "ㄨˇ",
+    "pinyin": "wǔ",
+    "sort_order": 4
+  },
+  {
+    "id": 6,
+    "category_id": 2,
+    "word": "紅",
+    "definition": "red",
+    "zhuyin": "ㄏㄨㄥˊ",
+    "pinyin": "hóng",
+    "sort_order": 0
+  },
+  {
+    "id": 7,
+    "category_id": 2,
+    "word": "藍",
+    "definition": "blue",
+    "zhuyin": "ㄌㄢˊ",
+    "pinyin": "lán",
+    "sort_order": 0
+  },
+  {
+    "id": 8,
+    "category_id": 2,
+    "word": "綠",
+    "definition": "green",
+    "zhuyin": "ㄌㄩˋ",
+    "pinyin": "lǜ",
+    "sort_order": 0
+  },
+  {
+    "id": 9,
+    "category_id": 2,
+    "word": "白",
+    "definition": "white",
+    "zhuyin": "ㄅㄞˊ",
+    "pinyin": "bái",
+    "sort_order": 0
+  },
+  {
+    "id": 10,
+    "category_id": 2,
+    "word": "黑",
+    "definition": "black",
+    "zhuyin": "ㄏㄟ",
+    "pinyin": "hēi",
+    "sort_order": 0
+  },
+  {
+    "id": 11,
+    "category_id": 3,
+    "word": "上",
+    "definition": "up",
+    "zhuyin": "ㄕㄤˋ",
+    "pinyin": "shàng",
+    "sort_order": 0
+  },
+  {
+    "id": 12,
+    "category_id": 3,
+    "word": "下",
+    "definition": "down",
+    "zhuyin": "ㄒㄧㄚˋ",
+    "pinyin": "xià",
+    "sort_order": 1
+  },
+  {
+    "id": 13,
+    "category_id": 3,
+    "word": "左",
+    "definition": "left",
+    "zhuyin": "ㄗㄨㄛˇ",
+    "pinyin": "zuǒ",
+    "sort_order": 2
+  },
+  {
+    "id": 14,
+    "category_id": 3,
+    "word": "右",
+    "definition": "right",
+    "zhuyin": "ㄧㄡˋ",
+    "pinyin": "yòu",
+    "sort_order": 3
+  },
+  {
+    "id": 15,
+    "category_id": 1,
+    "word": "六",
+    "definition": "six, 6",
+    "zhuyin": "ㄌㄧㄡˋ",
+    "pinyin": "liù",
+    "sort_order": 5
+  },
+  {
+    "id": 16,
+    "category_id": 2,
+    "word": "黃",
+    "definition": "yellow, pornographic, to fall through",
+    "zhuyin": "ㄏㄨㄤˊ",
+    "pinyin": "huáng",
+    "sort_order": 0
+  }
+]

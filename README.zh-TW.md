@@ -1,0 +1,211 @@
+# Learning Chinese
+
+> English: [README.md](./README.md) ｜ 繁體中文（本文件）
+
+> 持續維護的文件 — 隨著 app 演進而保持最新。在重大變更／部署時更新。
+
+一個 **本地優先（local-first）、可離線運作的 PWA**，用來學習台灣實際使用的繁體中文
+（繁體中文 + 注音／ㄅㄆㄇㄈ）。把它安裝到主畫面，無須帳號、無須伺服器、無須網路即可練習
+——你所有的學習進度都存在自己的裝置上。本專案以 npm-workspace monorepo 建置，並以靜態資源
+部署到 Cloudflare Pages。
+
+技術深入細節請見 **[architecture.zh-TW.md](./architecture.zh-TW.md)**（英文版見
+[ARCHITECTURE.md](./ARCHITECTURE.md)）；模組開發請見
+**[modules/README.zh-TW.md](./modules/README.zh-TW.md)**。
+
+---
+
+## 功能說明 — 四個模組
+
+主畫面是一個由各自獨立的學習活動組成的網格。你先選擇一個 profile（多位學習者可共用一台裝置），
+然後再選擇模組：
+
+- **Writing Challenge**（✍️ `writing-challenge`）— 核心模組。在真正的台灣繁體句子上做手寫／
+  筆順練習，搭配逐筆驗證（HanziWriter）、注音提示與音訊。App 會挑選你*最需要*練的字，並找出一個
+  自然的句子讓你在其中練習（見下方「智慧選字」）。
+- **Word Sets**（📚 `word-sets`）— 瀏覽經過策劃的詞彙分類，附注音／拼音與 TOCFL 等級，點一個詞
+  即可聽發音並練習書寫。
+- **Practice English**（🔤 `practice-english`）— 一個英文克漏字拼字遊戲（填入缺漏的字母），
+  搭配螢幕鍵盤與音訊。
+- **Copybook**（📝 `copybook`）— 自帶文字的逐字書寫練習：貼上任意文字並逐字書寫。也可選擇用
+  Gemini **Generate（產生）** 一個全新的台灣繁體句子。
+
+**適合對象：** 為了台灣而學習繁體中文的學習者（以及家庭／孩童），他們想要由個人實際所需驅動的
+專注手寫練習，並可在完全離線狀態下使用。
+
+**登陸頁（Landing page）。** 在真正網域上以瀏覽器分頁造訪的人，會先看到一個行銷／安裝用的
+**登陸頁**（`platform/src/LandingPage.tsx`，也可用 `?landing` 強制顯示），它唯一的任務就是
+讓 app 被安裝到主畫面。它是一套大膽、深色、海軍藍（`#073464`）的 VCASS 風格識別，環繞著「讀＋寫」
+的定位，並帶有一個互動式的 **讀文覆蓋率示範（read-along coverage demo）**：拖動滑桿設定你「認得」
+多少個最常見的字，看著真實的台灣文字亮起來（含情境分頁與貼上自己文字的選項）。見
+[architecture.zh-TW.md §9](./architecture.zh-TW.md)。
+
+---
+
+## UI 系統
+
+每個畫面都由一個小型的 **共用 UI kit**（`platform/src/ui`）組成，因此整個 app 共享同一套外觀
+——一種厚實、親切的 **「cartoon-candy（卡通糖果）」** 美學（奶油色面板、紫色邊框、可按壓的 3D
+糖果按鈕並帶有彩色下緣）。
+
+- `<Button variant="primary|secondary|ghost">` — 3D 糖果按鈕。
+- `<ModuleScreen title onBack? children>` — 標準的模組主畫面外殼（返回膠囊鈕 + 奶油色卡片 + 標題）。
+  一個模組的登陸畫面基本上就是 `<ModuleScreen title onBack={onExit}>…<Button/>…</ModuleScreen>`。
+- `<Card>` / `<BackButton>` — 奶油色面板，以及每個模組共用的獨立返回膠囊鈕。
+- `<CharTile>` — 共用的字符卡片（排名、等級、熟練度條、近期結果圓點、緞帶），在「我的字」、
+  「接下來練」字片與 word-set 清單之間重用。
+
+所有顏色／尺寸／字型都是 **只定義一次的 CSS custom properties**，宣告在 `platform/src/index.css`
+的 `:root` 上；模組使用 `var(--token)` 而絕不另行分叉它們。此 kit 的樣式表由 `main.tsx` 匯入一次。
+完整細節見 **[platform/src/ui/README.md](./platform/src/ui/README.md)**。
+
+### 主題（Themes）
+
+在 kit 之上還有一套由註冊表（registry）驅動的 **主題系統**（`platform/src/theme/`）：**Default**、
+兩款付費皮膚 **Gold（暖金箔）** 與 **Silver（冷鉑金）**，外加三款免費皮膚 **Midnight（墨夜，深色 ink 模式）**、
+**Sakura（櫻花，暖粉淺色）** 與 **Matcha（抹茶，鼠尾草綠淺色）**。一個主題就是 `themes.ts` 註冊表中的
+一筆項目；其外觀是一個 `body[data-theme="<id>"]` 區塊——內嵌在 `index.css`（Gold/Silver），或放在獨立的
+`theme/theme-<id>.css` 檔並於 `main.tsx` 匯入（Midnight/Sakura/Matcha）。Default 不設定任何 token
+——它*就是* `:root` 的外觀。你可以在裝置設定中為 **整台裝置** 設定主題，或在某個 profile 的設定中
+**針對該 profile** 設定；有效主題的解析為 `profileOverride ?? device ?? default`。三款新皮膚為免費；
+只有 Gold/Silver 是付費的，**僅限裝置層級解鎖**——在裝置設定的 Device ID 下，透過螢幕鍵盤（`CodeEntry`）輸入 **代碼 9999**
+（`lc-unlocks`）；沒有 per-profile 解鎖（profile 只能在裝置已解鎖的主題之間*覆寫*）。解鎖後，主題選擇器
+**只列出可用的主題**（鎖住的付費皮膚不顯示），而 Profile 選擇器只在某 profile *自己的*覆寫為
+Gold/Silver 時才顯示該 profile 的皇冠。所選主題與解鎖狀態都會隨 JSON 備份一起帶走。（`8888` 同樣
+用來解鎖開發用的 Admin 主控台。）細節見 [architecture.zh-TW.md §5.5–5.6](./architecture.zh-TW.md)。
+
+---
+
+## 「智慧選字」— 接下來練什麼
+
+目標是 **練字，而不是練句子**：句子只是用來鑽練學習者所需特定字的自然載體。選字邏輯位於
+`shared/src/sentence-generator.ts`（純函式，在裝置端與開發伺服器上執行結果完全相同），分兩個階段運作。
+
+### 1. 挑選要練「哪個」字（parity 權重）
+
+從學習者的 **目標字**（落在其等級附近視窗內的未知字 — 見 `shared/src/char-knowledge.ts`）中，
+每個候選字會得到一個權重，混合了：
+
+- **need（需求）** — 對低熟練度的字與從未見過的字較高（`parity_mastery_weight`），若最近答錯則加成
+  （`parity_miss_boost`，會看最近幾次的結果）。need 有 **上限**（`parity_need_cap`），所以不會有任何
+  一個字獨占。
+- **recency / 防飢餓（anti-starvation）** — 一個字越久沒練（`lastSeen` 越舊），其 recency 乘數越高
+  （`parity_recency_cap`），因此每個目標字最終都會輪回來。
+
+接著用加權隨機挑出該字。重點在於 **parity 與覆蓋率**（把你需要的全部練到），而非變化性。
+
+### 2. 挑選包含該字的最佳銀行句子
+
+接著 App 會為銀行中所有*包含*所選字的句子評分，並挑出最合適的一句（同分時隨機）。評分為
+**僅加分**——它會獎勵句子裡的*其他*字符合以下條件：
+
+- 屬於目標池（`bank_pool_weight`），
+- 已經熟練／已知，亦即在等級之內或以下（`bank_known_weight`），
+- 其頻率排名與目標字 **接近**（`bank_near_weight` / `bank_near_scale`）。
+
+對於超出等級或最近見過的字 **沒有任何懲罰**——歡迎跳躍與重複。若沒有任何目標字有銀行句子覆蓋，
+則退而求其次，選整體評分最高的句子（以其最接近學習者等級的字為錨點）；最後的最後一招則是單獨呈現
+最需要練的那個字。
+
+### 句子銀行 — 「大腦」
+
+練習句子來自一個 **經策劃的銀行**（`bank_sentences` 表，約 3,800 個自然的台灣繁體句子，每句大致
+6–15 字）。範本／合併欄位（merge-field）的產生方式已被移除——銀行是練習句子的單一來源。
+（策劃／填補流程：`npm run analyze-bank`。）
+
+這個銀行——連同 TOCFL 詞表——是 **平台所擁有的課程內容（platform-owned curriculum）**，存放在它
+自己的 `platform/content.db`（透過 `@shared/character-stats/content-db` 存取），以 `content.db` 出貨到
+裝置。它過去存在於 `writing-challenge.db` 內；後來被抽離出來，讓每個模組都只是單一共用課程的純
+*消費者*。每個 profile 的進度則維持獨立。在匯入時（以及透過離線 scrub，`scripts/bank-fix.py`），
+每個句子都會被 **正規化為單一的台灣繁體形式**：簡體 → 繁體，但 台 *和* 臺 兩者都保留（永不轉換），
+而無法書寫的異體字會被統一到其已排名、可書寫的形式（汙→污、秘→祕）。見
+[architecture.zh-TW.md §3.5](./architecture.zh-TW.md)。
+
+### 熟練度、等級與「已知」— 可調整的調節桿
+
+以上一切都由設定（「levers，調節桿」）控制，並帶有合理的預設值，可在進階設定面板中針對每台裝置編輯：
+
+- **字符排名**（`shared/src/char-ranker.ts`）— 每個 TOCFL 字符依據頻率排名與 TOCFL 等級的混合來排名
+  （`rank_freq_weight` / `rank_level_weight`、`freq_model`）。
+- **熟練度／記憶保留（retention）**（`shared/src/mastery.ts`）— 一個 0–100 的分數，由近期結果
+  （依近期加權）、整體正確率與目前連勝（streak）算出，然後 **依距上次見過的時間衰減**（遺忘曲線）。
+  調節桿：`weight_recent`、`weight_overall`、`weight_streak`、`correct_weight`、`streak_cap`、
+  `decay_per_day`、`decay_mode`。
+- **「已知（Known）」**（`shared/src/char-knowledge.ts`）— 一個字在 **全部** 符合以下條件時才算已知：
+  (1) 最近 M 次嘗試中有 N 次正確／完美，(2) 記憶保留 ≥ 門檻，(3) 上次成功嘗試在 N 天內。
+  調節桿：`known_recent_*`、`known_retention_*`、`known_recency_*`。
+- **等級與流利度** — 等級是學習者在前 N 個排名字中已知 ≥ `level_known_pct`% 時的最高 N 值；
+  流利度則是一條對所有已知字數量的 0–100 RPG 風格曲線。
+
+### Gemini 驅動的「Generate」（copybook）
+
+在 **copybook** 中，學習者可以產生一個全新句子，而不必貼上自己的文字。這是一個盡力而為（best-effort）
+的線上便利功能：
+
+- **自帶金鑰（BYO key），每個 profile 各自獨立** — 每個 profile 可儲存自己的 Gemini API 金鑰
+  （在 Settings 中輸入並可測試）；Pages secret 也可作為後備（fallback）。
+- **由伺服器代理（Server-proxied）** — 瀏覽器無法直接呼叫 Gemini（CORS／金鑰外洩風險），因此會
+  經過一個 Cloudflare Pages Function（`platform/functions/api/copybook/generate.ts`），它重用了
+  `modules/copybook/server/gemini.ts` 裡的可攜式（portable）產生器。
+- **僅限繁體的驗證** — Gemini 偶爾會夾帶簡體字，因此每個候選句都會經過驗證（僅限繁體、包含目標字、
+  6–15 個漢字），失敗時最多重試 3 次後才放棄。
+
+---
+
+## 部署
+
+以靜態資源部署到 **Cloudflare Pages**——沒有正式環境（production）伺服器。
+
+```bash
+npm -w platform run deploy
+# = npm run build (bake data + vite build)  &&  wrangler pages deploy dist
+#   --project-name=learning-chinese
+```
+
+- **`build`** 會烘焙（bake）出貨的資料庫 + `stroke-data.json` + `version.json`，然後執行
+  `vite build`。每次 build 都會蓋上一個 **每次部署都全新的 `version`**（以及一個獨立的、僅關乎資料的
+  `contentHash`），因此 app 內的「有新版本可用」橫幅會在每次部署時觸發，而裝置只有在*資料*真正改變時
+  才會重新下載那約 18 MB 的資料庫。（見 [architecture.zh-TW.md §4](./architecture.zh-TW.md)。）
+- **Gemini secret**（一次性設定，供正式環境的 copybook Generate 使用）：
+
+  ```bash
+  npx wrangler pages secret put GEMINI_API_KEY --project-name=learning-chinese
+  ```
+
+  （每個 profile 自帶的金鑰無須此設定即可運作；此 secret 是共用的後備。）
+
+---
+
+## 本機執行
+
+```bash
+npm install                  # 安裝所有 workspaces
+
+npm run dev                  # 在 http://localhost:3000 啟動 Express + Vite 開發伺服器
+                             #   （完整開發伺服器：各模組的 API + admin UI）
+
+npm run build                # bake data + vite build（寫入 platform/dist）
+npm -w platform run preview  # 提供正式環境建置版本（vite preview，:4173）
+npm -w platform run bake:data  # 僅重新烘焙出貨的資料庫 / version.json
+```
+
+此 app 是本地優先的，因此其大部分功能完全不需要伺服器即可運作——開發伺服器（`:3000`）主要是用於
+admin／策劃以及產生烘焙後的資料。
+
+**選用的額外項目：**
+
+- **供 Generate 使用的 `.env`** — 若想在本機未自帶金鑰的情況下使用 copybook 的 Generate，可在
+  開發伺服器會讀取的 `.env` 中放入 `GEMINI_API_KEY=...`（當用戶端有自帶金鑰時，會以自帶金鑰優先）。
+  `GEMINI_MODEL` 可選擇性地覆寫預設的 `gemini-2.5-flash`。
+
+---
+
+## 專案結構地圖
+
+| 路徑 | 內容 |
+|------|------|
+| `shared/` | `@shared/character-stats` — 排名、熟練度、「已知」、選字（純函式） |
+| `platform/` | PWA 外殼、離線資料層、UI kit、admin、bake／deploy、Pages Functions |
+| `modules/*` | 四個學習活動（見 [modules/README.zh-TW.md](./modules/README.zh-TW.md)） |
+| `ARCHITECTURE.md` / `architecture.zh-TW.md` | 技術架構（monorepo、模組系統、資料、部署） |
+| `platform/src/ui/README.md` | 共用 UI kit 參考文件 |

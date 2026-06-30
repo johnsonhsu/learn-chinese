@@ -1,0 +1,17 @@
+export default {
+  'myChars.title': '我的字',
+  'myChars.statsTable': '統計表',
+  'myChars.grid': '格狀',
+  'myChars.fluency': '流利度',
+  'myChars.known': '已學會',
+  'myChars.learning': '學習中',
+  'myChars.retention': '記憶保留',
+  'myChars.seen': '已練字',
+  'myChars.colChar': '字',
+  'myChars.colRank': '排名',
+  'myChars.colLevel': '級',
+  'myChars.colMem': '記憶',
+  'myChars.colRetention': '保留',
+  'myChars.colSeen': '次數',
+  'myChars.practiceChar': '練習 {char}',
+} as const;

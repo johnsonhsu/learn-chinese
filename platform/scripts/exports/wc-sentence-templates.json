@@ -1,0 +1,106 @@
+[
+  {
+    "id": 1,
+    "pattern": "{pronoun}很喜歡{verb}",
+    "example": "我很喜歡看書",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"verb\",\"grammar\":\"verb\"}]",
+    "difficulty": 1,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 2,
+    "pattern": "{pronoun}在{place}{verb}",
+    "example": "她在家吃飯",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"place\",\"grammar\":\"place\"},{\"name\":\"verb\",\"grammar\":\"verb\"}]",
+    "difficulty": 1.5,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 3,
+    "pattern": "{pronoun}覺得{clause}",
+    "example": "我覺得這樣很好",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"clause\",\"grammar\":\"clause\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 4,
+    "pattern": "為什麼{clause}",
+    "example": "為什麼不按",
+    "slots": "[{\"name\":\"clause\",\"grammar\":\"clause\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 5,
+    "pattern": "{pronoun}想當{noun}",
+    "example": "我想當獸醫",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"noun\",\"grammar\":\"noun\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 6,
+    "pattern": "聽說{clause}",
+    "example": "聽說租金又漲了",
+    "slots": "[{\"name\":\"clause\",\"grammar\":\"clause\"}]",
+    "difficulty": 2.5,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 7,
+    "pattern": "如果{clause}就{clause}",
+    "example": "如果妳不收好我就拿去回收",
+    "slots": "[{\"name\":\"clause\",\"grammar\":\"clause\"},{\"name\":\"clause\",\"grammar\":\"clause\"}]",
+    "difficulty": 3,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 8,
+    "pattern": "{pronoun}不要{verb}",
+    "example": "不要給自己壓力",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"verb\",\"grammar\":\"verb\"}]",
+    "difficulty": 1.5,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 9,
+    "pattern": "{pronoun}真的很{adjective}",
+    "example": "男生真的很無聊",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"adjective\",\"grammar\":\"adjective\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 10,
+    "pattern": "{pronoun}說{clause}",
+    "example": "老師說那是正常的",
+    "slots": "[{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"clause\",\"grammar\":\"clause\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 11,
+    "pattern": "{time}{pronoun}要{verb}",
+    "example": "明天要去打針",
+    "slots": "[{\"name\":\"time\",\"grammar\":\"time\"},{\"name\":\"pronoun\",\"grammar\":\"pronoun\"},{\"name\":\"verb\",\"grammar\":\"verb\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 12,
+    "pattern": "{noun}是用來{verb}的",
+    "example": "尾巴是用來平衡的",
+    "slots": "[{\"name\":\"noun\",\"grammar\":\"noun\"},{\"name\":\"verb\",\"grammar\":\"verb\"}]",
+    "difficulty": 3,
+    "created_at": "2026-04-05 06:28:06"
+  },
+  {
+    "id": 13,
+    "pattern": "{noun}真的很{adjective}",
+    "example": "男生真的很無聊",
+    "slots": "[{\"name\":\"noun\",\"grammar\":\"noun\"},{\"name\":\"adjective\",\"grammar\":\"adjective\"}]",
+    "difficulty": 2,
+    "created_at": "2026-04-05 20:21:16"
+  }
+]

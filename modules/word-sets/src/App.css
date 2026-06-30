@@ -1,0 +1,312 @@
+/* Word Sets module styles — ws- prefix */
+
+.ws-page-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--text-muted, #888);
+}
+
+/* The screen wrapper (.ui-screen: 16px inset + bottom pad), the cream candy
+   panel (.module-tile + .ui-screen-card: max-width/centering/shell + column
+   flex) and the title (.module-tile-title) all come from the shared kit's
+   <ModuleScreen>. This only widens the inner column back to full width: the
+   kit centers children (align-items:center), but the category grid must stretch
+   edge-to-edge inside the tile, and the original tile used a 20px gap. */
+.ws-tile {
+  align-items: stretch;
+  gap: 20px;
+}
+
+/* Category grid — lives inside .ws-tile.
+   width:100% makes the 2 columns each ~half the tile (robust no matter what the
+   tile's align-items resolves to — the shared kit's `.app-shell .ui-screen-card`
+   forces align-items:center at higher specificity than .ws-tile, which otherwise
+   centers the grid at its narrow intrinsic width and squeezes the columns into
+   skinny portrait cards).
+   align-content:start keeps the implicit rows content-sized: with 3 cards the
+   grid has 2 rows, and the default `align-content:stretch` would inflate those
+   rows (and, via the cells' default `align-items:stretch`, the cards) to absorb
+   any vertical free space — so the tile would render far taller than its
+   content. Pinning to start removes that stretch so the tile hugs the
+   title + grid + padding. */
+.ws-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+  align-content: start;
+}
+
+/* Each card sits at its own content height inside its row track — never
+   stretched to fill the row (the grid cell default is align-items:stretch). */
+.ws-card { align-self: start; }
+
+/* Paper-leaf category cards: each keeps its identity through ONE quiet accent
+   (passed inline as the `--ws-color` custom property) — a top hairline rule + a
+   tinted icon disc. No candy fills/lips; a paper face with a hairline border,
+   matching the home `.module-card` tiles. */
+.ws-card {
+  --ws-color: var(--seal, #C0392B);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 132px;
+  padding: 20px 12px 18px;
+  border: 1px solid var(--rule, #DAD2C2);
+  border-radius: var(--radius-lg, 16px);
+  background: var(--paper-raised, #FBF8F0);
+  color: var(--ink, #1C1A17);
+  cursor: pointer;
+  text-align: center;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  appearance: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  position: relative;
+  overflow: hidden;
+}
+/* Accent hairline along the top edge encodes the category. */
+.ws-card::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+  background: var(--ws-color);
+}
+
+/* Hover — gated to real pointers only (iOS sticky-hover fix). */
+@media (hover: hover) {
+  .ws-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: color-mix(in srgb, var(--ws-color) 55%, var(--rule));
+  }
+  .ws-card:hover .ws-card-icon-circle { transform: scale(1.06); }
+}
+
+/* Press: a small settle. NOT gated — resets cleanly on release. */
+.ws-card:active {
+  transform: translateY(0);
+}
+.ws-card:active .ws-card-icon-circle { transform: scale(0.97); }
+
+.ws-card:focus-visible {
+  outline: 2px solid var(--seal, #C0392B);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ws-card { transition: none; }
+  .ws-card:active,
+  .ws-card:hover { transform: none; }
+  .ws-card-icon-circle,
+  .ws-card:hover .ws-card-icon-circle,
+  .ws-card:active .ws-card-icon-circle { transform: none; }
+}
+
+/* Tinted disc carries the category accent quietly. */
+.ws-card-icon-circle {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ws-color) 12%, var(--paper, #F3EEE2));
+  border: 1px solid color-mix(in srgb, var(--ws-color) 35%, var(--rule, #DAD2C2));
+  box-shadow: none;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ws-card-icon {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.ws-card-name-zh {
+  font-size: 20px;
+  font-weight: 600;
+  font-family: var(--font-serif, serif);
+  color: var(--ink, #1C1A17);
+}
+
+.ws-card-name-en {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft, #56514A);
+}
+
+.ws-card-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-faint, #8A8377);
+  margin-top: 2px;
+}
+
+/* Word list */
+.ws-word-list {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ws-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border, #333);
+  flex-shrink: 0;
+}
+/* Back sits in the header row → compact (no full-width stretch); the header
+   padding controls its inset, so drop the shared pill's own margin here. */
+.ws-header .module-back { margin: 0; }
+
+.ws-header-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.ws-header-zh {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.ws-header-en {
+  font-size: 13px;
+  color: var(--text-muted, #aaa);
+}
+
+.ws-words {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ws-word-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border, #222);
+}
+
+.ws-word-speak {
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.ws-word-speak:active { opacity: 1; }
+
+/* Per-character tappable tiles are the shared kit <CharTile size="sm">
+   (look in ui-kit.css). This just rows them up with the punctuation glyphs. */
+.ws-word-chars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ws-word-punct {
+  font-size: 26px;
+  color: var(--text, #2D1B00);
+}
+
+.ws-word-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ws-word-zhuyin {
+  font-size: 13px;
+  color: var(--text-muted, #aaa);
+}
+
+.ws-word-def {
+  font-size: 14px;
+  color: var(--text-dim, #999);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Practice overlay */
+.ws-practice-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.ws-practice-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: var(--bg, #1a1a1a);
+  border-radius: 16px;
+  border: 1px solid var(--border, #333);
+  max-width: 340px;
+  width: 90%;
+}
+
+.ws-practice-char-display {
+  font-size: 40px;
+  font-weight: 600;
+}
+
+.ws-practice-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ws-close-btn {
+  font-size: 16px;
+  padding: 8px 12px;
+  border: 1px solid var(--border, #444);
+  background: var(--bg-raised, #2a2a2a);
+  color: var(--text-muted, #aaa);
+  border-radius: 6px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* ===== Editorial theme — word list sits on the paper screen bg ===== */
+
+/* Header reads ink-on-paper with a hairline rule. */
+.ws-header { border-bottom: 1px solid var(--rule, #DAD2C2); }
+.ws-header-zh { color: var(--ink, #1C1A17); font-family: var(--font-serif, serif); font-weight: 600; }
+.ws-header-en { color: var(--ink-soft, #56514A); }
+
+/* The scrolling word list is a paper panel with hairline-ruled rows. */
+.ws-words {
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule, #DAD2C2);
+  border-radius: var(--radius-lg, 16px);
+  margin: 12px 16px;
+  padding: 2px 16px;
+}
+.ws-word-row { border-bottom: 1px solid var(--rule, #DAD2C2); }
+.ws-word-row:last-child { border-bottom: none; }
+.ws-word-punct { color: var(--ink, #1C1A17); }
+.ws-word-zhuyin { color: var(--ink-soft, #56514A); }
+.ws-word-def { color: var(--ink-soft, #56514A); }

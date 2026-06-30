@@ -1,0 +1,459 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   SHARED UI KIT — the design primitives every module composes (Button, Card,
+   ModuleScreen). ONE place for the cartoon-candy look so modules stop re-
+   implementing it. Imported once by platform/src/main.tsx.
+
+   All selectors are prefixed with `.app-shell` (specificity 0,2,0) on purpose:
+   modules apply a scoped `* { margin:0; padding:0 }` reset, and `.app-shell`
+   out-specifies it so the kit's insets/paddings survive inside any module —
+   the same trick used by the shared `.module-back` / `.module-tile`.
+
+   Tokens come from platform/src/index.css `:root` (the single source of truth):
+   --gold / --gold-dark (primary face + lip), --border / --panel-border (purple),
+   --bg-raised / --panel-bg (cream), --text, --radius, --font, --shadow3d.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Button — editorial flat-ink button ────────────────────────────────────────
+   Promoted from the landing's `.lp-cta`: a flat sumi-ink face, a vermilion arrow
+   on the primary, hairline-bordered secondary, quiet ghost. NO candy lip — press
+   feedback is a 1px settle. Three variants share one base. */
+.app-shell .ui-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 28px;
+  min-height: 44px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  transition: background 0.16s ease, transform 0.1s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.app-shell .ui-btn:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: default;
+}
+
+/* primary = flat ink face, paper text */
+.app-shell .ui-btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.app-shell .ui-btn--primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* secondary = paper face, hairline ink-faint border */
+.app-shell .ui-btn--secondary {
+  background: var(--paper-raised);
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+.app-shell .ui-btn--secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* ghost = subtle, no border; for low-emphasis / toggle-style actions */
+.app-shell .ui-btn--ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+}
+.app-shell .ui-btn--ghost:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* hover only on real pointers (iOS sticky-hover fix) */
+@media (hover: hover) {
+  .app-shell .ui-btn--primary:hover:not(:disabled) {
+    background: #000;
+  }
+  .app-shell .ui-btn--secondary:hover:not(:disabled) {
+    border-color: var(--ink);
+  }
+  .app-shell .ui-btn--ghost:hover:not(:disabled) {
+    color: var(--ink);
+    border-color: var(--rule);
+  }
+}
+
+.app-shell .ui-btn:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 3px;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .ui-btn { transition: none; }
+  .app-shell .ui-btn:active:not(:disabled),
+  .app-shell .ui-btn:hover:not(:disabled) { transform: none; }
+}
+
+/* ── Card / ModuleScreen ───────────────────────────────────────────────────────
+   <Card> renders the shared `.module-tile` look (defined in index.css) — the kit
+   re-uses that class, so there's nothing extra to declare here. <ModuleScreen>
+   adds the page-level wrapper that gives every module's MAIN screen the same
+   16px edge inset + back-pill→tile rhythm. */
+.app-shell .ui-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  /* NO forced viewport height. The screen is exactly as tall as its content — the
+     back-arrow row + the tile sized to its OWN content — so it can never overshoot
+     the viewport and force a scrollbar. A short landing just sits at the top (the
+     body's fixed background fills the rest of the screen); genuinely tall content
+     scrolls naturally. This replaces the earlier min-height:100svh approach, which
+     kept overshooting by the header-row height. */
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+/* The standard cream landing card body: column layout with comfortable spacing.
+   (Border/shadow/radius/fill/inset/top-margin all come from `.module-tile`.) */
+.app-shell .ui-screen-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+/* The screen wrapper centers its children, so opt the back pill OUT of centering
+   — it belongs at the top-left corner. margin-left:0 so it rides the wrapper's
+   own 16px inset instead of doubling it. margin-top:0 so the pill hugs the
+   wrapper's top padding (its index.css base margin-top would otherwise add a
+   second top gap now that the wrapper supplies the inset).
+
+   margin-bottom IS the back-pill→tile gap. It must be an explicit, non-collapsing
+   value here (NOT auto and NOT the index.css base 4px, which read as "touching"):
+   the tile's auto margins collapse to 0 when content is tall, so this margin is
+   the ONLY thing guaranteeing a clear, consistent gap in that case — and on a
+   short screen it sits between the pill and the tile's auto-margin centering,
+   so the gap is uniform either way. It's a fixed px (not part of the centering
+   math) so it never re-introduces overflow. */
+.app-shell .ui-screen > .module-back { align-self: flex-start; margin-left: 0; margin-top: 0; margin-bottom: 16px; }
+
+/* Unified back control. There is now ONE back treatment (see `.app-shell
+   .module-back` in index.css): a quiet ghost-style "← Back" — same size, weight,
+   and look everywhere. The `--sm` variant only drops the banner's flow margins so
+   an inline row (Stop / Auto-Skip / refresh) positions it; it is visually
+   identical to the main-screen back. */
+.app-shell .module-back--sm {
+  margin: 0;
+}
+
+/* The tile is exactly as tall as its content and flows from the top — right below
+   the back-pill's 16px gap. No auto-margin centering and no forced height (that's
+   what was overshooting the viewport). Overrides the index.css base margin ONLY
+   inside .ui-screen; standalone <Card>/Styleguide uses keep the base. */
+.app-shell .ui-screen > .module-tile { margin-top: 0; margin-bottom: 24px; }
+
+/* Opt-in wider card for grid-style main screens (e.g. word-sets' 2-column
+   picker, which is cramped at the default 420px). */
+.app-shell .module-tile.ui-screen-card--wide { max-width: 600px; }
+
+/* ── CharTile — the ONE per-character practice tile (REDESIGNED) ────────────────
+   Shared across My Characters (lg, on the paper page bg) and writing-challenge
+   "Next up" / word-sets chips (sm, inside a paper card). The card is a small
+   米字格-flavoured leaf of paper: a square paper surface with a hairline border
+   and a faint center cross-hair that nods to the practice cell — the app's
+   signature, used quietly. Layout (top → bottom):
+     · TOP row  — rank (#N, plain tabular ink-faint) left · level chip right.
+                  Both live in a flex row with explicit side padding and the row
+                  is `position:relative; z-index:1` so it ALWAYS sits clear of the
+                  rounded corners — 4-digit ranks (#1119) and starred levels (4*)
+                  never clip. The mastery state shows as a small COLORED DOT next
+                  to the rank (NOT a corner ribbon — the ribbon was what clipped).
+     · GLYPH    — calligraphic Han serif, the centered focus, takes the slack.
+     · FOOT     — recent-result dots, breathing room above the bottom bar.
+     · BAR      — a hairline-thin mastery bar inset from the rounded corners.
+   `--ct-ink`/`--ct-line` are tile-local so My Characters can flip them lighter on
+   its (now paper) page; the defaults read on the paper card. */
+.app-shell .char-tile {
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+  --ct-line: var(--rule);
+  --ct-face: var(--paper-raised);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--ct-line);
+  border-radius: var(--radius-sm);
+  background: var(--ct-face);
+  color: var(--ct-ink);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Faint 米字格 cross-hair behind the glyph — the practice-cell signature, very
+   quiet. Drawn with two gradients so it needs no extra DOM. */
+.app-shell .char-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to right, transparent calc(50% - 0.5px), var(--ct-line) calc(50% - 0.5px), var(--ct-line) calc(50% + 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom, transparent calc(50% - 0.5px), var(--ct-line) calc(50% - 0.5px), var(--ct-line) calc(50% + 0.5px), transparent calc(50% + 0.5px));
+  opacity: 0.5;
+}
+
+/* lg = My Characters grid: bigger glyph + room for the dots, generous insets. */
+.app-shell .char-tile--lg { padding: 9px 9px 0; }
+.app-shell .char-tile--lg .char-tile-glyph { font-size: 34px; }
+
+/* sm = compact "Next up" / word-set chips: smaller glyph, tighter insets. The
+   cross-hair would crowd a small chip, so it's dropped there — the frame alone
+   carries the 米字格 nod. */
+.app-shell .char-tile--sm { min-width: 54px; padding: 6px 6px 0; }
+.app-shell .char-tile--sm .char-tile-glyph { font-size: 26px; }
+.app-shell .char-tile--sm .char-tile-top { font-size: 9px; }
+.app-shell .char-tile--sm::before { display: none; }
+
+/* Known characters: a faint success wash + a quiet green hairline. */
+.app-shell .char-tile--known {
+  --ct-face: linear-gradient(155deg, rgba(79,122,58,0.12), rgba(79,122,58,0.04));
+  border-color: color-mix(in srgb, var(--success) 50%, var(--rule));
+}
+
+/* Tap-to-practice: pressable + clear keyboard focus ring. */
+.app-shell .char-tile--tappable { cursor: pointer; touch-action: manipulation; transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition); }
+.app-shell .char-tile--tappable:active { transform: scale(0.96); }
+.app-shell .char-tile--tappable:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; z-index: 1; }
+@media (hover: hover) {
+  .app-shell .char-tile--tappable:hover {
+    border-color: var(--ct-ink-soft);
+    box-shadow: var(--shadow-md);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .char-tile--tappable { transition: none; }
+  .app-shell .char-tile--tappable:active { transform: none; }
+}
+
+/* TOP row — rank (left) + level (right). z-index keeps it above the cross-hair;
+   the explicit side padding keeps both chips clear of the rounded corners no
+   matter how wide the rank ("#1119") or level ("4*") string is. */
+.app-shell .char-tile-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Rank: a colored mastery PIP (was the clipping corner ribbon) + the rank number
+   in plain tabular ink-faint. The pip is inline so it can never clip a corner. */
+.app-shell .char-tile-rank {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.2px;
+  color: var(--ct-ink-soft);
+  min-width: 0;
+}
+.app-shell .char-tile-pip {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rule-strong);
+}
+.app-shell .char-tile-pip--below  { background: var(--seal); }
+.app-shell .char-tile-pip--target { background: var(--success); }
+.app-shell .char-tile-pip--above  { background: var(--warning); }
+
+/* Level badge: a small seal-outlined chip — the one accent, alone on the right.
+   border-box + flex-none so a "4*" string never forces the row to overflow. */
+.app-shell .char-tile-level {
+  flex: none;
+  box-sizing: border-box;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--seal);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--seal) 45%, transparent);
+  padding: 1px 5px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+/* Glyph — the centered calligraphic focus; takes the vertical slack. */
+.app-shell .char-tile-glyph {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-han);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ct-ink);
+}
+
+/* FOOT — recent dots, breathing room ABOVE the bottom bar. */
+.app-shell .char-tile-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 8px;
+  margin-bottom: 8px;
+}
+.app-shell .char-tile--sm .char-tile-foot { margin-bottom: 7px; }
+
+/* Recent-result dots. */
+.app-shell .char-tile-dots { display: flex; gap: 3px; }
+.app-shell .char-tile-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+.app-shell .char-tile-dot--P { background: var(--success); }
+.app-shell .char-tile-dot--C { background: var(--warning); }
+.app-shell .char-tile-dot--I { background: var(--seal); }
+.app-shell .char-tile-dot--S { background: var(--ct-ink); opacity: 0.3; }
+
+/* Mastery bar: a thin hairline-track bar inset from the rounded corners so it
+   never bleeds past the radius. */
+.app-shell .char-tile-bar {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 3px;
+  margin: 0 1px 1px;
+  border-radius: 999px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.app-shell .char-tile-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .char-tile-bar-fill { transition: none; }
+}
+
+/* ── In-app feedback widget (FeedbackWidget.tsx) ───────────────────────────────
+   Floating button + modal dialog, mounted at the app shell. Theme-aware via the
+   canonical tokens (re-pointed by every theme), so it reads on all six skins. */
+.fb-fab {
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  z-index: 900;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; line-height: 1;
+  background: var(--paper-raised, #fff);
+  color: var(--ink, #1c1a17);
+  border: 1.5px solid var(--rule-strong, rgba(0, 0, 0, 0.2));
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+@media (hover: hover) { .fb-fab:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28); } }
+.fb-fab:active { transform: translateY(0) scale(0.95); }
+.fb-fab:focus-visible { outline: 3px solid var(--accent, var(--seal, #c0392b)); outline-offset: 2px; }
+
+.fb-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+  background: rgba(10, 12, 20, 0.55);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+}
+.fb-dialog {
+  width: 100%; max-width: 420px;
+  max-height: calc(100vh - 32px); overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 20px;
+  background: var(--paper-raised, #fff);
+  color: var(--ink, #1c1a17);
+  border: 1px solid var(--rule-strong, rgba(0, 0, 0, 0.15));
+  border-radius: var(--radius, 16px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.fb-dialog__head { display: flex; align-items: center; justify-content: space-between; }
+.fb-dialog__head h3 { margin: 0; font-size: 18px; font-weight: 800; color: var(--ink); font-family: var(--font-display, inherit); }
+.fb-close { background: none; border: none; cursor: pointer; font-size: 18px; line-height: 1; padding: 6px; border-radius: 8px; color: var(--ink-soft, rgba(0, 0, 0, 0.6)); }
+.fb-close:hover { background: var(--rule, rgba(0, 0, 0, 0.06)); }
+.fb-close:focus-visible { outline: 2px solid var(--accent, #c0392b); }
+
+.fb-label { font-size: 13px; font-weight: 700; color: var(--ink-soft, rgba(0, 0, 0, 0.65)); margin-top: 4px; }
+.fb-select, .fb-textarea {
+  width: 100%; box-sizing: border-box; padding: 10px 12px;
+  background: var(--bg-input, var(--paper, #fff)); color: var(--ink, #1c1a17);
+  border: 1.5px solid var(--rule-strong, rgba(0, 0, 0, 0.2)); border-radius: 10px;
+  font: inherit; font-size: 15px;
+}
+.fb-textarea { resize: vertical; min-height: 80px; }
+.fb-select:focus, .fb-textarea:focus { outline: none; border-color: var(--accent, var(--seal, #c0392b)); }
+
+.fb-seg { display: flex; gap: 6px; }
+.fb-seg__btn {
+  flex: 1 1 0; padding: 8px 6px;
+  background: var(--bg-input, var(--paper, #fff)); color: var(--ink-soft, rgba(0, 0, 0, 0.7));
+  border: 1.5px solid var(--rule-strong, rgba(0, 0, 0, 0.2)); border-radius: 10px; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 700;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.fb-seg__btn.active { background: var(--accent, var(--seal, #c0392b)); color: #fff; border-color: transparent; }
+.fb-seg__btn:focus-visible { outline: 2px solid var(--accent, #c0392b); outline-offset: 1px; }
+
+.fb-check { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-soft); cursor: pointer; margin-top: 2px; }
+.fb-check input { width: 16px; height: 16px; }
+.fb-error { margin: 0; color: var(--error, #d32f2f); font-size: 13px; font-weight: 600; }
+
+.fb-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.fb-btn {
+  padding: 10px 18px; border-radius: 10px; cursor: pointer; font: inherit; font-size: 15px; font-weight: 700;
+  background: var(--bg-input, var(--paper, #fff)); color: var(--ink, #1c1a17);
+  border: 1.5px solid var(--rule-strong, rgba(0, 0, 0, 0.2));
+}
+.fb-btn--primary { background: var(--accent, var(--seal, #c0392b)); color: #fff; border-color: transparent; }
+.fb-btn:disabled { opacity: 0.5; cursor: default; }
+
+.fb-toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  z-index: 1000; padding: 12px 20px; border-radius: 999px;
+  background: var(--ink, #1c1a17); color: var(--paper, #fff); font-weight: 700; font-size: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); animation: fb-toast-in 0.2s ease;
+}
+.fb-toast--ok { background: var(--success, #4a9a00); color: #fff; }
+@keyframes fb-toast-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .fb-fab, .fb-seg__btn, .fb-btn { transition: none; }
+  .fb-fab:hover, .fb-fab:active { transform: none; }
+  .fb-toast { animation: none; }
+}
+@media (max-width: 480px) {
+  .fb-fab { width: 48px; height: 48px; font-size: 22px; }
+  .fb-dialog { padding: 16px; }
+}

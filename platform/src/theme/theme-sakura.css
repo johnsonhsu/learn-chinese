@@ -1,0 +1,238 @@
+/* ======================================================================
+   🌸 SAKURA THEME — soft warm blush light theme (registry: theme/themes.ts)
+   ----------------------------------------------------------------------
+   A FREE, light theme. Activates when AppInner sets <body data-theme="sakura">
+   (see theme/theme-store.ts). Like gold/silver, EVERYTHING here is scoped behind
+   `body[data-theme="sakura"]` so it is purely additive over the default look and
+   can never leak into it. Imported after index.css so it wins the cascade.
+
+   Unlike gold/silver, Sakura is NOT a foil skin — it sets none of the --foil*
+   family. It is a light, refined spring-blossom palette: blush / sakura-petal
+   grounds, deep plum-rose ink (NOT black), a confident sakura-pink → plum accent,
+   and a soft gold hairline for warmth. It themes the WHOLE app by RE-POINTING the
+   global :root token contract (--paper*, --ink*, --rule*, --seal*, --gold[CTA],
+   --screen-bg, the legacy module hues, char-tile --ct-* tokens, text). Every
+   surface reads those tokens, so overriding them here dresses home, profile,
+   modules, My Characters, settings, buttons and text in one cohesive blush
+   identity — no module edits.
+   ====================================================================== */
+
+body[data-theme="sakura"] {
+  /* — Core blush palette (the single source of truth, re-pointed) — */
+  --paper: #FBEDF0;            /* soft sakura-petal blush ground */
+  --paper-raised: #FFF6F8;     /* lifted card / panel — warm near-white */
+  --paper-sunken: #F6E1E7;     /* recessed fills (inputs, tracks) — deeper blush */
+  --ink: #5E2A3E;              /* deep plum-rose "ink" — NOT black, strong on blush */
+  --ink-soft: #8A4A5E;         /* secondary text — muted plum-rose */
+  --ink-faint: #B07F8E;        /* captions / hairline labels — soft mauve */
+  --seal: #C75B7A;             /* sakura-pink accent — primary actions / active */
+  --seal-deep: #9E3B5E;        /* deeper plum for pressed / hover */
+  --seal-wash: #F7DDE5;        /* faint pink tint for active fills */
+  --rule: #EBCFD8;             /* hairline dividers / grids — gentle petal pink */
+  --rule-strong: #DDB3C0;      /* slightly heavier hairline */
+
+  /* — Surfaces — */
+  --bg: var(--paper);
+  --bg-raised: var(--paper-raised);
+  --bg-raised-2: var(--paper-sunken);
+  --bg-input: #FFFCFD;         /* clean blush-white input fill */
+  --border: var(--rule);
+  --border-hover: var(--ink-faint);
+  --tile-edge: rgba(94, 42, 62, 0.10);
+  --panel-bg: var(--paper-raised);
+  --panel-border: var(--rule);
+  --bg-card: var(--paper-raised);
+  --bg-card2: var(--paper-sunken);
+
+  /* — Text / semantic mappings — */
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+  --accent: var(--seal);
+  --accent-bg: var(--seal-wash);
+  --accent-hover: var(--seal-deep);
+  --chip-above: var(--seal);
+  --error: #B23B5A;
+  --danger: var(--seal);
+  --success: #4F7A3A;          /* keep the calligrapher's grass green for "known" */
+  --warning: #B5701C;
+
+  /* A soft gold hairline for warmth — used by themed edges below. */
+  --sakura-gold: #D9A441;
+  --sakura-gold-soft: rgba(217, 164, 65, 0.35);
+
+  /* — Primary CTA face (the --gold token name) → confident plum, not pink-on-pink
+       so primary buttons stay legible white-on-plum. --grad-primary follows. — */
+  --gold: var(--seal-deep);    /* primary CTA face → deep plum-rose */
+  --gold-dark: #7E2C4A;        /* CTA pressed edge */
+  --grad-primary: linear-gradient(135deg, #C75B7A 0%, #9E3B5E 100%);
+
+  /* — Legacy named module hues, re-tinted into one blush family so each module
+       keeps a distinct-but-related rose/plum tone (parallels the :root family). — */
+  --pink: #C75B7A;             /* word-sets — the signature sakura-pink */
+  --pink-dark: #9E3B5E;
+  --teal: #B0738E;             /* writing-challenge — dusty mauve-rose */
+  --teal-dark: #8A5066;
+  --blue: #8C6A93;             /* practice-english — soft plum-violet */
+  --blue-dark: #6B4E72;
+  --orange: #D08A6A;           /* copybook — warm blush-terracotta */
+  --orange-dark: #AA6347;
+  --purple: #9A6E92;
+  --purple-dark: #75506E;
+  --green-bright: #6E9A5A;
+  --green-bright-dark: #527040;
+  --green: var(--green-bright);
+  --green-dark: var(--green-bright-dark);
+  --red: var(--seal);
+  --red-dark: var(--seal-deep);
+  --key-edge: var(--rule-strong);
+
+  /* — Per-screen background (modules + home + profile) → the blush field. — */
+  --screen-bg: var(--paper);
+  --screen-bg-dark: #F2DCE2;
+  --screen-accent: var(--seal);
+
+  /* — Gradients — soft blossom blends. — */
+  --grad-fluency: linear-gradient(135deg, #C75B7A 0%, #9E3B5E 100%);
+  --grad-success: linear-gradient(135deg, #6E9A5A 0%, #527040 100%);
+
+  /* — Depth — gentle, soft plum-tinted shadows (refined, not heavy). — */
+  --shadow-sm: 0 1px 2px rgba(94, 42, 62, 0.10);
+  --shadow-md: 0 18px 40px -24px rgba(94, 42, 62, 0.38);
+  --shadow-glow: 0 1px 0 var(--rule), 0 12px 28px -20px rgba(158, 59, 94, 0.32);
+
+  /* — Text contract — keep the rounded UI font; a touch more weight reads warm
+       and friendly without being heavy. — */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* Apply the themed body text weight + paint the blush field on EVERY screen with
+   a soft petal halo from the top, so home, profile, modules, my-chars, settings
+   and placement all read as the same spring-blossom field (the default look only
+   painted the shell — a THEME paints the whole app). */
+body[data-theme="sakura"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(199, 91, 122, 0.10) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+}
+
+/* ── HOME / PROFILE WORDMARK ──────────────────────────────────────────────────
+   A soft blossom-gradient title (no foil shimmer — Sakura is gentle, not flashy).
+   Clipped to the text so the wordmark reads as a warm sakura-pink → plum sweep. */
+body[data-theme="sakura"] .welcome-header h1,
+body[data-theme="sakura"] .user-picker h1 {
+  background: linear-gradient(100deg, #C75B7A 0%, #9E3B5E 45%, #C75B7A 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(158, 59, 94, 0.18);
+}
+
+/* ── MODULE TILES ─────────────────────────────────────────────────────────────
+   Keep each module's (re-tinted) identity colour, wrap in a soft gold hairline +
+   gentle blush shadow so the home grid reads pretty and refined. */
+body[data-theme="sakura"] .module-card {
+  border: 1.5px solid var(--sakura-gold-soft);
+  box-shadow: 0 6px 0 rgba(158, 59, 94, 0.10), 0 14px 30px -20px rgba(158, 59, 94, 0.30);
+}
+body[data-theme="sakura"] .module-card--writing-challenge { background: var(--teal);   box-shadow: 0 6px 0 var(--teal-dark),   0 14px 30px -20px rgba(158, 59, 94, 0.30); }
+body[data-theme="sakura"] .module-card--word-sets         { background: var(--pink);   box-shadow: 0 6px 0 var(--pink-dark),   0 14px 30px -20px rgba(158, 59, 94, 0.30); }
+body[data-theme="sakura"] .module-card--practice-english  { background: var(--blue);   box-shadow: 0 6px 0 var(--blue-dark),   0 14px 30px -20px rgba(158, 59, 94, 0.30); }
+body[data-theme="sakura"] .module-card--copybook          { background: var(--orange); box-shadow: 0 6px 0 var(--orange-dark), 0 14px 30px -20px rgba(158, 59, 94, 0.30); }
+
+/* Soft cream icon disc with a gentle gold hairline. */
+body[data-theme="sakura"] .module-card .module-icon {
+  background: var(--paper-raised);
+  box-shadow: 0 2px 0 var(--sakura-gold-soft), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+@media (hover: hover) {
+  body[data-theme="sakura"] .module-card:hover {
+    box-shadow: 0 10px 0 rgba(158, 59, 94, 0.14), 0 18px 36px -18px rgba(158, 59, 94, 0.38);
+  }
+}
+
+/* Fluency banner: soft blossom fill, cream ink, gentle gold edge. */
+body[data-theme="sakura"] .welcome-level {
+  background: var(--grad-primary);
+  color: #FFF6F8;
+  border: 1.5px solid var(--sakura-gold-soft);
+  box-shadow: 0 4px 14px -6px rgba(158, 59, 94, 0.45);
+  font-weight: 700;
+}
+
+/* Profile-picker "Add profile" button → the blossom active look. */
+body[data-theme="sakura"] .user-create button {
+  background: var(--grad-primary);
+  color: #FFF6F8;
+  box-shadow: 0 4px 14px -6px rgba(158, 59, 94, 0.45);
+}
+
+/* ── BUTTONS (token contract) ─────────────────────────────────────────────────
+   --grad-primary already re-points the settings "active" option + shared primary
+   CTA to the plum blossom face; make their text legible (cream) + give the kit's
+   primary button a soft gold hairline so buttons read themed everywhere. */
+body[data-theme="sakura"] .settings-option.active {
+  color: #FFF6F8;
+  text-shadow: none;
+}
+body[data-theme="sakura"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #FFF6F8;
+  border: 1px solid var(--sakura-gold-soft);
+  box-shadow: 0 2px 0 var(--gold-dark), 0 8px 18px -10px rgba(158, 59, 94, 0.45);
+}
+
+/* ── MY-CHARACTERS CHAR TILES (token contract: --ct-* tile color) ─────────────
+   The canonical glass char-tile lives in ui/ui-kit.css under `.app-shell
+   .char-tile`; these (0,3,1) selectors win as this file loads last. Off My Chars,
+   tiles follow the themed blush surfaces via the re-pointed --ct-* tokens; on My
+   Chars they get the soft-blush face + plum ink + gentle gold hairline. */
+body[data-theme="sakura"] .app-shell .char-tile {
+  --ct-face: var(--paper-raised);
+  --ct-line: var(--rule);
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+}
+body[data-theme="sakura"][data-screen="mychars"] .char-tile {
+  border: 1.5px solid var(--sakura-gold-soft);
+  background: linear-gradient(155deg, #FFF6F8 0%, #FBEDF0 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 4px 14px -8px rgba(158, 59, 94, 0.30);
+}
+/* Known tile: keep the blossom frame, layer a soft success glow. */
+body[data-theme="sakura"][data-screen="mychars"] .char-tile--known {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 4px 14px -8px rgba(158, 59, 94, 0.28),
+    0 0 12px color-mix(in srgb, var(--success) 28%, transparent);
+}
+/* Glyph stays the readable plum ink. */
+body[data-theme="sakura"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+/* Rank chip: a quiet plum-soft outline (rank stays the calm element). */
+body[data-theme="sakura"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+  border-color: var(--rule-strong);
+}
+/* Level badge: the headline accent — blossom fill, cream text, gold hairline. */
+body[data-theme="sakura"][data-screen="mychars"] .char-tile-level {
+  color: #FFF6F8;
+  background: var(--grad-primary);
+  border-color: var(--sakura-gold-soft);
+  text-shadow: 0 1px 1px rgba(158, 59, 94, 0.35);
+}
+@media (hover: hover) {
+  body[data-theme="sakura"][data-screen="mychars"] .char-tile--tappable:hover {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 8px 22px -10px rgba(158, 59, 94, 0.38);
+  }
+}

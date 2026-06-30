@@ -1,0 +1,37 @@
+{
+  "name": "platform",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch server/index.ts",
+    "bake:data": "tsx scripts/bake-data.ts",
+    "build": "tsx scripts/bake-data.ts && vite build",
+    "typecheck": "tsc -b",
+    "deploy": "npm run build && npx wrangler@latest pages deploy dist --project-name=learning-chinese",
+    "start": "NODE_ENV=production node server/index.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@shared/character-stats": "*",
+    "better-sqlite3": "^12.8.0",
+    "express": "^5.2.1",
+    "html-to-image": "^1.11.13",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.12.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "hanzi-writer-data": "^2.0.1",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.1",
+    "vite-plugin-pwa": "^1.2.0"
+  }
+}

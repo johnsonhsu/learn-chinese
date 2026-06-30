@@ -1,0 +1,17 @@
+export default {
+  'myChars.title': 'My Characters',
+  'myChars.statsTable': 'Stats table',
+  'myChars.grid': 'Grid',
+  'myChars.fluency': 'Fluency',
+  'myChars.known': 'Known',
+  'myChars.learning': 'Learning',
+  'myChars.retention': 'Retention',
+  'myChars.seen': 'Seen',
+  'myChars.colChar': 'Char',
+  'myChars.colRank': 'Rank',
+  'myChars.colLevel': 'Lv',
+  'myChars.colMem': 'Mem',
+  'myChars.colRetention': 'Ret',
+  'myChars.colSeen': 'Seen',
+  'myChars.practiceChar': 'Practice {char}',
+} as const;

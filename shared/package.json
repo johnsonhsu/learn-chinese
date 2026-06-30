@@ -1,0 +1,20 @@
+{
+  "name": "@shared/character-stats",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mastery": "./src/mastery.ts",
+    "./types": "./src/types.ts",
+    "./zhuyin": "./src/zhuyin.ts",
+    "./char-ranker": "./src/char-ranker.ts",
+    "./char-knowledge": "./src/char-knowledge.ts",
+    "./sentence-generator": "./src/sentence-generator.ts",
+    "./content-db": "./src/content-db.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "opencc-js": "^1.3.2"
+  }
+}

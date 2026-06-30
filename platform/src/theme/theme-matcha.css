@@ -1,0 +1,244 @@
+/* ======================================================================
+   🍵 MATCHA THEME — a calm, natural GREEN light theme (registry: themes.ts)
+   ----------------------------------------------------------------------
+   Activates when AppInner sets <body data-theme="matcha">. Like every
+   theme, everything here is scoped behind `body[data-theme="matcha"]` so it
+   is purely additive over the default editorial look and can never leak
+   into it. The orchestrator registers the id + name in themes.ts and imports
+   this file; this block is the look.
+
+   UNLIKE gold/silver (dark jewel skins built around a metallic --foil),
+   Matcha is a LIGHT theme with NO foil family. It keeps the default
+   "ink-on-paper" STRUCTURE — soft grounds, hairline rules, flat CTAs, gentle
+   shadows — but RE-POINTS the global :root contract tokens at a sage / matcha
+   palette: soft sage grounds, warm near-white raised surfaces, deep
+   forest/bamboo ink text, and ONE confident matcha-green accent for primary
+   CTAs + active states. A warm-cream secondary keeps it from feeling clinical.
+
+   Because every themeable surface (module backgrounds, buttons, text,
+   char-tiles, settings, paperpad-equivalents) reads these tokens, overriding
+   them here themes the WHOLE app — profile picker, home grid, every module
+   bg, My Characters tiles, settings — with no module edits.
+
+   PALETTE
+     · ground (base)     #E7EEDF  soft sage field
+     · ground (sunken)   #DCE6D0  recessed sage (inputs, tracks)
+     · raised surface    #F4F7EE  warm near-white card/panel
+     · ink (text)        #2C3A2A  deep forest / bamboo ink (NOT black)
+     · ink soft/faint    muted forest greens for secondary / captions
+     · accent (matcha)   #5C8A4A → #3E6B33  confident bamboo green
+     · cream secondary   warm cream wash so it isn't clinical
+   ====================================================================== */
+
+body[data-theme="matcha"] {
+  /* — Core palette re-pointed → themes EVERYTHING (modules, buttons, text,
+       tiles). Soft sage grounds, warm-cream raised surfaces, forest ink. — */
+  --paper: #E7EEDF;              /* soft sage ground */
+  --paper-raised: #F4F7EE;       /* warm near-white card / panel surface */
+  --paper-sunken: #DCE6D0;       /* recessed fills (inputs, tracks) */
+  --ink: #2C3A2A;               /* deep forest / bamboo ink — NOT black */
+  --ink-soft: #4F6149;          /* muted forest — secondary text */
+  --ink-faint: #7C8C74;         /* sage-grey — captions / hairline labels */
+  --rule: #CBD8BC;              /* sage hairline dividers / grids */
+  --rule-strong: #B4C6A1;        /* slightly heavier sage hairline */
+  --bg-input: #FBFCF8;           /* clean warm-white input fill */
+
+  /* The one accent → confident matcha / bamboo green (replaces vermilion). */
+  --seal: #5C8A4A;              /* matcha green accent */
+  --seal-deep: #3E6B33;          /* deeper bamboo — pressed / hover */
+  --seal-wash: #DCE9CF;          /* faint matcha tint for active fills */
+
+  /* Surface aliases follow the re-pointed core (kept explicit for clarity). */
+  --bg: var(--paper);
+  --bg-raised: var(--paper-raised);
+  --bg-raised-2: var(--paper-sunken);
+  --border: var(--rule);
+  --border-hover: var(--ink-faint);
+  --tile-edge: rgba(44, 58, 42, 0.10);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+  --accent: var(--seal);
+  --accent-bg: var(--seal-wash);
+  --accent-hover: var(--seal-deep);
+  --chip-above: var(--seal);
+  --error: #B23B30;
+  --success: #4F7A3A;            /* matcha-family grass green (kept) */
+  --warning: #B5701C;
+  --danger: var(--seal);
+
+  /* Wood/frame tones (writing-pad frame) → quiet sage so it reads as a calm
+     framed slot in the tea-garden palette, not a cartoon woodcut. */
+  --wood: #B4C6A1;
+  --wood-dark: #93A87E;
+  --wood-light: #CBD8BC;
+
+  /* Panel aliases. */
+  --panel-bg: var(--paper-raised);
+  --panel-border: var(--rule);
+
+  /* Primary-CTA face (the --gold token name) → matcha-green fill, deeper
+     bamboo as the pressed edge. This themes the shared primary button + the
+     settings active option everywhere. */
+  --gold: var(--seal);
+  --gold-dark: var(--seal-deep);
+  --grad-primary: linear-gradient(135deg, #5C8A4A 0%, #3E6B33 100%);
+
+  /* Per-category module hues — kept as a cohesive sage/earth family so the
+     home grid reads as one tea-garden, with a warm-cream secondary and
+     muted naturals rather than candy. */
+  --teal: #4E7C76;               /* celadon (writing-challenge) */
+  --teal-dark: #3B5F5A;
+  --pink: #B98A5E;               /* warm cream/clay secondary (word-sets) */
+  --pink-dark: #97683E;
+  --blue: #5E7E8C;               /* muted slate-celadon (practice-english) */
+  --blue-dark: #46606C;
+  --orange: #B5701C;             /* warm ochre (copybook) */
+  --orange-dark: #8C540F;
+  --purple: #6E7560;             /* muted sage-olive */
+  --purple-dark: #545A48;
+  --green-bright: #5C8A4A;       /* matcha green */
+  --green-bright-dark: #3E6B33;
+  --green: var(--green-bright);
+  --green-dark: var(--green-bright-dark);
+  --red: var(--seal);
+  --red-dark: var(--seal-deep);
+
+  /* Module aliases. */
+  --bg-card: var(--paper-raised);
+  --bg-card2: var(--paper-sunken);
+  --key-edge: var(--rule-strong);
+
+  /* Per-screen background (modules + home + profile) → the soft sage field. */
+  --screen-bg: var(--paper);
+  --screen-bg-dark: #DCE6D0;
+  --screen-accent: var(--seal);
+
+  /* Gradients → matcha-family so nothing reintroduces candy. */
+  --grad-fluency: linear-gradient(135deg, #5C8A4A 0%, #3E6B33 100%);
+  --grad-success: linear-gradient(135deg, #4F7A3A 0%, #3A5A2A 100%);
+
+  /* Depth — soft sage shadows (NOT foil glow). */
+  --shadow-sm: 0 1px 2px rgba(44, 58, 42, 0.10);
+  --shadow-md: 0 18px 40px -24px rgba(44, 58, 42, 0.40);
+  --shadow-glow: 0 1px 0 var(--rule), 0 12px 28px -20px rgba(44, 58, 42, 0.35);
+
+  /* Text contract — keep the calm body weight; warm cream secondary handled
+     by --pink/--ink-soft above, so no foil weight bump. */
+  --font-display: var(--font);
+}
+
+/* THEMED BACKGROUND, ALL SCREENS. The default look paints the per-screen field
+   from --screen-bg (re-pointed to the sage ground above, already applied by the
+   base body/.screen-* rules). Layer a barely-there warm-cream halo from the top
+   so every screen — home, profile, modules, my-chars, settings — reads as the
+   same soft tea-garden field. A single large gentle radial; no dot texture. */
+body[data-theme="matcha"] {
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(244, 247, 238, 0.7) 0%, transparent 58%),
+    var(--screen-bg);
+  background-attachment: fixed;
+}
+
+/* Profile + home wordmark — quiet deep-forest ink (no shimmer; Matcha is calm,
+   not metallic). Kept on the display face for a refined, grown-up feel. */
+body[data-theme="matcha"] .welcome-header h1,
+body[data-theme="matcha"] .user-picker h1 {
+  color: var(--ink);
+}
+
+/* Module tiles: keep each module's identity hue with a gentle sage border + a
+   soft natural shadow (NO foil frame). Calm and grown-up. */
+body[data-theme="matcha"] .module-card {
+  border: 1px solid var(--rule-strong);
+  box-shadow: var(--shadow-sm);
+}
+@media (hover: hover) {
+  body[data-theme="matcha"] .module-card:hover {
+    border-color: var(--seal);
+    box-shadow: 0 10px 26px -18px rgba(44, 58, 42, 0.45);
+  }
+}
+
+/* Fluency banner → matcha-green fill, warm-white text. */
+body[data-theme="matcha"] .welcome-level {
+  background: var(--grad-primary);
+  color: #F4F7EE;
+  border: 1px solid var(--seal-deep);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+}
+
+/* Profile-picker "Add profile" button → matcha active look. */
+body[data-theme="matcha"] .user-create button {
+  background: var(--grad-primary);
+  color: #F4F7EE;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── BUTTONS (token contract) ────────────────────────────────────────────────
+   The settings "active" option + the shared primary CTA read --grad-primary
+   (re-pointed to the matcha gradient above), so they pick up the green face.
+   Make their text legible (warm near-white) on the green. */
+body[data-theme="matcha"] .settings-option.active {
+  color: #F4F7EE;
+  text-shadow: none;
+}
+body[data-theme="matcha"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #F4F7EE;
+  box-shadow: 0 2px 0 var(--seal-deep), var(--shadow-sm);
+}
+
+/* ── MY-CHARACTERS CHAR TILES (token contract: tile color) ───────────────────
+   Char-tiles read tile-local --ct-* tokens (ui-kit.css `.app-shell .char-tile`,
+   specificity 0,2,0). These selectors are (0,3,1) and this file is imported
+   after, so they win. Soft sage tile face with forest ink; level badge takes
+   the matcha accent; rank stays the calm element. Off-My-Chars tiles (writing
+   "Next up", word-set chips) inherit the re-pointed --ct-* below so they read
+   on the sage field too. */
+body[data-theme="matcha"] .app-shell .char-tile {
+  --ct-face: var(--paper-raised);
+  --ct-line: var(--rule);
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+}
+body[data-theme="matcha"][data-screen="mychars"] .char-tile {
+  --ct-face: #EEF3E4;            /* soft sage tile face */
+  --ct-line: var(--rule-strong);
+  border: 1px solid var(--rule-strong);
+  background: var(--ct-face);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 14px -8px rgba(44, 58, 42, 0.35);
+}
+/* Known tile: keep the sage face, add a gentle success glow. */
+body[data-theme="matcha"][data-screen="mychars"] .char-tile--known {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 14px -8px rgba(44, 58, 42, 0.35),
+    0 0 14px color-mix(in srgb, var(--success) 30%, transparent);
+}
+/* Glyph stays the readable forest ink. */
+body[data-theme="matcha"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+/* Rank chip: quiet sage outline (keeps rank the calm element). */
+body[data-theme="matcha"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+  border-color: var(--rule-strong);
+}
+/* Level badge: the headline matcha accent — green fill, warm-white text. */
+body[data-theme="matcha"][data-screen="mychars"] .char-tile-level {
+  color: #F4F7EE;
+  background: var(--grad-primary);
+  border-color: var(--seal-deep);
+}
+@media (hover: hover) {
+  body[data-theme="matcha"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: var(--seal);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.7),
+      0 8px 22px -10px rgba(44, 58, 42, 0.4);
+  }
+}

@@ -1,0 +1,289 @@
+/* ── Custom Chars — cartoon theme (cream panels, candy buttons) ── */
+
+/* Transparent full-height passthrough — the kit's <ModuleScreen> (.ui-screen)
+   owns the edge inset + centering for the input screen, and the writing screen
+   (shared writing-challenge PracticePage) owns its own layout. */
+.cc-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* The candy action buttons (Start Writing / Generate / use-last) are now the
+   shared kit <Button> (primary / ghost / secondary); the kit owns their look
+   (.app-shell .ui-btn*). Only the equal-flex sizing override (.cc-action-btn)
+   remains, below. */
+
+/* ── Input screen ── */
+
+/* The cream candy panel (.module-tile + .ui-screen-card) + the title
+   (.module-tile-title) come from the shared kit's <ModuleScreen>. This only
+   re-stretches the inner column to full width (the kit centers children) and
+   restores the tighter 14px gap the input screen used. */
+.cc-input {
+  align-items: stretch;
+  gap: 14px;
+}
+
+.cc-input-head { display: flex; flex-direction: column; gap: 4px; }
+
+.cc-input-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text, #2D1B00);
+}
+
+.cc-input-sub {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-muted, #6B4C20);
+}
+
+.cc-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  background: var(--bg-input, #FFFDF7);
+  border: 2px solid var(--panel-border, #5A1A96);
+  border-radius: 12px;
+  color: var(--text, #2D1B00);
+  font-size: 1.4rem;
+  line-height: 1.6;
+  resize: vertical;
+  font-family: inherit;
+}
+.cc-textarea::placeholder { color: var(--text-dim, #9c8a6a); }
+.cc-textarea:focus {
+  outline: none;
+  border-color: var(--accent, #C44F00);
+}
+
+@keyframes cc-pop {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.cc-input-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+/* The three kit <Button>s share the row equally; normalize the ghost variant's
+   smaller type/padding back to the others' so they read as one balanced row of
+   candy buttons (the prior look: equal-width, 17px, 14px/20px padding). */
+.cc-input-actions .cc-action-btn {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 20px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.cc-input-error {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--accent, #C44F00);
+}
+
+/* ── Practice screen ── */
+
+.cc-practice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.cc-practice-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.cc-change-text {
+  background: none;
+  border: none;
+  color: var(--text-muted, #6B4C20);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 6px 2px;
+  flex-shrink: 0;
+}
+.cc-change-text:active { opacity: 0.6; }
+
+.cc-progress {
+  flex: 1;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text-muted, #6B4C20);
+}
+
+/* Auto-skip toggle — ink = ON, paper = OFF (mirrors writing-challenge) */
+.cc-autoskip {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius, 12px);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--paper-raised, #FBF8F0);
+  color: var(--ink, #1C1A17);
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  box-shadow: none;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.1s ease;
+}
+.cc-autoskip.active {
+  background: var(--ink, #1C1A17);
+  color: var(--paper, #F3EEE2);
+  border-color: var(--ink, #1C1A17);
+  box-shadow: none;
+}
+.cc-autoskip:active { transform: translateY(1px); }
+
+/* Char scroll — horizontal strip of all chars in the set */
+.cc-char-scroll {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  padding: 4px 2px 8px;
+  -webkit-overflow-scrolling: touch;
+}
+.cc-scroll-char {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm, 10px);
+  font-family: var(--font-han, serif);
+  font-size: 1.25rem;
+  line-height: 1;
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule, #DAD2C2);
+  color: var(--ink, #1C1A17);
+}
+.cc-scroll-upcoming { opacity: 0.5; }
+.cc-scroll-active {
+  border-color: var(--seal, #C0392B);
+  background: var(--seal-wash, #F3E0DB);
+  box-shadow: 0 0 0 1px var(--seal, #C0392B);
+  transform: scale(1.06);
+}
+.cc-scroll-pass { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border-color: var(--success, #4F7A3A); }
+.cc-scroll-warn { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); }
+.cc-scroll-skip { opacity: 0.4; }
+.cc-scroll-done { opacity: 0.7; }
+
+.cc-char-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.cc-zhuyin {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent, #C44F00);
+  letter-spacing: 0.08em;
+  min-height: 1.8rem;
+  text-align: center;
+}
+
+.cc-skip-btn {
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule-strong, #C7BCA6);
+  color: var(--ink-soft, #56514A);
+  border-radius: var(--radius, 12px);
+  padding: 8px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: none;
+  transition: border-color 0.16s ease, transform 0.1s ease;
+}
+.cc-skip-btn:active { transform: translateY(1px); }
+
+/* ── Completion screen ── */
+
+.cc-done {
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule, #DAD2C2);
+  border-radius: var(--radius-lg, 16px);
+  padding: 28px 20px;
+  box-shadow: var(--shadow-md);
+}
+.cc-done-spark { font-size: 2.4rem; animation: cc-pop 0.4s ease both; }
+.cc-done-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-family: var(--font-serif, serif);
+  font-weight: 600;
+  color: var(--ink, #1C1A17);
+}
+.cc-done-stats {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft, #56514A);
+}
+.cc-done-chars {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+.cc-done-char {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm, 10px);
+  font-family: var(--font-han, serif);
+  font-size: 1.5rem;
+  line-height: 1;
+  background: var(--paper-raised, #FBF8F0);
+  border: 1px solid var(--rule, #DAD2C2);
+  color: var(--ink, #1C1A17);
+}
+.cc-r-perfect { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border-color: var(--success, #4F7A3A); }
+.cc-r-correct { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); }
+.cc-r-skip { opacity: 0.45; }
+
+.cc-done .cc-input-actions { width: 100%; }
+
+/* ── Loading / empty ── */
+
+.cc-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  color: var(--text-dim, #9c8a6a);
+  font-weight: 700;
+}
+
+.cc-empty {
+  color: var(--text-muted, #6B4C20);
+  font-size: 0.95rem;
+  text-align: center;
+  padding: 24px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The action buttons are the kit <Button> (own reduced-motion floor). */
+  .cc-autoskip, .cc-skip-btn, .cc-input,
+  .cc-done-spark, .cc-scroll-active { transition: none; animation: none; }
+}

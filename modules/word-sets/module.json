@@ -1,0 +1,9 @@
+{
+  "name": "word-sets",
+  "displayName": "Word Sets",
+  "displayNameZh": "詞組",
+  "icon": "📚",
+  "apiPrefix": "/api/word-sets",
+  "dbFile": "word-sets.db",
+  "order": 2
+}

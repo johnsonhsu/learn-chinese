@@ -1,0 +1,283 @@
+/* ======================================================================
+   🌙 THEME — "Midnight" / 「墨夜」 (registry id: midnight)
+   ----------------------------------------------------------------------
+   A refined, true DARK mode. Unlike gold/silver (which are FOIL skins — a
+   --foil* family layered over a jewel ground), Midnight is NOT foil: it is a
+   calm, premium ink-dark surface system. It re-points the SAME global :root
+   token contract the other themes use (see theme/themes.ts + the gold/silver
+   blocks in index.css), so overriding those tokens here themes the WHOLE app
+   — every module background, button, char-tile and text run — with no module
+   edits. Scoped entirely behind `body[data-theme="midnight"]` so it is purely
+   additive over the default look and can never leak into it.
+
+   Palette
+     · Grounds   ink-black / charcoal — base #0F1115, recessed #0A0B0E,
+                 raised surfaces #1A1D23.
+     · Text      soft moonlight off-white #E7E5DF (never pure #FFF) + muted
+                 rgba steps for secondary / faint.
+     · Accent    ONE cool accent — JADE-GREEN #5FB89A — for primary buttons,
+                 active states and key figures. Used restrained.
+
+   No foil tokens, no crown band, no shimmer — just dark glass surfaces, hairline
+   borders, and the single jade accent. High contrast for legibility at night.
+   ====================================================================== */
+
+body[data-theme="midnight"] {
+  /* ── (B) Contract tokens re-pointed → themes EVERYTHING ──────────────────── */
+
+  /* Grounds + surfaces */
+  --paper: #0F1115;            /* deep ink-black base ground */
+  --paper-raised: #1A1D23;     /* lifted card / panel surface — dark glass */
+  --paper-sunken: #0A0B0E;     /* recessed fills (inputs, tracks) */
+  --bg: var(--paper);
+  --bg-raised: #1A1D23;
+  --bg-raised-2: #14171C;
+  --bg-card: #1A1D23;
+  --bg-card2: #14171C;
+  --bg-input: #0A0B0E;         /* near-black input fill */
+  --panel-bg: #1A1D23;
+
+  /* Moonlight off-white text (never pure white) + muted steps */
+  --ink: #E7E5DF;              /* moonlight off-white "ink" */
+  --ink-soft: rgba(231, 229, 223, 0.74);   /* secondary text */
+  --ink-faint: rgba(231, 229, 223, 0.48);  /* captions / hairline labels */
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules on dark glass */
+  --rule: #2A2E36;
+  --rule-strong: #3A3F49;
+  --border: #2A2E36;
+  --border-hover: #4A505C;
+  --panel-border: #2A2E36;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #3A3F49;
+
+  /* The ONE accent — jade-green — replaces the vermilion seal everywhere */
+  --seal: #5FB89A;
+  --seal-deep: #4A9C81;
+  --seal-wash: rgba(95, 184, 154, 0.16);
+  --accent: #5FB89A;
+  --accent-bg: rgba(95, 184, 154, 0.16);
+  --accent-hover: #6FCBAC;
+  --screen-accent: #5FB89A;
+
+  /* Primary-CTA face (the --gold token name) → jade fill on dark */
+  --gold: #5FB89A;
+  --gold-dark: #3C8068;        /* pressed / edge */
+  --grad-primary: linear-gradient(135deg, #6FCBAC 0%, #5FB89A 52%, #4A9C81 100%);
+
+  /* Status colours tuned for legibility on ink-dark */
+  --error: #E0726A;
+  --danger: #E0726A;
+  --red: #E0726A;
+  --red-dark: #C2564E;
+  --success: #6FC18F;          /* brighter grass-green so it reads on dark */
+  --warning: #E0A85A;          /* warm amber — secondary signal only */
+
+  /* Per-category module hues — muted, cohesive, lifted to read on the dark
+     ground (the home grid keeps its category identity without going neon). */
+  --teal: #3E7E74;             /* writing-challenge */
+  --teal-dark: #2C5B53;
+  --pink: #A85C68;             /* word-sets — muted clay-rose */
+  --pink-dark: #823F49;
+  --blue: #4D6190;             /* practice-english — muted indigo */
+  --blue-dark: #36456A;
+  --orange: #C07A2E;           /* copybook */
+  --orange-dark: #8C540F;
+  --purple: #6A5F86;
+  --purple-dark: #4E4564;
+  --green: #6FC18F;
+  --green-dark: #4F9269;
+  --green-bright: #6FC18F;
+  --green-bright-dark: #4F9269;
+
+  /* Wood-frame tones (writing-pad surround) → charcoal so the slot reads dark */
+  --wood: #2A2E36;
+  --wood-dark: #1A1D23;
+  --wood-light: #3A3F49;
+
+  /* Per-screen background (modules + home + profile) → the ink-black field */
+  --screen-bg: #0F1115;
+  --screen-bg-dark: #0A0B0E;
+
+  /* Gradients re-flattened onto the jade/ink family */
+  --grad-fluency: linear-gradient(135deg, #5FB89A 0%, #3C8068 100%);
+  --grad-success: linear-gradient(135deg, #6FC18F 0%, #4F9269 100%);
+
+  /* Depth + glow — deeper shadows for the dark ground, jade focus glow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-md: 0 18px 40px -24px rgba(0, 0, 0, 0.8);
+  --shadow-glow: 0 1px 0 #2A2E36, 0 14px 30px -20px rgba(0, 0, 0, 0.85);
+  --shadow-glow-success: 0 0 0 1px rgba(95, 184, 154, 0.35);
+
+  /* Text contract — body stays the rounded sans; a touch heavier reads premium */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* Apply the themed body text weight + paint the ink-black field on EVERY screen
+   (the default look only painted the shell). A single very soft jade halo from
+   the top so home/profile/modules/my-chars/settings read as one calm dark field
+   — restrained, never a glow-bloom. */
+body[data-theme="midnight"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(95, 184, 154, 0.07) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Wordmark / headings — quiet moonlight ink with a faint jade lift (NO foil
+   clip, NO shimmer). Keeps the dark mode calm rather than decorative. */
+body[data-theme="midnight"] .welcome-header h1,
+body[data-theme="midnight"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(95, 184, 154, 0.18);
+}
+
+/* ── MODULE TILES ────────────────────────────────────────────────────────────
+   Dark glass cards with a hairline border; each module keeps its (muted, lifted)
+   category hue as a soft top-edge wash + a dark drop so the home grid still reads
+   as a family on the ink ground — no candy lips. */
+body[data-theme="midnight"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)) ,
+    var(--bg-raised);
+  box-shadow: 0 6px 0 #0A0B0E, 0 16px 30px -22px rgba(0, 0, 0, 0.9);
+}
+body[data-theme="midnight"] .module-card--writing-challenge { box-shadow: inset 0 2px 0 var(--teal),  0 6px 0 #0A0B0E, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+body[data-theme="midnight"] .module-card--word-sets         { box-shadow: inset 0 2px 0 var(--pink),  0 6px 0 #0A0B0E, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+body[data-theme="midnight"] .module-card--practice-english  { box-shadow: inset 0 2px 0 var(--blue),  0 6px 0 #0A0B0E, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+body[data-theme="midnight"] .module-card--copybook          { box-shadow: inset 0 2px 0 var(--orange), 0 6px 0 #0A0B0E, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+
+/* Icon disc → dark glass with a hairline + the category hue carried by the icon */
+body[data-theme="midnight"] .module-card .module-icon {
+  background: #14171C;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+@media (hover: hover) {
+  body[data-theme="midnight"] .module-card:hover {
+    border-color: var(--seal);
+    box-shadow: 0 10px 0 #0A0B0E, 0 22px 40px -22px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(95, 184, 154, 0.35);
+  }
+}
+
+/* Fluency banner — dark glass with a restrained jade hairline + key figure tint */
+body[data-theme="midnight"] .welcome-level {
+  background: #14171C;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--seal) 50%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-weight: 700;
+}
+
+/* Profile-picker "Add profile" button → jade active look */
+body[data-theme="midnight"] .user-create button {
+  background: var(--grad-primary);
+  color: #0A0B0E;
+  box-shadow: 0 2px 0 var(--gold-dark);
+}
+
+/* ── BUTTONS (token contract) ────────────────────────────────────────────────
+   Primary CTA = jade fill on near-black ink text (high contrast); secondary +
+   settings options = dark glass with hairline borders; the active settings
+   option takes the jade wash. */
+body[data-theme="midnight"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #0A0B0E;
+  box-shadow: 0 2px 0 var(--gold-dark), 0 8px 20px -10px rgba(95, 184, 154, 0.5);
+}
+body[data-theme="midnight"] .app-shell .ui-btn--secondary {
+  background: #1A1D23;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+@media (hover: hover) {
+  body[data-theme="midnight"] .app-shell .ui-btn--secondary:hover:not(:disabled) {
+    border-color: var(--seal);
+  }
+}
+
+/* ── SETTINGS ────────────────────────────────────────────────────────────────
+   Sections become dark-glass panels; option pills are dark with hairlines; the
+   active option lights with the jade accent. */
+body[data-theme="midnight"] .settings-section,
+body[data-theme="midnight"] .placement-card,
+body[data-theme="midnight"] .restore-modal {
+  background: #1A1D23;
+  border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 14px 30px -22px rgba(0, 0, 0, 0.85);
+}
+body[data-theme="midnight"] .settings-option,
+body[data-theme="midnight"] .lever-pill,
+body[data-theme="midnight"] .lever-reset-all {
+  background: #14171C;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+}
+body[data-theme="midnight"] .settings-option.active,
+body[data-theme="midnight"] .lever-pill.active {
+  background: var(--seal-wash);
+  border-color: var(--seal);
+  color: var(--ink);
+  text-shadow: none;
+}
+
+/* ── MY-CHARACTERS CHAR TILES (token contract: --ct-* tile tokens) ───────────
+   Off the My-Chars screen, char-tiles (writing "Next up", word-set chips) inherit
+   the re-pointed --ct-* tokens so they read on the dark field. On the My-Chars
+   screen they get the headline treatment: dark glass face, jade hairline frame,
+   moonlight glyph, jade level badge. The canonical glass char-tile lives in
+   ui-kit.css under `.app-shell .char-tile` (specificity 0,2,0); these selectors
+   are (0,3,1) and this file is imported after, so they win. */
+body[data-theme="midnight"] .app-shell .char-tile {
+  --ct-face: #1A1D23;
+  --ct-line: var(--rule);
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+}
+body[data-theme="midnight"][data-screen="mychars"] .char-tile {
+  --ct-face: #14171C;
+  --ct-line: var(--rule-strong);
+  border: 1px solid var(--rule-strong);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 14px rgba(0, 0, 0, 0.65);
+}
+/* Known tile: keep the dark glass, layer a soft jade-success glow */
+body[data-theme="midnight"][data-screen="mychars"] .char-tile--known {
+  border-color: color-mix(in srgb, var(--success) 55%, var(--rule-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.65),
+    0 0 16px color-mix(in srgb, var(--success) 28%, transparent);
+}
+/* Glyph stays the readable moonlight ink */
+body[data-theme="midnight"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+/* Rank chip — the calm element: muted moonlight on a quiet hairline */
+body[data-theme="midnight"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+/* Level badge — the headline jade accent: jade fill, near-black ink text */
+body[data-theme="midnight"][data-screen="mychars"] .char-tile-level {
+  color: #0A0B0E;
+  background: var(--seal);
+  border-color: var(--seal-deep);
+}
+@media (hover: hover) {
+  body[data-theme="midnight"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: var(--seal);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 8px 22px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(95, 184, 154, 0.3);
+  }
+}

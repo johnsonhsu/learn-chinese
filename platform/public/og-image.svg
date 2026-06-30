@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!--
+    Social / link-preview card (1200x630), VCASS read/write identity.
+    Navy field, cream display type, one warm tan accent. The signature is the
+    landing-page hero: two 米字格 practice cells inking 讀 (read) and 寫 (write)
+    in tan, the read+write duality at the heart of the app. Headline carries
+    the product tagline "Read and write real Taiwan Chinese."
+
+    Palette (matches the .lp tokens in index.css):
+      navy ground  #073464   (char)
+      navy well    #04223F   (char-deep)
+      navy lift    #0C4276   (char-raised)
+      cream text   #F4EFE4   (cream)
+      cream soft   #CFC8B8   (cream-soft)
+      tan accent   #C9A36A   (tan)
+      blaze band   #E9B949   (blaze)
+
+    NOTE: og:image must be a PNG/JPG for most platforms; a 1200x630 PNG export
+    of this file ships as og-image.png (rendered from this SVG).
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%"  stop-color="#0C4276"/>
+      <stop offset="42%" stop-color="#073464"/>
+      <stop offset="100%" stop-color="#04223F"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="26%" cy="34%" r="62%">
+      <stop offset="0%"  stop-color="#C9A36A" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#C9A36A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Field -->
+  <rect x="0" y="0" width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="630" fill="url(#halo)"/>
+
+  <!-- Hairline tan frame, VCASS poster feel -->
+  <rect x="28" y="28" width="1144" height="574" fill="none" stroke="#C9A36A" stroke-width="2" opacity="0.45"/>
+
+  <!-- ── Signature: two 米字格 cells, 讀 then 寫 ── -->
+  <g transform="translate(96 168)">
+    <!-- cell 1: 讀 (read) -->
+    <g transform="translate(0 0)">
+      <rect x="0" y="0" width="180" height="180" fill="#04223F" stroke="#C9A36A" stroke-width="3"/>
+      <g stroke="#C9A36A" stroke-width="1.4" stroke-dasharray="5 6" opacity="0.5">
+        <line x1="90" y1="0" x2="90" y2="180"/>
+        <line x1="0" y1="90" x2="180" y2="90"/>
+        <line x1="0" y1="0" x2="180" y2="180"/>
+        <line x1="180" y1="0" x2="0" y2="180"/>
+      </g>
+      <text x="90" y="92" font-family="'Songti TC','Kaiti TC','STKaiti','Noto Serif TC',serif"
+            font-size="138" font-weight="600" fill="#C9A36A"
+            text-anchor="middle" dominant-baseline="central">讀</text>
+    </g>
+    <!-- cell 2: 寫 (write) -->
+    <g transform="translate(208 0)">
+      <rect x="0" y="0" width="180" height="180" fill="#04223F" stroke="#C9A36A" stroke-width="3"/>
+      <g stroke="#C9A36A" stroke-width="1.4" stroke-dasharray="5 6" opacity="0.5">
+        <line x1="90" y1="0" x2="90" y2="180"/>
+        <line x1="0" y1="90" x2="180" y2="90"/>
+        <line x1="0" y1="0" x2="180" y2="180"/>
+        <line x1="180" y1="0" x2="0" y2="180"/>
+      </g>
+      <text x="90" y="92" font-family="'Songti TC','Kaiti TC','STKaiti','Noto Serif TC',serif"
+            font-size="138" font-weight="600" fill="#C9A36A"
+            text-anchor="middle" dominant-baseline="central">寫</text>
+    </g>
+  </g>
+
+  <!-- Region eyebrow under the cells -->
+  <text x="96" y="408" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="22" font-weight="800" letter-spacing="5" fill="#C9A36A">TRADITIONAL · TAIWAN</text>
+
+  <!-- ── Headline block (right of the cells) ── -->
+  <g font-family="'Helvetica Neue','Arial Narrow',Arial,sans-serif">
+    <!-- script eyebrow -->
+    <text x="540" y="150" font-family="'Snell Roundhand','Apple Chancery',cursive"
+          font-style="italic" font-size="50" fill="#C9A36A">Read / Write</text>
+    <!-- big display headline, uppercase, cream + tan -->
+    <text x="538" y="262" font-size="116" font-weight="800" letter-spacing="-2"
+          text-transform="uppercase" fill="#F4EFE4">中文 IN</text>
+    <text x="538" y="378" font-size="116" font-weight="800" letter-spacing="-2"
+          text-transform="uppercase" fill="#C9A36A">TAIWAN</text>
+  </g>
+
+  <!-- ── Bright tan/gold tagline band across the bottom ── -->
+  <rect x="0" y="470" width="1200" height="92" fill="#E9B949"/>
+  <text x="96" y="528" font-family="'Helvetica Neue','Arial Narrow',Arial,sans-serif"
+        font-size="40" font-weight="800" letter-spacing="0.5" fill="#073464">READ AND WRITE REAL TAIWAN CHINESE</text>
+
+  <!-- footer feature line -->
+  <text x="96" y="592" font-family="'Helvetica Neue',Arial,sans-serif"
+        font-size="24" font-weight="800" letter-spacing="3" fill="#CFC8B8">FREE · OFFLINE · NO ACCOUNT · NO ADS</text>
+</svg>

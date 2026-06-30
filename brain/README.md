@@ -1,9 +1,9 @@
 # Learn-Chinese — curriculum brain 🧠
 
 The app's curriculum data ("brain"), exported from `content.db` to plain TSV so
-it's browsable and diffable here. All Traditional Chinese / Taiwan Mandarin. The
-application code is kept separately; this repo tracks only the characters &
-sentences.
+it's browsable and diffable here. All Traditional Chinese / Taiwan Mandarin.
+These TSVs are the human-readable view; the app itself runs from `platform/content.db`
+in the same repo, so the project is reproducible end-to-end.
 
 | File | What it holds | Rows |
 |------|---------------|------|

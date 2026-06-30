@@ -1,0 +1,4 @@
+# The version stamp must always revalidate so clients detect content updates.
+# (The DB files themselves are cache-busted with ?v=<version> on download.)
+/data/version.json
+  Cache-Control: no-cache

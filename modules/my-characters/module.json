@@ -1,0 +1,8 @@
+{
+  "name": "my-characters",
+  "displayName": "My Characters",
+  "displayNameZh": "我的字",
+  "icon": "📊",
+  "apiPrefix": "/api/my-characters",
+  "order": 5
+}

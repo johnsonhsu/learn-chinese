@@ -1,0 +1,177 @@
+/* Reusable 4-digit keypad code-entry + auto-dismissing results modal.
+   Scoped to CodeEntry.tsx. Class prefix `codepad-` keeps these from colliding
+   with the restore modal.
+
+   NEUTRAL BY DESIGN: this keypad is what UNLOCKS premium themes, so it must look
+   clean and consistent no matter which theme is active — it must NOT pick up the
+   gold/silver foil family. We therefore set its own self-contained palette here
+   (literal values, not theme-foil-* tokens) so an active premium theme can't
+   bleed into it. Only the structural :root tokens (radius/spacing) are reused. */
+
+.codepad-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; box-sizing: border-box;
+}
+
+.codepad-modal {
+  /* Neutral surface — explicit values so it never inherits a themed look. */
+  background: #ffffff;
+  color: #1c1c1e;
+  border: 1px solid #e2e2e7;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  width: 100%; max-width: 320px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+}
+.codepad-modal h3 {
+  margin: 0 0 16px;
+  color: #1c1c1e;
+  text-align: center;
+}
+
+/* Entered-digits row: 4 slots reveal the typed digits, with a backspace key
+   pinned to the right end of the same row. */
+.codepad-entry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+}
+.codepad-slots {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.codepad-slot {
+  width: 44px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #d1d1d6;
+  border-radius: var(--radius);
+  background: #f5f5f7;
+  box-sizing: border-box;
+  font-size: 24px; font-weight: 700; line-height: 1;
+  color: #1c1c1e;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+/* Empty slots show a placeholder underscore; filled slots show the real digit. */
+.codepad-slot::before {
+  content: '_';
+  color: #c7c7cc;
+}
+.codepad-slot--filled {
+  border-color: #1c1c1e;
+  background: #ffffff;
+}
+.codepad-slot--filled::before {
+  content: none;
+}
+
+.codepad-backspace {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: #f5f5f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+  border-radius: var(--radius);
+  font-size: 22px; line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: background 80ms ease, transform 80ms ease, border-color 80ms ease;
+}
+.codepad-backspace:hover:not(:disabled) { border-color: #1c1c1e; }
+.codepad-backspace:active:not(:disabled) { transform: scale(0.96); background: #ececf0; }
+.codepad-backspace:disabled { opacity: 0.4; cursor: default; }
+.codepad-backspace:focus-visible {
+  outline: 3px solid #1c1c1e;
+  outline-offset: 2px;
+}
+
+/* Number grid: 1–9 (3×3), then 0 centered on the last row (empty cells flank it). */
+.codepad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.codepad-key {
+  appearance: none;
+  background: #f5f5f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+  border-radius: var(--radius);
+  padding: 16px 0;
+  font-size: 22px; font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: background 80ms ease, transform 80ms ease, border-color 80ms ease;
+}
+.codepad-key:hover { border-color: #1c1c1e; }
+.codepad-key:active { transform: scale(0.96); background: #ececf0; }
+.codepad-key:focus-visible {
+  outline: 3px solid #1c1c1e;
+  outline-offset: 2px;
+}
+
+/* Neutral cancel button — self-contained so it doesn't inherit a themed pill. */
+.codepad-cancel {
+  appearance: none;
+  width: 100%;
+  margin-top: 16px;
+  padding: 11px;
+  background: #f5f5f7;
+  color: #1c1c1e;
+  border: 1px solid #d1d1d6;
+  border-radius: var(--radius);
+  font-size: 15px; font-weight: 600;
+  cursor: pointer;
+  transition: background 80ms ease, border-color 80ms ease;
+}
+.codepad-cancel:hover { border-color: #1c1c1e; }
+.codepad-cancel:active { background: #ececf0; }
+.codepad-cancel:focus-visible {
+  outline: 3px solid #1c1c1e;
+  outline-offset: 2px;
+}
+
+/* Auto-dismissing results modal — emoji + localized outcome message. Neutral
+   surface, matching the keypad. */
+.codepad-result {
+  background: #ffffff;
+  border: 1px solid #e2e2e7;
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  width: 100%; max-width: 320px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
+  text-align: center;
+  cursor: pointer;
+  animation: codepad-pop 160ms ease;
+}
+.codepad-result__emoji {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.codepad-result__msg {
+  margin: 0;
+  color: #1c1c1e;
+  font-size: 17px; font-weight: 600;
+}
+
+@keyframes codepad-pop {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .codepad-slot,
+  .codepad-backspace,
+  .codepad-key { transition: none; }
+  .codepad-result { animation: none; }
+}
