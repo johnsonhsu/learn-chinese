@@ -378,6 +378,8 @@ Workbox 快取（資料層在 IndexedDB 中自行管理它們）；`/data/versio
   `writing-challenge.db` 僅留 `module_settings`）；且銀行句子用到的每個課程字都有內建筆順資料
   （可離線書寫），並附一份小而有記錄的 allowlist 收容無任何開放資料集涵蓋的字。見 §3.5／字形正規化說明。
 
+**測試紀律——貢獻者的責任。** 上述閘門守護的是*出貨資料*，無法攔截引擎的回歸。因此**任何**變更都要評估是否需要新增或更新測試，並把測試影響記在 issue spec／PR 裡；新引擎邏輯或修好的 bug，會在同一個 PR 內附上守護它的單元／對等測試。把測試套件維持成保養良好的機器是貢獻者的工作，不是靠部署閘門兜底的。
+
 **CI/CD —— `.github/workflows/ci.yml`。** 單一 job，觸發於 `pull_request` 與 `push: master`：
 `npm ci` → 單元測試 → Python 對等測試（`pip install opencc pytest`）→ `npm run build -w platform`
 → **資料完整性閘門** → `cloudflare/wrangler-action` 部署 →（僅 PR）留言 preview + `/?app&demo` 網址。

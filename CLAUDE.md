@@ -42,6 +42,7 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 - **Merge to `master` → production** (CI builds + gates + `wrangler pages deploy`). **PR → preview** with the URL commented on the PR. There is **no** manual deploy step.
 - The Pages project is **direct-upload** (no Git connection); its **production branch is `learning-chinese`, NOT `master`**. The workflow (`.github/workflows/ci.yml`) deploys `--branch=learning-chinese` on a master push (→ prod) and `--branch=<PR head>` on a PR (→ preview). Don't "fix" this to `master`.
 - The **data-integrity gate (`test:data`) blocks every deploy** — bad content/code can't ship.
+- **Docs-merge-on-green.** A **documentation-only** PR (`CLAUDE.md` / `README*` / `ARCHITECTURE*` / `.github/` templates — no `src`/`.db`/workflow changes) may be **merged automatically once CI is green** — no human-review gate. **Code and content (curriculum) PRs still require Johnson's review** before merge. This is a narrow, explicit exception to the *Working agreement*'s "PR review is the human gate".
 - A local PostToolUse hook in `.claude/settings.local.json` used to deploy `dist` to **prod** on any `npm run build` — it has been **removed** (CI owns deploys now). That file is machine-local + gitignored, so a fresh clone never has it. To verify a build without deploying, `npm -w platform run bake:data` and/or `npx vite build` (in `platform/`).
 - **Issue + PR templates** live in `.github/` (PR #9): a Markdown issue chooser (bug / feature / content / performance + `config.yml`) and a PR template whose checklist mirrors the gates + cardinal rules. ⚠️ `gh pr create --body` **overrides** the PR template — so when opening a PR from the CLI, fill those sections in yourself (type, the test/living-docs/content checklists, cardinal-rule ticks).
 
@@ -50,6 +51,13 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 1. **Engine units** (`shared/src/__tests__`): `sentence-generator` (the **binding** invariant + seeded-RNG coverage), `mastery`, `char-knowledge`, `char-ranker`, `zhuyin`. Fake `DbQueryProvider`; `vi.setSystemTime` for time; seeded `Math.random`.
 2. **Glyph-canonicalization parity**: `canonicalizeTW()` (TS, `content-db.ts`) vs `bank-fix.py canon()` (Python) against ONE golden fixture `test/fixtures/glyph-canon.json` — they MUST agree.
 3. **Data-integrity gate** (`platform/test/data-integrity.test.ts`, run on baked output): no Simplified/undrawable glyphs, referential, **no personal data**, offline stroke coverage (with a documented `STROKE_ALLOWLIST`).
+
+**Test discipline — keep the suite a well-oiled machine.** On ANY change, evaluate whether
+tests need to be added or updated, and say so: an issue spec / PR should state its **test
+impact** (new test, updated test, or "none — and why"). The data-integrity gate already blocks
+deploys on bad content, but **unit + parity coverage is the contributor's responsibility** —
+the gate won't catch an engine regression. New engine logic or a fixed bug → add the guarding
+test in the same PR.
 
 ## Data model + changing content
 
@@ -87,7 +95,7 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 
 Substantive work flows through GitHub issues, not ad-hoc edits. The loop: **intake → triage → refine to Ready → execute → PR → review → merge (auto-deploy)**.
 
-- **Roles — the main session is a DISPATCHER, not a worker** (and not the investigator/spec-writer). On a new request it does **not** read code, root-cause, spec, or implement. It hands the raw report to a background **intake agent** that runs the whole chain — investigate → root-cause → write the Definition-of-Ready spec → recommend the fix → create the Ready issue → dispatch a worker (→ PR) — then returns to the user fast and relays the ticket # + PR link. **Workers** implement one issue each. The human gate is **PR review** (never auto-merge); per-issue confirmation is not required — the agent chain is autonomous.
+- **Roles — the main session is a DISPATCHER, not a worker** (and not the investigator/spec-writer). On a new request it does **not** read code, root-cause, spec, or implement. It hands the raw report to a background **intake agent** that runs the whole chain — investigate → root-cause → write the Definition-of-Ready spec → recommend the fix → create the Ready issue → dispatch a worker (→ PR) — then returns to the user fast and relays the ticket # + PR link. **Workers** implement one issue each. The human gate is **PR review** (never auto-merge) — **except documentation-only PRs, which merge on green** (see *Deploy → Docs-merge-on-green*); per-issue confirmation is not required — the agent chain is autonomous.
 - **Trivial vs tracked.** Only substantive work becomes an issue; trivial ops (one-off tooling, lookups, git housekeeping) are done inline, not filed.
 - **File via the `🤖 Task (agent-ready spec)` template** (`.github/ISSUE_TEMPLATE/task.md`). `gh issue create` does **not** auto-apply templates — reproduce the spec sections in the body yourself.
 - **Definition of Ready** (label `status:ready`): Goal, testable acceptance criteria, affected files, applicable cardinal-rule constraints, a test/verification plan, and out-of-scope — all filled, so a cold future session can execute without re-discovery. Missing detail → `status:needs-info`; discuss here or in issue comments.
