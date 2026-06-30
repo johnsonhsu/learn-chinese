@@ -1,35 +1,35 @@
 /**
  * DEMO MODE — a public "try it" experience with preset profiles + progress.
  *
- * Reached via `?demo` (use `/?app&demo` so the app boots instead of the landing
- * page). Two things make it safe and self-contained:
+ * Reached via `?demo` (any host) OR — since issue #27 (demo-by-default) — a
+ * public browser `?app` load on the deployed host. `isDemoMode()` (in
+ * demo-mode.ts) is the single source of truth. Two things make it safe and
+ * self-contained:
  *
  *  1. ISOLATED STORAGE. In demo mode user-store opens a SEPARATE IndexedDB
  *     (`learning-chinese-user-demo`), so seeding/eviction here can NEVER touch a
  *     real (installed) user's progress — even on the same origin. That's why
  *     "always reset the demo" is safe, where blindly evicting shared storage
  *     would not be.
- *  2. VERSION STAMP. `__demoVersion` gates reseeding: a returning visitor on the
- *     current version keeps their session; bump DEMO_VERSION (or change the seed)
- *     and every visitor is reseeded onto the new canonical demo. This is the
- *     "version check" — reliable, current demo state with no risk.
+ *  2. ALWAYS-FRESH (issue #27). The demo resets to the canonical preset state on
+ *     EVERY load: in-session practice accrues and shows normally, but a refresh
+ *     wipes it. `DEMO_VERSION` remains the identity of the canonical seed (bump
+ *     it when the preset itself changes); the reset is unconditional now, so the
+ *     stamp is written for diagnostics rather than gating reseed.
  *
  * The data is synthesized at runtime from the shipped char ranking (no bundled
  * dataset to maintain): a couple of profiles with a band of "known" chars.
  */
-import { getPref, setPref } from './user-store.js';
+import { setPref } from './user-store.js';
 import type { OfflineDataLayer } from './offline-data-layer.js';
 
-/** True when the URL carries `?demo` (decided once; the param persists for the session). */
-export function isDemoMode(): boolean {
-  try {
-    return new URLSearchParams(location.search).has('demo');
-  } catch {
-    return false;
-  }
-}
+// Re-exported so existing imports (`offline-context`, etc.) keep working while
+// the predicate itself lives in one dependency-free place.
+export { isDemoMode } from './demo-mode.js';
 
-// Bump to force every demo visitor onto a fresh, current dataset.
+// Identity of the canonical preset seed. Always-fresh means every load reseeds,
+// so this no longer gates the reset — it's stamped for diagnostics and bumped
+// when the preset definition itself changes.
 const DEMO_VERSION = '1';
 
 // Preset profiles: name + how many of the top-ranked chars to mark "known".
@@ -41,14 +41,15 @@ const PRESETS: { name: string; known: number }[] = [
 ];
 
 /**
- * Ensure the demo store holds the current canonical demo data. No-op if already
- * seeded at this version; otherwise wipes the (isolated) demo store and reseeds.
- * MUST be called only in demo mode, after dataLayer.initialize().
+ * Reset the (isolated) demo store to the canonical preset state. Always-fresh
+ * (issue #27): this runs on EVERY demo load — a refresh wipes in-session
+ * progress and reseeds, so visitors always start from the same clean demo and
+ * never persist changes. Safe because demo mode uses a SEPARATE IndexedDB
+ * (`learning-chinese-user-demo`); the real `learning-chinese-user` jar is never
+ * touched. MUST be called only in demo mode, after dataLayer.initialize().
  */
 export async function ensureDemoSeed(dl: OfflineDataLayer): Promise<void> {
-  if ((await getPref<string>('__demoVersion')) === DEMO_VERSION) return;
-
-  // Reset to canonical state. Safe: demo mode uses an isolated IndexedDB, so this
+  // Wipe to canonical state. Safe: demo mode uses an isolated IndexedDB, so this
   // only ever clears demo profiles (incl. any default profile init seeded).
   for (const p of await dl.listProfiles()) await dl.deleteProfile(p.id);
 

@@ -5018,6 +5018,41 @@ body[data-screen="result"]     { --screen-accent: #4F7A3A; }
   white-space: nowrap;
 }
 
+/* --- Demo-site badge (issue #27): always-present pill on the public demo,
+   telling visitors a refresh resets progress. Bottom-centre so it clears the
+   top UpdateBanner; pointer-events:none so it never blocks taps underneath. --- */
+.demo-badge {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: calc(100vw - 24px);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--ink, #1C1A17);
+  color: var(--paper, #F3EEE2);
+  font-family: var(--font, inherit);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  box-shadow: 0 6px 18px -8px rgba(28, 26, 23, 0.5);
+  pointer-events: none;
+  opacity: 0.92;
+}
+.demo-badge__dot {
+  color: #f2a900;
+  font-size: 9px;
+}
+.demo-badge__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* --- Sentence-bank grid: full-window modal --- */
 .bank-grid-overlay {
   position: fixed;

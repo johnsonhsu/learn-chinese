@@ -9,6 +9,11 @@ export default {
   'loading.downloading': '下載中…',
   'loading.downloadingPct': '下載中… {pct}%',
 
+  // Demo-site badge (issue #27): shown on the public, always-fresh demo so
+  // visitors know progress is not saved and a refresh resets it.
+  'demo.badge': '示範',
+  'demo.note': '示範網站 — 重新整理會清除進度',
+
   'user.whoLearning': '今天誰來學？',
   'user.newName': '新使用者名稱',
   'user.create': '建立',

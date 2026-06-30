@@ -14,6 +14,7 @@
  */
 import { useCallback, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
+import { isDemoMode } from './offline/demo-mode.ts';
 
 export interface AppUpdate {
   needRefresh: boolean;
@@ -32,7 +33,23 @@ export function useAppUpdate(): AppUpdate {
     onRegisteredSW(_swUrl, registration) {
       registrationRef.current = registration;
     },
+    // ALWAYS-LATEST on the demo path (issue #27 (A)). For a real (installed/dev)
+    // session the SW stays `registerType: 'prompt'` — `needRefresh` flips and the
+    // UpdateBanner lets the user apply it (unchanged). For a demo session we
+    // instead auto-apply the waiting SW immediately (skipWaiting + reload on
+    // controllerchange), so a browser `?app`/`?demo` visitor never sits on a
+    // stale bundle and the reload doubles as the always-fresh reset. The real
+    // store and the installed-PWA prompt flow are untouched.
+    onNeedRefresh() {
+      if (isDemoMode()) void updateServiceWorkerRef.current?.(true);
+    },
   });
+
+  // updateServiceWorker is referenced inside onNeedRefresh, which is captured at
+  // registration time (before the binding above is assigned). A ref breaks that
+  // ordering so the callback always sees the live updater.
+  const updateServiceWorkerRef = useRef(updateServiceWorker);
+  updateServiceWorkerRef.current = updateServiceWorker;
 
   const checkForUpdate = useCallback(() => {
     // Guard: registration may not exist yet (or at all, e.g. dev without SW).
