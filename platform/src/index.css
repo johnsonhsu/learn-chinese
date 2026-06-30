@@ -5159,15 +5159,40 @@ body[data-theme="gold"] {
   --paper: #14224B;            /* deep royal-indigo ground */
   --paper-raised: #1B2C5C;     /* lifted card surface */
   --paper-sunken: #101C40;     /* recessed fills */
+  /* Surface ALIASES — re-declared per theme like indigo/midnight do. The :root
+     defaults (`--bg-raised: var(--paper-raised)`, `--bg-card`, `--panel-bg`, …)
+     resolve against :root's LIGHT paper ONCE and inherit that literal down, so
+     re-pointing --paper-raised above does NOT update them. Without this, the
+     OptionSelect menu (.voice-dd-list reads --bg-raised) renders as a stray light
+     cream box on the navy field. Same lifted-navy stack as the other dark
+     themes → the menu reads as a clearly LIFTED surface above --bg-input. */
+  --bg-raised: #1B2C5C;        /* dropdown/card surface — was the light :root cream */
+  --bg-raised-2: #101C40;
+  --bg-card: #1B2C5C;
+  --bg-card2: #101C40;
+  --panel-bg: #1B2C5C;
   --ink: #F6ECCB;              /* warm cream "ink" — readable on navy */
   --ink-soft: #D8C89A;
   --ink-faint: #A99B6E;
+  /* Text ALIASES — same one-time-resolution gotcha: re-point off the skin's cream
+     ink so option labels (--text) and the caret (--text-muted) stay legible. */
+  --text: var(--ink);          /* warm cream — was inheriting the near-black :root default */
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
   --rule: #2E3F6E;             /* hairline on navy */
   --rule-strong: #41538A;
+  --border: #2E3F6E;           /* control + menu border → navy hairline (was light :root rule) */
+  --border-hover: #41538A;
   --bg-input: #0E1838;
   --seal: #E7B53C;             /* accent → warm gold */
   --seal-deep: #C8971C;
   --seal-wash: rgba(231, 181, 60, 0.16);
+  /* Accent ALIASES — the selected dropdown row (.voice-dd-opt.selected uses
+     --accent-bg as fill + --accent as text). Re-point onto this skin's gold seal
+     so the selected row reads gold-on-navy, not the :root vermilion-on-pink. */
+  --accent: #E7B53C;
+  --accent-bg: rgba(231, 181, 60, 0.16);
+  --accent-hover: #C8971C;
   /* Primary-CTA face (the --gold token name) → foil-ink on a warm gold face. */
   --gold: #E7B53C;
   --gold-dark: #B8860B;
@@ -5196,15 +5221,38 @@ body[data-theme="silver"] {
   --paper: #122A33;            /* deep petrol/teal-charcoal ground */
   --paper-raised: #1A363F;
   --paper-sunken: #0E2229;
+  /* Surface ALIASES — re-declared per theme (see the gold block for why: the
+     :root `var(--paper-raised)` aliases resolve once at :root's light paper and
+     inherit that literal, so re-pointing --paper-raised here doesn't reach them).
+     Same lifted-petrol stack so the OptionSelect menu (.voice-dd-list →
+     --bg-raised) reads as a lifted surface above --bg-input, not a light box. */
+  --bg-raised: #1A363F;        /* dropdown/card surface — was the light :root cream */
+  --bg-raised-2: #0E2229;
+  --bg-card: #1A363F;
+  --bg-card2: #0E2229;
+  --panel-bg: #1A363F;
   --ink: #EDF2F7;              /* near-white "ink" */
   --ink-soft: #C3CFD9;
   --ink-faint: #8E9CA8;
+  /* Text ALIASES — re-point off the skin's near-white ink so labels (--text) and
+     the caret (--text-muted) stay legible (was the near-black :root default). */
+  --text: var(--ink);          /* near-white — was inheriting the near-black :root default */
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
   --rule: #294049;
   --rule-strong: #3C5560;
+  --border: #294049;           /* control + menu border → petrol hairline (was light :root rule) */
+  --border-hover: #3C5560;
   --bg-input: #0B1D23;
   --seal: #9FB3C2;             /* accent → cool platinum */
   --seal-deep: #74899A;
   --seal-wash: rgba(159, 179, 194, 0.16);
+  /* Accent ALIASES — selected dropdown row (--accent-bg fill + --accent text).
+     Re-point onto this skin's platinum seal → platinum-on-petrol, not the :root
+     vermilion-on-pink. */
+  --accent: #9FB3C2;
+  --accent-bg: rgba(159, 179, 194, 0.16);
+  --accent-hover: #74899A;
   --gold: #C2CDD8;
   --gold-dark: #93A0B2;
   --grad-primary: var(--foil);
