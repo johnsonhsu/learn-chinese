@@ -816,21 +816,17 @@ interface NavItem { id: string; label: string; }
 // (when not pinned), an outside click, or Esc. The button + panel share ONE
 // .lp-menu wrap so moving from the button into the panel never closes it
 // (mouseleave ignores descendants, even an absolutely-positioned one).
-function NavDropdown({ items, title, menuLabel, cta, onOpenChange }: {
+function NavDropdown({ items, title, menuLabel, cta }: {
   items: NavItem[];
   title: string;
   menuLabel: string;
   cta: ReactNode;
-  /** Notified whenever the menu opens/closes, so the parent can render the scrim. */
-  onOpenChange?: (open: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
   const close = () => { setOpen(false); setPinned(false); };
-  // Surface open-state to the parent (it renders the frosted scrim at root level).
-  useEffect(() => { onOpenChange?.(open); }, [open, onOpenChange]);
 
   // While open: an outside pointerdown or Esc closes (and unpins). Capture phase
   // so it runs before any item/section click elsewhere on the page.
@@ -1169,9 +1165,6 @@ export default function LandingPage() {
   const markRef = useRef<HTMLSpanElement>(null);
   const flyRef = useRef<HTMLSpanElement>(null);
   useDockTransition(lpRef, splashRef, markRef, flyRef);
-  // Menu open-state lifted here so the frosted scrim — a root-level sibling of the
-  // bar — can sit below the bar/menu but above the page content.
-  const [menuOpen, setMenuOpen] = useState(false);
 
   // ── Section-nav menu (the ☰) ──
   // Jump-to-section links shown in the bar-attached NavDropdown (which owns its
@@ -1210,7 +1203,7 @@ export default function LandingPage() {
           useDockTransition once the wordmark lands). The inner
           wrapper keeps the bar's contents on the same centered 760px column as the
           rest of the page while the bar background runs full-bleed. */}
-      <header className={`lp-bar${menuOpen ? ' is-menu-open' : ''}`}>
+      <header className="lp-bar">
         <div className="lp-bar-inner">
           {/* Hamburger + its bar-attached dropdown (hover opens · click pins ·
               outside-click/Esc closes) — see NavDropdown. */}
@@ -1219,7 +1212,6 @@ export default function LandingPage() {
             title={t.menuTitle}
             menuLabel={t.menuLabel}
             cta={<Cta block />}
-            onOpenChange={setMenuOpen}
           />
           <span className="lp-mark" ref={markRef}>{t.wordmark}</span>
           <div className="lp-bar-right">
@@ -1231,12 +1223,6 @@ export default function LandingPage() {
           </div>
         </div>
       </header>
-
-      {/* Frosted-glass scrim — fades in behind the open menu to dim + blur the page
-          below the bar. Root-level sibling of the bar, so it sits under the bar +
-          menu but over the content. Clicking it closes the menu (caught by
-          NavDropdown's outside-pointerdown). */}
-      <div className={`lp-menu-scrim${menuOpen ? ' is-open' : ''}`} aria-hidden="true" />
 
       {/* Brand splash: the large 學中文 that SHRINKS INTO the bar's wordmark as you
           scroll. useDockTransition drives a single fixed copy (.lp-fly) from this
