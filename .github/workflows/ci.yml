@@ -94,6 +94,7 @@ jobs:
               '',
               `- 🎮 **Try the demo:** ${base}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${base}/?app`,
+              `- UI components (styleguide): ${base}/?ui`,
               `- Always-latest (this branch): ${base}`,
               `- This exact build: ${url}`,
             ].join('\n');
