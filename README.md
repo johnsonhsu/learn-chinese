@@ -203,6 +203,8 @@ pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip ins
 - **Data-integrity gate** — the shipped DBs carry no Simplified/undrawable glyphs, are referentially sound, contain **no personal data**, and every curriculum char used in the bank is drawable offline.
 - *(A theme-resolution suite — selection, premium gating, per-profile override, `body[data-theme]` apply — is written and lands with the theme refactor it depends on.)*
 
+**Test discipline.** Treat the suite as a well-oiled machine: on **any** change, decide whether tests need to be added or updated and state that test impact in the issue/PR. The data-integrity gate blocks deploys on bad content automatically, but **unit + parity coverage is the contributor's job** — new engine logic or a fixed bug ships with its guarding test in the same PR.
+
 ## Deployment
 
 Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`) and gated on the tests + data-integrity check:
@@ -210,6 +212,7 @@ Deployed to **Cloudflare Pages** as static assets — no production server. **De
 - **Pull request → preview.** CI builds from the committed seeds, runs the gate, deploys a Cloudflare Pages **preview**, and comments its URLs on the PR — including the demo link `…/?app&demo`.
 - **Merge to `master` → production.** Identical build + gate. The Pages project is *direct-upload* with production branch **`learning-chinese`** (not `master`), so the workflow deploys `--branch=learning-chinese` on a master push (→ `learnchinese.hsu.mobi`) and `--branch=<PR head>` on a PR (→ preview).
 - **One-time setup:** repo secrets `CLOUDFLARE_API_TOKEN` (Pages:Edit) + `CLOUDFLARE_ACCOUNT_ID`, and the CF project's production branch set to `learning-chinese`.
+- **Docs-merge-on-green.** A **documentation-only** PR (README / ARCHITECTURE / CLAUDE.md / `.github/` templates — no source, DB, or workflow changes) may be **merged automatically once CI is green**, with no human-review step. **Code and content (curriculum) PRs still need a review** before merge.
 
 **Shipping a change** — there's no manual deploy; open a PR, eyeball its preview, merge:
 

@@ -434,6 +434,12 @@ Python glyph scrub. Scripts: `npm test` (all), `npm run test:unit`
   bank has bundled stroke data (offline-drawable), with a small, documented allowlist for
   chars no open dataset covers. See §3.5 / the glyph-normalization notes.
 
+**Test discipline — a contributor responsibility.** The gate above protects *shipped data*,
+but it can't catch an engine regression. So on **any** change, evaluate whether tests need to
+be added or updated and record that test impact in the issue spec / PR; new engine logic or a
+fixed bug lands with its guarding unit/parity test in the same PR. Keeping the suite a
+well-oiled machine is the contributor's job — not something the deploy gate backstops.
+
 **CI/CD — `.github/workflows/ci.yml`.** One job on `pull_request` and `push: master`:
 `npm ci` → unit tests → Python parity (`pip install opencc pytest`) → `npm run build -w
 platform` → **data-integrity gate** → `cloudflare/wrangler-action` deploy → (PRs only) a
