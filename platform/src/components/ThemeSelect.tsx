@@ -41,7 +41,10 @@ export function ThemeSelect({ value, onChange, scope, profileId, inheritLabel, r
     void refreshKey;
     const opts: SelectOption[] = [];
     if (inheritLabel !== undefined) opts.push({ value: '', label: inheritLabel });
-    for (const th of THEMES) {
+    // Premium themes ALWAYS sort to the end (free themes keep their registry
+    // order). Stable sort: free (0) before premium (1).
+    const ordered = [...THEMES].sort((a, b) => Number(a.premium) - Number(b.premium));
+    for (const th of ordered) {
       // Only list themes that are actually available — locked premium themes
       // do not appear at all.
       if (!isThemeAvailable(th)) continue;

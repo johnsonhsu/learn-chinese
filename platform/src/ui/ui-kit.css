@@ -232,6 +232,24 @@
   border-color: color-mix(in srgb, var(--success) 50%, var(--rule));
 }
 
+/* STATUS FRAME — the per-character status as a full colored ring (restores the
+   old corner indicator). Drawn as ::after so it sits ABOVE any theme's border +
+   box-shadow and survives the data-screen="mychars" theme overrides. The token
+   values re-skin per theme automatically. learned=success · in-progress=blue ·
+   above-level=warning. No status class → transparent ring (invisible). */
+.app-shell .char-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  border: 2px solid transparent;
+  z-index: 2;
+}
+.app-shell .char-tile--status-learned::after  { border-color: var(--success); }
+.app-shell .char-tile--status-progress::after { border-color: var(--blue); }
+.app-shell .char-tile--status-above::after    { border-color: var(--warning); }
+
 /* Tap-to-practice: pressable + clear keyboard focus ring. */
 .app-shell .char-tile--tappable { cursor: pointer; touch-action: manipulation; transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition); }
 .app-shell .char-tile--tappable:active { transform: scale(0.96); }
@@ -264,8 +282,9 @@
   line-height: 1;
 }
 
-/* Rank: a colored mastery PIP (was the clipping corner ribbon) + the rank number
-   in plain tabular ink-faint. The pip is inline so it can never clip a corner. */
+/* Rank: just the rank number in plain tabular ink-faint. The per-character
+   status now reads from the full colored frame ring (.char-tile::after) above,
+   instead of an easy-to-miss inline pip. */
 .app-shell .char-tile-rank {
   display: inline-flex;
   align-items: center;
@@ -276,16 +295,6 @@
   color: var(--ct-ink-soft);
   min-width: 0;
 }
-.app-shell .char-tile-pip {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--rule-strong);
-}
-.app-shell .char-tile-pip--below  { background: var(--seal); }
-.app-shell .char-tile-pip--target { background: var(--success); }
-.app-shell .char-tile-pip--above  { background: var(--warning); }
 
 /* Level badge: a small seal-outlined chip — the one accent, alone on the right.
    border-box + flex-none so a "4*" string never forces the row to overflow. */

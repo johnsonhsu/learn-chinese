@@ -18,7 +18,7 @@
  */
 
 import {
-  THEMES, getTheme, isThemeId, DEFAULT_THEME_ID, PREMIUM_FEATURE,
+  THEMES, getTheme, isThemeId, DEFAULT_THEME_ID, ROOT_THEME_ID, PREMIUM_FEATURE,
   type Theme,
 } from './themes.js';
 import { isFeatureUnlocked, setUnlockedFeatures } from '../utils/unlocks.js';
@@ -112,6 +112,20 @@ export function resolveEffectiveTheme(profileId: number | null): string {
     return DEFAULT_THEME_ID;
   }
   return theme.id;
+}
+
+/**
+ * Apply an effective theme id to the DOM. The ROOT theme (the editorial "Paper"
+ * look, id 'default') REMOVES `body[data-theme]` — its tokens come from :root, so
+ * the cascade stays byte-identical to pre-theming. EVERY other id (including the
+ * default selection, Indigo) sets the attribute, behind which all theme CSS is
+ * scoped. Keyed on ROOT_THEME_ID, not DEFAULT_THEME_ID, so the default selection
+ * can itself be a real applied theme. AppInner drives this from a useEffect on
+ * the resolved theme — keep the component calling this rather than re-inlining.
+ */
+export function applyThemeToBody(effectiveTheme: string, body: HTMLElement = document.body): void {
+  if (effectiveTheme === ROOT_THEME_ID) delete body.dataset.theme;
+  else body.dataset.theme = effectiveTheme;
 }
 
 // ── Backup serialization ──────────────────────────────────────────────────────

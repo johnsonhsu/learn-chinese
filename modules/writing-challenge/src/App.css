@@ -573,14 +573,6 @@
   transform: translateY(-2px) scale(1.06);
 }
 
-.char-box-done {
-  color: var(--text, #e6e8ee);
-  background: var(--bg-raised-2, #20242f);
-  border-color: var(--tile-edge, rgba(255,255,255,0.14));
-  font-size: 22px;
-  padding: 10px 16px;
-}
-
 .char-box-warn {
   background: linear-gradient(160deg, color-mix(in srgb, #ff9800 30%, var(--bg-raised)), var(--bg-raised));
   box-shadow: 0 4px 14px rgba(255,152,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -621,11 +613,6 @@
     inset 0 1px 0 rgba(255,255,255,0.18),
     inset 0 -3px 6px rgba(0,0,0,0.25);
   opacity: 0.9;
-}
-
-.char-box-skipped {
-  border-color: var(--border, #333);
-  color: var(--text-dim, #555);
 }
 
 /* Top bar */
@@ -1010,6 +997,10 @@ canvas {
 .char-box-pass { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); border-color: var(--success, #4F7A3A); color: var(--success, #4F7A3A); box-shadow: none; }
 .char-box-warn { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); color: var(--warning, #B5701C); box-shadow: none; }
 .char-box-fail { background: var(--seal-wash, #F3E0DB); border-color: var(--seal, #C0392B); color: var(--seal-deep, #97271C); box-shadow: none; }
+/* Done + user-skipped: placed AFTER the editorial .char-box base above so their
+   distinct colors win the cascade (the base was clobbering them by source order). */
+.char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
+.char-box-skipped { background: var(--paper-raised, #FBF8F0); border-color: var(--rule, #DAD2C2); color: var(--text-dim, #8A8377); box-shadow: none; }
 
 /* Result tiles → paper with a colored hairline + tinted wash (no candy fills) */
 .sp-result-perfect   { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border: 1px solid var(--success, #4F7A3A); color: var(--ink, #1C1A17); box-shadow: none; }

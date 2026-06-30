@@ -98,16 +98,25 @@ export interface Theme {
  * all data-driven off this list.
  */
 export const THEMES: Theme[] = [
-  { id: 'default', name: 'Default', nameKey: 'theme.default', premium: false, arrangement: 'grid', cssDefined: true },
-  { id: 'gold',    name: 'Gold',    nameKey: 'theme.gold',    premium: true,  arrangement: 'grid', cssDefined: true },
-  { id: 'silver',  name: 'Silver',  nameKey: 'theme.silver',  premium: true,  arrangement: 'grid', cssDefined: true },
+  { id: 'indigo',   name: 'Indigo',   nameKey: 'theme.indigo',   premium: false, arrangement: 'grid', cssDefined: true },
+  { id: 'default',  name: 'Paper',    nameKey: 'theme.default',  premium: false, arrangement: 'grid', cssDefined: true },
   { id: 'midnight', name: 'Midnight', nameKey: 'theme.midnight', premium: false, arrangement: 'grid', cssDefined: true },
   { id: 'sakura',   name: 'Sakura',   nameKey: 'theme.sakura',   premium: false, arrangement: 'grid', cssDefined: true },
   { id: 'matcha',   name: 'Matcha',   nameKey: 'theme.matcha',   premium: false, arrangement: 'grid', cssDefined: true },
+  // Premium foils — always listed LAST (the picker also sorts premium to the end).
+  { id: 'gold',     name: 'Gold',     nameKey: 'theme.gold',     premium: true,  arrangement: 'grid', cssDefined: true },
+  { id: 'silver',   name: 'Silver',   nameKey: 'theme.silver',   premium: true,  arrangement: 'grid', cssDefined: true },
 ];
 
-/** The id rendered when nothing is selected anywhere. Pixel-identical to today. */
-export const DEFAULT_THEME_ID = 'default';
+/** The DEFAULT SELECTION for a new device/profile — what the picker starts on.
+ *  "Indigo" (the landing look), applied like any theme via `body[data-theme]`. */
+export const DEFAULT_THEME_ID = 'indigo';
+
+/** The id whose tokens ARE :root — applied by REMOVING `body[data-theme]` (the
+ *  editorial "Paper" baseline). Kept DISTINCT from DEFAULT_THEME_ID so the
+ *  default selection can be a real applied theme (Indigo) while the cascade
+ *  still has a no-attribute fallback. */
+export const ROOT_THEME_ID = 'default';
 
 /** Feature key (in utils/unlocks.ts CODE_FEATURES) that ungates premium themes. */
 export const PREMIUM_FEATURE = 'premium';

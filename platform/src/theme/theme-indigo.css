@@ -1,0 +1,275 @@
+/* ======================================================================
+   🪶 THEME — "Indigo" / 「靛藍」 (registry id: indigo)
+   ----------------------------------------------------------------------
+   The signature look from the marketing landing page, brought into the app:
+   a deep TAIWAN-NAVY field (#073464) with a single warm GOLD accent and warm
+   cream "ink". This is the DEFAULT SELECTION for new devices (see themes.ts
+   DEFAULT_THEME_ID) — but it is NOT the :root theme. The :root/no-attribute
+   look is the editorial "Paper" theme (id 'default', = ROOT_THEME_ID); Indigo
+   is applied like any other theme via `body[data-theme="indigo"]`, so it is
+   purely additive and re-points the SAME global token contract every theme
+   uses — theming the WHOLE app (backgrounds, buttons, char-tiles, text) with
+   no module edits.
+
+   Palette
+     · Grounds  navy — base #073464, recessed #04223F, raised #0C4276.
+     · Text     warm cream off-white #F4EFE1 (never pure #FFF) + muted steps.
+     · Accent   ONE warm GOLD #E8C940 — primary buttons, active states, level
+                badges, key figures. Used restrained against the navy.
+
+   Distinct from the premium "Gold" foil skin: Indigo is a navy ground with a
+   gold accent (the landing), not an all-over gold foil.
+   ====================================================================== */
+
+body[data-theme="indigo"] {
+  /* ── Contract tokens re-pointed → themes EVERYTHING ──────────────────────── */
+
+  /* Grounds + surfaces — the navy field */
+  --paper: #073464;            /* deep Taiwan-navy base ground */
+  --paper-raised: #0C4276;     /* lifted card / panel surface */
+  --paper-sunken: #04223F;     /* recessed fills (inputs, tracks) */
+  --bg: var(--paper);
+  --bg-raised: #0C4276;
+  --bg-raised-2: #08305C;
+  --bg-card: #0C4276;
+  --bg-card2: #08305C;
+  --bg-input: #04223F;
+  --panel-bg: #0C4276;
+
+  /* Warm cream "ink" (never pure white) + muted steps */
+  --ink: #F4EFE1;              /* warm cream off-white */
+  --ink-soft: rgba(244, 239, 225, 0.75);   /* secondary text */
+  --ink-faint: rgba(244, 239, 225, 0.50);  /* captions / hairline labels */
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules — lifted navy on the deep ground */
+  --rule: #1A4C84;
+  --rule-strong: #2A5E98;
+  --border: #1A4C84;
+  --border-hover: #3E72A8;
+  --panel-border: #1A4C84;
+  --tile-edge: rgba(0, 0, 0, 0.40);
+  --key-edge: #2A5E98;
+
+  /* The ONE accent — warm GOLD — replaces the vermilion seal everywhere */
+  --seal: #E8C940;
+  --seal-deep: #C9A52E;
+  --seal-wash: rgba(232, 201, 64, 0.16);
+  --accent: #E8C940;
+  --accent-bg: rgba(232, 201, 64, 0.16);
+  --accent-hover: #F2DC6A;
+  --screen-accent: #E8C940;
+
+  /* Primary-CTA face (the --gold token name) → gold fill on navy */
+  --gold: #E8C940;
+  --gold-dark: #B8901E;        /* pressed / edge */
+  --grad-primary: linear-gradient(135deg, #F2DC6A 0%, #E8C940 52%, #CDA82E 100%);
+
+  /* Status colours tuned to read on navy */
+  --error: #E8786E;
+  --danger: #E8786E;
+  --red: #E8786E;
+  --red-dark: #C85A50;
+  --success: #7BC79A;          /* grass-green, lifted so it reads on navy */
+  --warning: #EBB45E;          /* warm amber — secondary signal only */
+
+  /* Per-category module hues — muted, cohesive, lifted to read on navy */
+  --teal: #4FA99B;             /* writing-challenge */
+  --teal-dark: #357A6F;
+  --pink: #D98C9C;             /* word-sets — clay-rose */
+  --pink-dark: #B05E6E;
+  --blue: #6E9BD8;             /* practice-english — sky, lifted off the navy */
+  --blue-dark: #4A6FA8;
+  --orange: #E0A24E;           /* copybook */
+  --orange-dark: #B8771E;
+  --purple: #9384C0;
+  --purple-dark: #6A5F96;
+  --green: #7BC79A;
+  --green-dark: #4F9269;
+  --green-bright: #7BC79A;
+  --green-bright-dark: #4F9269;
+
+  /* Wood-frame tones (writing-pad surround) → navy so the slot reads dark */
+  --wood: #1A4C84;
+  --wood-dark: #0C4276;
+  --wood-light: #2A5E98;
+
+  /* Per-screen background (modules + home + profile) → the navy field */
+  --screen-bg: #073464;
+  --screen-bg-dark: #04223F;
+
+  /* Gradients re-flattened onto the gold/navy family */
+  --grad-fluency: linear-gradient(135deg, #E8C940 0%, #C9A52E 100%);
+  --grad-success: linear-gradient(135deg, #7BC79A 0%, #4F9269 100%);
+
+  /* Depth + glow — deep navy shadows, warm gold focus glow */
+  --shadow-sm: 0 1px 2px rgba(2, 16, 38, 0.55);
+  --shadow-md: 0 18px 40px -24px rgba(2, 16, 38, 0.8);
+  --shadow-glow: 0 1px 0 #04223F, 0 14px 30px -20px rgba(2, 16, 38, 0.85);
+  --shadow-glow-success: 0 0 0 1px rgba(123, 199, 154, 0.35);
+
+  /* Text contract — body stays the rounded sans; a touch heavier reads premium */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* Paint the navy field on EVERY screen with a soft gold halo from the top, so
+   home/profile/modules/my-chars/settings read as one calm navy field. */
+body[data-theme="indigo"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(232, 201, 64, 0.10) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Wordmark / headings — warm cream ink with a faint gold lift (no foil clip). */
+body[data-theme="indigo"] .welcome-header h1,
+body[data-theme="indigo"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(232, 201, 64, 0.22);
+}
+
+/* ── MODULE TILES ────────────────────────────────────────────────────────────
+   Navy glass cards with a hairline border; each module keeps its (muted, lifted)
+   category hue as a soft top-edge wash so the home grid still reads as a family. */
+body[data-theme="indigo"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0)),
+    var(--bg-raised);
+  box-shadow: 0 6px 0 #04223F, 0 16px 30px -22px rgba(2, 16, 38, 0.9);
+}
+body[data-theme="indigo"] .module-card--writing-challenge { box-shadow: inset 0 2px 0 var(--teal),   0 6px 0 #04223F, 0 16px 30px -22px rgba(2, 16, 38, 0.9); }
+body[data-theme="indigo"] .module-card--word-sets         { box-shadow: inset 0 2px 0 var(--pink),   0 6px 0 #04223F, 0 16px 30px -22px rgba(2, 16, 38, 0.9); }
+body[data-theme="indigo"] .module-card--practice-english  { box-shadow: inset 0 2px 0 var(--blue),   0 6px 0 #04223F, 0 16px 30px -22px rgba(2, 16, 38, 0.9); }
+body[data-theme="indigo"] .module-card--copybook          { box-shadow: inset 0 2px 0 var(--orange), 0 6px 0 #04223F, 0 16px 30px -22px rgba(2, 16, 38, 0.9); }
+
+/* Icon disc → navy glass with a hairline + the category hue carried by the icon */
+body[data-theme="indigo"] .module-card .module-icon {
+  background: #08305C;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 2px 6px rgba(2, 16, 38, 0.6);
+}
+
+@media (hover: hover) {
+  body[data-theme="indigo"] .module-card:hover {
+    border-color: var(--seal);
+    box-shadow: 0 10px 0 #04223F, 0 22px 40px -22px rgba(2, 16, 38, 0.95), 0 0 0 1px rgba(232, 201, 64, 0.4);
+  }
+}
+
+/* Fluency banner — navy glass with a restrained gold hairline + key figure tint */
+body[data-theme="indigo"] .welcome-level {
+  background: #08305C;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--seal) 50%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  font-weight: 700;
+}
+
+/* Profile-picker "Add profile" button → gold active look */
+body[data-theme="indigo"] .user-create button {
+  background: var(--grad-primary);
+  color: #04223F;
+  box-shadow: 0 2px 0 var(--gold-dark);
+}
+
+/* ── BUTTONS (token contract) ────────────────────────────────────────────────
+   Primary CTA = gold fill on deep-navy text (high contrast); secondary = navy
+   glass with hairline borders. */
+body[data-theme="indigo"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #04223F;
+  box-shadow: 0 2px 0 var(--gold-dark), 0 8px 20px -10px rgba(232, 201, 64, 0.5);
+}
+body[data-theme="indigo"] .app-shell .ui-btn--secondary {
+  background: #0C4276;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+@media (hover: hover) {
+  body[data-theme="indigo"] .app-shell .ui-btn--secondary:hover:not(:disabled) {
+    border-color: var(--seal);
+  }
+}
+
+/* ── SETTINGS ────────────────────────────────────────────────────────────────
+   Sections become navy-glass panels; option pills are navy with hairlines; the
+   active option lights with the gold accent. */
+body[data-theme="indigo"] .settings-section,
+body[data-theme="indigo"] .placement-card,
+body[data-theme="indigo"] .restore-modal {
+  background: #0C4276;
+  border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 14px 30px -22px rgba(2, 16, 38, 0.85);
+}
+body[data-theme="indigo"] .settings-option,
+body[data-theme="indigo"] .lever-pill,
+body[data-theme="indigo"] .lever-reset-all {
+  background: #08305C;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+}
+body[data-theme="indigo"] .settings-option.active,
+body[data-theme="indigo"] .lever-pill.active {
+  background: var(--seal-wash);
+  border-color: var(--seal);
+  color: var(--ink);
+  text-shadow: none;
+}
+
+/* ── MY-CHARACTERS CHAR TILES (token contract: --ct-* tile tokens) ───────────
+   Off the My-Chars screen, char-tiles inherit the re-pointed --ct-* tokens so
+   they read on the navy field. On the My-Chars screen they get the headline
+   treatment: navy glass face, gold hairline frame, cream glyph, GOLD level
+   badge. Selectors are (0,3,1) and this file imports after ui-kit.css, so they
+   win over the canonical `.app-shell .char-tile` (0,2,0). */
+body[data-theme="indigo"] .app-shell .char-tile {
+  --ct-face: #0C4276;
+  --ct-line: var(--rule);
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+}
+body[data-theme="indigo"][data-screen="mychars"] .char-tile {
+  --ct-face: #08305C;
+  --ct-line: var(--rule-strong);
+  border: 1px solid var(--rule-strong);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(2, 16, 38, 0.65);
+}
+/* Known tile: navy glass with a soft gold-success glow */
+body[data-theme="indigo"][data-screen="mychars"] .char-tile--known {
+  border-color: color-mix(in srgb, var(--success) 55%, var(--rule-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 4px 14px rgba(2, 16, 38, 0.65),
+    0 0 16px color-mix(in srgb, var(--success) 26%, transparent);
+}
+/* Glyph stays the readable cream ink */
+body[data-theme="indigo"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+/* Rank chip — the calm element: muted cream on a quiet hairline */
+body[data-theme="indigo"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+/* Level badge — the headline GOLD accent: gold fill, deep-navy ink text */
+body[data-theme="indigo"][data-screen="mychars"] .char-tile-level {
+  color: #04223F;
+  background: var(--seal);
+  border-color: var(--seal-deep);
+}
+@media (hover: hover) {
+  body[data-theme="indigo"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: var(--seal);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 22px rgba(2, 16, 38, 0.75),
+      0 0 0 1px rgba(232, 201, 64, 0.35);
+  }
+}

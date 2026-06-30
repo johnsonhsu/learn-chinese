@@ -1,48 +1,77 @@
-import { useState, type ReactNode } from 'react';
-import { Button, Card, BackButton, ModuleScreen } from './ui/index.ts';
+import { useState, useEffect, type ReactNode } from 'react';
+import { Button, Card, BackButton, ModuleScreen, CharTile } from './ui/index.ts';
+import { THEMES, DEFAULT_THEME_ID, ROOT_THEME_ID } from './theme/themes.ts';
+// Import the writing-challenge module's REAL stylesheet so the char-box / track
+// specimens render with the exact production CSS — including its editorial
+// override cascade (the `.char-box` block at ~995 that beats the candy block at
+// ~538 by source order). Hand-copying that drifted once; this can't. Only this
+// dev `?ui` route loads it, and its other `.sp-*` rules are inert here (no
+// module mounted, no elements with those classes).
+import '../../modules/writing-challenge/src/App.css';
 
 /**
- * Living styleguide / component gallery.
+ * Living styleguide / component gallery / THEME INSPECTOR.
  *
  * A REAL, rendered page (not a doc) that imports the ACTUAL shared UI kit
  * (`./ui/index.ts`) and references the REAL canonical design tokens (the
  * `:root` custom properties in `index.css`) plus the shared classes
- * (`.module-tile`, `.module-back`, etc.). Because it composes the live
- * primitives, it stays accurate as the kit evolves.
+ * (`.module-tile`, `.char-tile`, the writing-challenge `.char-box*` states).
+ * Because it composes the live primitives + the live tokens, it stays accurate
+ * as the kit evolves AND it re-skins with whatever theme is selected — so every
+ * theme can be inspected surface-by-surface from one page.
  *
  * The whole page is wrapped in `.app-shell` so the kit's stylesheet
  * (ui-kit.css, all selectors prefixed `.app-shell`) actually applies — exactly
  * as it does when a module renders inside ActiveModuleView's `.app-shell`.
  *
+ * THEME PREVIEW: the bar at the top writes `body[data-theme]` directly so the
+ * whole page re-skins live. It is a PREVIEW only — nothing is persisted (no
+ * theme-store / localStorage writes), and the app's real effective theme is
+ * captured on mount and restored on unmount, so leaving the page reverts.
+ *
  * Reachable two ways (see App.tsx): a top-level `?ui` query-param route
  * (mirrors the `?landing`/`?app` pattern) and a "UI Components" link in Device
- * Settings → Advanced (where dev/device tooling lives). Demo content uses plain
- * English labels (this is a dev reference); the persistent nav label that opens
- * it is routed through i18n.
+ * Settings → Advanced. Demo content uses plain English labels (this is a dev
+ * reference); the persistent nav label that opens it is routed through i18n.
  */
 
 // The canonical color tokens worth eyeballing as swatches. Names are the REAL
-// `:root` custom properties from index.css — we read them live via var().
+// `:root` custom properties from index.css — we read them live via var(), so
+// each swatch shows the ACTIVE theme's resolved value.
 const COLOR_TOKENS: { name: string; note: string; dark?: boolean }[] = [
-  { name: '--bg', note: 'deep teal ink-board', dark: true },
-  { name: '--bg-raised', note: 'cream panel interior' },
-  { name: '--bg-raised-2', note: 'cream-dark' },
-  { name: '--bg-input', note: 'near-white input fill' },
-  { name: '--border', note: 'purple panel border', dark: true },
-  { name: '--border-hover', note: 'purple hover', dark: true },
-  { name: '--gold', note: 'primary candy face' },
-  { name: '--gold-dark', note: 'primary candy lip', dark: true },
-  { name: '--teal', note: 'accent teal', dark: true },
-  { name: '--teal-dark', note: 'accent teal lip', dark: true },
-  { name: '--green', note: 'success / green', dark: true },
-  { name: '--green-dark', note: 'green lip', dark: true },
-  { name: '--red', note: 'error / red', dark: true },
-  { name: '--red-dark', note: 'red lip', dark: true },
-  { name: '--accent', note: 'orange-dark accent', dark: true },
-  { name: '--accent-bg', note: 'accent tint' },
-  { name: '--text', note: 'dark text on cream', dark: true },
+  { name: '--bg', note: 'app canvas / paper field' },
+  { name: '--bg-raised', note: 'panel interior' },
+  { name: '--bg-raised-2', note: 'sunken fill (done tile)' },
+  { name: '--bg-input', note: 'input fill' },
+  { name: '--border', note: 'hairline border' },
+  { name: '--border-hover', note: 'hover border', dark: true },
+  { name: '--gold', note: 'primary CTA face', dark: true },
+  { name: '--gold-dark', note: 'primary CTA lip', dark: true },
+  { name: '--teal', note: 'celadon — writing', dark: true },
+  { name: '--pink', note: 'clay-rose — word-sets', dark: true },
+  { name: '--orange', note: 'ochre — copybook', dark: true },
+  { name: '--blue', note: 'indigo — practice EN', dark: true },
+  { name: '--text', note: 'body text', dark: true },
   { name: '--text-muted', note: 'muted text', dark: true },
   { name: '--text-dim', note: 'dim text' },
+];
+
+// The SEMANTIC / STATE colors — the "color logic". These are what give the
+// writing-challenge char track and the char tiles their meaning, and they are
+// the tokens most likely to drift per-theme (a theme that remaps the ink/seal
+// palette but doesn't re-anchor these inherits the wrong hue). Inspect these
+// across themes. `--grad-primary` may resolve to a gradient — the chip paints it.
+const SEMANTIC_TOKENS: { name: string; note: string; dark?: boolean }[] = [
+  { name: '--ink', note: 'current pill fill · upcoming text', dark: true },
+  { name: '--paper-raised', note: 'upcoming pill fill' },
+  { name: '--rule-strong', note: 'upcoming pill border' },
+  { name: '--bg-raised-2', note: 'done pill (sunken)' },
+  { name: '--seal', note: 'above-level / fail border', dark: true },
+  { name: '--seal-wash', note: 'above-level / fail fill' },
+  { name: '--seal-deep', note: 'above / fail text', dark: true },
+  { name: '--success', note: 'pass · mastery≥80 · target', dark: true },
+  { name: '--warning', note: 'warn · mastery≥50', dark: true },
+  { name: '--text-dim', note: 'user-skipped text' },
 ];
 
 // The per-screen background hues set on `<body data-screen>` by AppInner.
@@ -75,26 +104,98 @@ function Specimen({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export default function Styleguide({ onBack }: { onBack?: () => void }) {
-  // When opened via ?ui (no in-app navigator), fall back to history.back().
-  const back = onBack ?? (() => window.history.back());
+function Swatches({ tokens }: { tokens: { name: string; note: string; dark?: boolean }[] }) {
+  return (
+    <div className="sg-swatches">
+      {tokens.map((tok) => (
+        <div className="sg-swatch" key={tok.name}>
+          <div
+            className="sg-swatch-chip"
+            style={{ background: `var(${tok.name})`, color: tok.dark ? '#fff' : 'var(--text)' }}
+          >
+            <span className="sg-swatch-name">{tok.name}</span>
+          </div>
+          <span className="sg-swatch-note">{tok.note}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Styleguide() {
   // Local toggle so the candy press/active states are observable on touch too.
   const [armed, setArmed] = useState(false);
 
+  // THEME PREVIEW — drive body[data-theme] directly. Open on the app's DEFAULT
+  // selection (Indigo) so the inspector reflects what new users actually see;
+  // capture the real attribute on mount and restore it on unmount so previewing
+  // never leaks into the user's saved theme.
+  const [theme, setTheme] = useState<string>(DEFAULT_THEME_ID);
+  useEffect(() => {
+    const original = document.body.getAttribute('data-theme');
+    if (DEFAULT_THEME_ID === ROOT_THEME_ID) document.body.removeAttribute('data-theme');
+    else document.body.setAttribute('data-theme', DEFAULT_THEME_ID);
+    return () => {
+      if (original) document.body.setAttribute('data-theme', original);
+      else document.body.removeAttribute('data-theme');
+    };
+  }, []);
+  const applyTheme = (id: string) => {
+    setTheme(id);
+    // ROOT theme (Paper) is the no-attribute :root look; everything else sets it.
+    if (id === ROOT_THEME_ID) document.body.removeAttribute('data-theme');
+    else document.body.setAttribute('data-theme', id);
+  };
+
+  // CHAR-TILE SCREEN CONTEXT — char-tiles intensify (gold/silver faces, filled
+  // level badge, brighter glyph) ONLY on the My-Characters screen, because every
+  // theme gates that look behind `body[data-screen="mychars"]`. Off that screen
+  // (writing's Next-up, word-set chips) they use the quieter base look. Mirror
+  // the real body attribute here so the specimens match the device exactly;
+  // restore whatever it was on unmount.
+  const [tileCtx, setTileCtx] = useState<'mychars' | 'other'>('mychars');
+  useEffect(() => {
+    const original = document.body.dataset.screen;
+    document.body.dataset.screen = tileCtx === 'mychars' ? 'mychars' : 'home';
+    return () => {
+      if (original) document.body.dataset.screen = original;
+      else delete document.body.dataset.screen;
+    };
+  }, [tileCtx]);
+
   return (
-    // `.app-shell` makes the kit's `.app-shell .ui-*` / `.module-tile` rules
-    // apply; `screen-settings` paints the same dotted purple backdrop the rest
-    // of the app uses for its settings surface (canonical --screen-bg tokens).
+    // `.app-shell` makes the kit's `.app-shell .ui-*` / `.module-tile` /
+    // `.char-tile` rules apply; `screen-settings` paints the same backdrop the
+    // rest of the app uses for its settings surface (canonical --screen-bg).
     <div className="app-shell screen-settings sg-page">
       <style>{styleguideCss}</style>
 
-      <BackButton onClick={back} label="← Back" />
+      {/* THEME SWITCHER — fixed dark chrome (does NOT itself re-theme, so it
+          stays legible on every theme's backdrop). The specimens below DO. */}
+      <div className="sg-themebar" role="group" aria-label="Preview theme">
+        <span className="sg-themebar-title">Theme</span>
+        <div className="sg-themebar-btns">
+          {THEMES.map((th) => (
+            <button
+              key={th.id}
+              type="button"
+              className={`sg-theme-btn${theme === th.id ? ' is-active' : ''}`}
+              aria-pressed={theme === th.id}
+              onClick={() => applyTheme(th.id)}
+            >
+              {th.name}
+              {th.premium && <span className="sg-theme-prem" aria-label="premium">★</span>}
+            </button>
+          ))}
+        </div>
+        <span className="sg-themebar-note">Preview only — your saved theme is unchanged</span>
+      </div>
 
       <header className="sg-header">
         <h1 className="sg-title">UI Components</h1>
         <p className="sg-subtitle">
-          Living gallery of <code>platform/src/ui</code> — the real shared kit &amp; canonical{' '}
-          <code>:root</code> tokens. Rendered, not documented.
+          Living gallery of <code>platform/src/ui</code> + the canonical <code>:root</code> tokens —
+          rendered, not documented. Flip the theme above to inspect every surface.
         </p>
       </header>
 
@@ -138,10 +239,116 @@ export default function Styleguide({ onBack }: { onBack?: () => void }) {
         </div>
       </Section>
 
+      {/* ── CHARACTER TILES ─────────────────────────────────────────────── */}
+      <Section
+        title="Character tile (CharTile)"
+        desc="The ONE shared per-character tile. On the My Characters screen it intensifies — gold/silver faces, filled level badge, brighter glyph — while off it (Next-up, word-set chips) it stays quieter. Use the Screen toggle to compare; both match the device. Recent-result dots and the known-face tint read theme tokens. NOTE: the mastery-bar fill is hardcoded hex in CharTile.tsx (masteryFillColor) — it does NOT follow a theme."
+      >
+        <div className="sg-ctx" role="group" aria-label="Char-tile screen context">
+          <span className="sg-ctx-label">Screen</span>
+          <button
+            type="button"
+            className={`sg-ctx-btn${tileCtx === 'mychars' ? ' is-active' : ''}`}
+            onClick={() => setTileCtx('mychars')}
+          >
+            My Characters
+          </button>
+          <button
+            type="button"
+            className={`sg-ctx-btn${tileCtx === 'other' ? ' is-active' : ''}`}
+            onClick={() => setTileCtx('other')}
+          >
+            Next-up / chips
+          </button>
+        </div>
+        <div className="sg-tilegrid">
+          <Specimen label="lg · ribbon below · 85%">
+            <CharTile char="字" rank={42} level="1" mastery={85} recent={['P', 'P', 'C']} ribbon="below" />
+          </Specimen>
+          <Specimen label="lg · ribbon target · 55%">
+            <CharTile char="學" rank={318} level="2" mastery={55} recent={['C', 'I', 'C']} ribbon="target" />
+          </Specimen>
+          <Specimen label="lg · ribbon above · 20%">
+            <CharTile char="鬱" rank={1119} level="4*" mastery={20} recent={['I', 'S', 'I']} ribbon="above" />
+          </Specimen>
+          <Specimen label="lg · known (success face)">
+            <CharTile char="我" rank={8} level="1" mastery={100} recent={['P', 'P', 'P']} ribbon="target" known />
+          </Specimen>
+          <Specimen label="lg · fresh (0%, no dots)">
+            <CharTile char="龜" rank={2750} level="5" mastery={0} ribbon="above" />
+          </Specimen>
+          <Specimen label="sm · Next-up chip">
+            <CharTile char="們" rank={56} level="1" size="sm" />
+          </Specimen>
+        </div>
+        <p className="sg-mono-note">
+          Result dots, in order: <code>P</code> perfect · <code>C</code> correct · <code>I</code> incorrect ·{' '}
+          <code>S</code> skipped.
+        </p>
+      </Section>
+
+      {/* ── WRITING-CHALLENGE CHARACTER TRACK ───────────────────────────── */}
+      <Section
+        title="Writing-challenge character track"
+        desc="The sentence shown as a scroll of SEMANTIC state pills — current, upcoming, done, above-level / auto-skip, user-skipped. Rendered with the writing-challenge module's REAL stylesheet (imported), so what you see here is exactly what the live module renders under each theme."
+      >
+        {/* Realistic row, as it appears mid-sentence. */}
+        <div className="sg-track-surface">
+          <div className="sp-char-scroll">
+            <span className="char-box char-box-active">ㄨㄛˇ</span>
+            <span className="char-box">們</span>
+            <span className="char-box">全</span>
+            <span className="char-box">家</span>
+            <span className="char-box char-box-done">人</span>
+            <span className="char-box char-box-above">預</span>
+          </div>
+        </div>
+
+        {/* Each state, labelled, on the themed module surface. */}
+        <div className="sg-track-surface sg-track-legend">
+          <div className="sg-legend-item">
+            <span className="char-box char-box-active">ㄨㄛˇ</span>
+            <code>current · .char-box-active</code>
+          </div>
+          <div className="sg-legend-item">
+            <span className="char-box">們</span>
+            <code>upcoming · .char-box</code>
+          </div>
+          <div className="sg-legend-item">
+            <span className="char-box char-box-done">家</span>
+            <code>done · .char-box-done</code>
+          </div>
+          <div className="sg-legend-item">
+            <span className="char-box char-box-above">預</span>
+            <code>above-level / auto-skip · .char-box-above</code>
+          </div>
+          <div className="sg-legend-item">
+            <span className="char-box char-box-skipped">計</span>
+            <code>user-skipped · .char-box-skipped</code>
+          </div>
+        </div>
+
+        <h3 className="sg-subhead">Stroke-result states (practice-done tiles)</h3>
+        <div className="sg-track-surface sg-track-legend">
+          <div className="sg-legend-item">
+            <span className="char-box char-box-pass">字</span>
+            <code>pass · .char-box-pass</code>
+          </div>
+          <div className="sg-legend-item">
+            <span className="char-box char-box-warn">字</span>
+            <code>warn · .char-box-warn</code>
+          </div>
+          <div className="sg-legend-item">
+            <span className="char-box char-box-fail">字</span>
+            <code>fail · .char-box-fail</code>
+          </div>
+        </div>
+      </Section>
+
       {/* ── CARD ────────────────────────────────────────────────────────── */}
       <Section
         title="Card"
-        desc="The shared cream candy panel (the .module-tile look: purple border, 3D drop, cream fill, centered max-width) for use OUTSIDE a full ModuleScreen."
+        desc="The shared cream candy panel (the .module-tile look) for use OUTSIDE a full ModuleScreen."
       >
         <Card>
           <h3 style={{ margin: 0 }}>A standalone Card</h3>
@@ -155,7 +362,7 @@ export default function Styleguide({ onBack }: { onBack?: () => void }) {
       {/* ── BACK BUTTON ─────────────────────────────────────────────────── */}
       <Section
         title="BackButton"
-        desc="The shared back pill (.module-back) as a standalone primitive — solid cream-white candy pill, purple border + flat 3D lip. ModuleScreen renders the same pill internally when given onBack."
+        desc="The shared back pill (.module-back) as a standalone primitive. ModuleScreen renders the same pill internally when given onBack."
       >
         <div className="sg-row">
           <Specimen label="default label">
@@ -170,7 +377,7 @@ export default function Styleguide({ onBack }: { onBack?: () => void }) {
       {/* ── MODULE SCREEN ───────────────────────────────────────────────── */}
       <Section
         title="ModuleScreen"
-        desc="The standard module MAIN-screen shell: optional back pill + shared cream card + title, then children. Shown here at reduced scale inside framed stages."
+        desc="The standard module MAIN-screen shell: optional back pill + shared card + title, then children. Shown here at reduced scale inside framed stages."
       >
         <div className="sg-frames">
           <Specimen label="title + onBack (default width)">
@@ -199,30 +406,23 @@ export default function Styleguide({ onBack }: { onBack?: () => void }) {
       {/* ── COLOR TOKENS ────────────────────────────────────────────────── */}
       <Section
         title="Color tokens"
-        desc="Canonical :root custom properties from index.css — the single source of truth. Each swatch is painted with its live var(), so it always matches the running theme."
+        desc="Canonical :root custom properties from index.css. Each swatch is painted with its live var(), so it always matches the SELECTED theme above."
       >
-        <div className="sg-swatches">
-          {COLOR_TOKENS.map((tok) => (
-            <div className="sg-swatch" key={tok.name}>
-              <div
-                className="sg-swatch-chip"
-                style={{
-                  background: `var(${tok.name})`,
-                  color: tok.dark ? '#fff' : 'var(--text)',
-                }}
-              >
-                <span className="sg-swatch-name">{tok.name}</span>
-              </div>
-              <span className="sg-swatch-note">{tok.note}</span>
-            </div>
-          ))}
-        </div>
+        <Swatches tokens={COLOR_TOKENS} />
+      </Section>
+
+      {/* ── SEMANTIC / STATE COLORS ─────────────────────────────────────── */}
+      <Section
+        title="Semantic & state colors"
+        desc="The tokens the writing-challenge char track + tiles actually read. The track is built from the ink / paper / seal palette — so a theme that remaps those (e.g. Midnight) re-skins every state automatically. Compare across themes to see each state's resolved color."
+      >
+        <Swatches tokens={SEMANTIC_TOKENS} />
       </Section>
 
       {/* ── PER-SCREEN BACKGROUNDS ──────────────────────────────────────── */}
       <Section
         title="Per-screen backgrounds"
-        desc="Each app screen sets a saturated --screen-bg / --screen-bg-dark pair (declared on the .screen-* classes). The chips below ARE those classes, so they render the real backdrop gradient."
+        desc="Each app screen sets a --screen-bg / --screen-bg-dark pair (declared on the .screen-* classes). The chips below ARE those classes, so they render the real backdrop."
       >
         <div className="sg-screens">
           {SCREEN_BACKGROUNDS.map((s) => (
@@ -292,14 +492,18 @@ export default function Styleguide({ onBack }: { onBack?: () => void }) {
       </Section>
 
       <footer className="sg-footer">
-        Source: <code>platform/src/ui</code> · tokens: <code>platform/src/index.css :root</code>
+        Source: <code>platform/src/ui</code> · tokens: <code>platform/src/index.css :root</code> ·
+        char track: <code>modules/writing-challenge/src/App.css</code>
       </footer>
     </div>
   );
 }
 
-/* Page-only layout. Uses ONLY canonical tokens (no new palette). Scoped under
-   `.sg-page` so it can't leak. Respects prefers-reduced-motion via the kit. */
+/* Page-only layout. Uses ONLY canonical tokens (no new palette) EXCEPT the
+   fixed-dark theme switcher chrome (intentionally theme-independent so it stays
+   legible on every backdrop). Scoped under `.sg-page` so nothing leaks. The
+   `.char-box*` + `.sp-char-scroll` styles are NOT here — they come from the real
+   module stylesheet imported at the top of this file, so they stay in sync. */
 const styleguideCss = `
 .sg-page {
   width: 100%;
@@ -307,174 +511,139 @@ const styleguideCss = `
   margin: 0 auto;
   padding: 0 16px calc(60px + env(safe-area-inset-bottom, 0px));
 }
+
+/* — Theme switcher (fixed dark chrome) — */
+.sg-themebar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 0 -16px 22px;
+  padding: 11px 16px;
+  background: #20242e;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 6px 18px -10px rgba(0,0,0,0.6);
+}
+.sg-themebar-title {
+  font-family: var(--font); font-weight: 900; font-size: 12px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.65);
+}
+.sg-themebar-btns { display: flex; flex-wrap: wrap; gap: 7px; }
+.sg-theme-btn {
+  font-family: var(--font); font-size: 14px; font-weight: 800; color: #fff;
+  cursor: pointer; padding: 7px 13px; border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.26);
+  background: rgba(255,255,255,0.08);
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.sg-theme-btn:active { transform: translateY(1px); }
+.sg-theme-btn.is-active { background: #fff; color: #1a1d24; border-color: #fff; }
+.sg-theme-prem { font-size: 11px; color: #E8C940; line-height: 1; }
+.sg-theme-btn.is-active .sg-theme-prem { color: #B58A00; }
+.sg-themebar-note {
+  font-family: var(--font); font-size: 12px; color: rgba(255,255,255,0.55);
+  margin-left: auto;
+}
+@media (max-width: 600px) { .sg-themebar-note { display: none; } }
+
 .sg-header { margin: 8px 0 28px; }
 .sg-title {
-  margin: 0;
-  font-family: var(--font);
-  font-size: 34px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: 0.5px;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.25);
+  margin: 0; font-family: var(--font); font-size: 34px; font-weight: 900;
+  color: var(--text); letter-spacing: 0.5px;
 }
 .sg-subtitle {
-  margin: 8px 0 0;
-  font-family: var(--font);
-  font-size: 15px;
-  color: rgba(255,255,255,0.88);
-  line-height: 1.5;
+  margin: 8px 0 0; font-family: var(--font); font-size: 15px;
+  color: var(--text-muted); line-height: 1.5;
 }
-.sg-page code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.9em;
-}
+.sg-page code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
 .sg-section {
   background: var(--bg-raised);
-  border: 3px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 8px 0 var(--border);
+  box-shadow: var(--shadow-md);
   padding: 22px 20px;
   margin: 0 0 26px;
 }
-.sg-section-title {
-  margin: 0;
-  font-family: var(--font);
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--text);
-}
-.sg-section-desc {
-  margin: 8px 0 0;
-  font-family: var(--font);
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-muted);
-}
+.sg-section-title { margin: 0; font-family: var(--font); font-size: 22px; font-weight: 900; color: var(--text); }
+.sg-section-desc { margin: 8px 0 0; font-family: var(--font); font-size: 14px; line-height: 1.5; color: var(--text-muted); }
 .sg-section-body { margin-top: 18px; }
-.sg-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-  align-items: flex-start;
+.sg-subhead {
+  margin: 22px 0 12px; font-family: var(--font); font-size: 14px; font-weight: 800;
+  letter-spacing: 0.04em; color: var(--text-muted);
 }
+.sg-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
 .sg-row + .sg-row { margin-top: 18px; }
 .sg-row--wrap { align-items: stretch; }
-.sg-specimen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.sg-specimen { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.sg-specimen-stage { display: flex; align-items: center; justify-content: center; }
+.sg-specimen-label { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--text-muted); text-align: center; }
+.sg-page .ui-btn.sg-armed { transform: translateY(4px); box-shadow: 0 1px 0 var(--gold-dark); }
+.sg-ctx { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.sg-ctx-label { font-family: var(--font); font-weight: 800; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+.sg-ctx-btn {
+  font-family: var(--font); font-size: 13px; font-weight: 800; cursor: pointer;
+  padding: 5px 11px; border-radius: 999px; border: 1.5px solid var(--border);
+  background: var(--bg-raised); color: var(--text);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
-.sg-specimen-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.sg-specimen-label {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  color: var(--text-muted);
-  text-align: center;
-}
-/* Hold the armed demo button in its pressed pose for touch users. */
-.sg-page .ui-btn.sg-armed {
-  transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--gold-dark);
-}
-.sg-frames {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
-}
+.sg-ctx-btn.is-active { background: var(--text); color: var(--bg-raised); border-color: var(--text); }
+.sg-tilegrid { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.sg-frames { display: flex; flex-wrap: wrap; gap: 18px; }
 .sg-frame {
   flex: 1 1 280px;
   background:
     radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px) 0 0 / 22px 22px,
     var(--screen-bg-dark, #2C2150);
-  border-radius: var(--radius);
-  padding: 14px 4px;
+  border-radius: var(--radius); padding: 14px 4px; overflow: hidden;
+}
+.sg-demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* — Writing-challenge track surface (the .char-box pills themselves come from
+   the imported module stylesheet, not from here) — */
+.sg-track-surface {
+  background: var(--screen-bg, var(--bg-raised-2));
+  border: 1px solid var(--tile-edge);
+  border-radius: var(--radius-lg);
+  margin-bottom: 14px;
   overflow: hidden;
 }
-.sg-demo-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.sg-track-legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 16px; }
+.sg-legend-item { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: 150px; }
+.sg-legend-item code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
+  color: var(--text-muted); text-align: center;
 }
-.sg-swatches {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 14px;
-}
+/* NOTE: .char-box*, .char-box-active/-done/-above/-skipped/-pass/-warn/-fail and
+   .sp-char-scroll are intentionally NOT defined here — they come from the imported
+   real module stylesheet (top of file), so this inspector renders the production
+   cascade exactly and stays in sync automatically. */
+
+.sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .sg-swatch { display: flex; flex-direction: column; gap: 6px; }
 .sg-swatch-chip {
-  height: 64px;
-  border-radius: var(--radius-sm);
-  border: 2px solid var(--border);
-  display: flex;
-  align-items: flex-end;
-  padding: 8px;
+  height: 64px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  display: flex; align-items: flex-end; padding: 8px;
 }
-.sg-swatch-name {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  font-weight: 700;
-}
-.sg-swatch-note {
-  font-family: var(--font);
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.sg-screens {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 14px;
-}
+.sg-swatch-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 700; }
+.sg-swatch-note { font-family: var(--font); font-size: 12px; color: var(--text-muted); }
+.sg-screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .sg-screen-chip {
-  min-height: 84px;
-  border-radius: var(--radius-sm);
-  border: 2px solid rgba(0,0,0,0.18);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-end;
-  gap: 2px;
-  padding: 10px;
-  color: #fff;
-  font-family: var(--font);
-  font-weight: 800;
+  min-height: 84px; border-radius: var(--radius-sm); border: 1px solid rgba(0,0,0,0.18);
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  gap: 2px; padding: 10px; color: #fff; font-family: var(--font); font-weight: 800;
   text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
-.sg-screen-chip code {
-  font-weight: 600;
-  font-size: 11px;
-  opacity: 0.9;
-}
+.sg-screen-chip code { font-weight: 600; font-size: 11px; opacity: 0.9; }
 .sg-type { display: flex; flex-direction: column; gap: 14px; }
 .sg-type-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  border-bottom: 1px dashed var(--bg-raised-2);
-  padding-bottom: 12px;
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 8px; border-bottom: 1px dashed var(--bg-raised-2); padding-bottom: 12px;
 }
-.sg-type-row code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  color: var(--text-muted);
-}
-.sg-mono-note {
-  margin: 14px 0 0;
-  font-family: var(--font);
-  font-size: 13px;
-  color: var(--text-muted);
-}
-.sg-footer {
-  margin-top: 8px;
-  text-align: center;
-  font-family: var(--font);
-  font-size: 13px;
-  color: rgba(255,255,255,0.85);
-}
+.sg-type-row code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--text-muted); }
+.sg-mono-note { margin: 14px 0 0; font-family: var(--font); font-size: 13px; color: var(--text-muted); }
+.sg-footer { margin-top: 8px; text-align: center; font-family: var(--font); font-size: 13px; color: var(--text-muted); }
 `;

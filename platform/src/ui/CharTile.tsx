@@ -64,10 +64,15 @@ export function CharTile({
   ariaLabel,
   className,
 }: CharTileProps) {
+  // Status frame — the corner indicator, restored as a full colored ring drawn by
+  // `.char-tile::after`: learned (known) → success, above-level → warning,
+  // in-progress (has a ribbon, not yet known) → blue. No ribbon + not known → none.
+  const status = known ? 'learned' : ribbon === 'above' ? 'above' : ribbon ? 'progress' : 'none';
   const cls = [
     'char-tile',
     `char-tile--${size}`,
     known && 'char-tile--known',
+    status !== 'none' && `char-tile--status-${status}`,
     onActivate && 'char-tile--tappable',
     className,
   ]
@@ -97,10 +102,7 @@ export function CharTile({
     >
       {hasTop && (
         <div className="char-tile-top">
-          <span className="char-tile-rank">
-            {ribbon && <span className={`char-tile-pip char-tile-pip--${ribbon}`} aria-hidden="true" />}
-            #{rank || '?'}
-          </span>
+          <span className="char-tile-rank">#{rank || '?'}</span>
           {level !== undefined && <span className="char-tile-level">{level}</span>}
         </div>
       )}
