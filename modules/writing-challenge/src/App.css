@@ -996,7 +996,13 @@ canvas {
 .char-box-above { background: var(--seal-wash, #F3E0DB); border-color: var(--seal, #C0392B); color: var(--seal-deep, #97271C); box-shadow: none; }
 .char-box-pass { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); border-color: var(--success, #4F7A3A); color: var(--success, #4F7A3A); box-shadow: none; }
 .char-box-warn { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); color: var(--warning, #B5701C); box-shadow: none; }
-.char-box-fail { background: var(--seal-wash, #F3E0DB); border-color: var(--seal, #C0392B); color: var(--seal-deep, #97271C); box-shadow: none; }
+/* Fail = RED, routed through the themed --error token (NOT --seal). --seal is each
+   theme's single ACCENT (gold in indigo/gold, teal in midnight, green in matcha, pink
+   in sakura, platinum in silver) — only Paper's accent is red — so keying fail off
+   --seal made it collide with the above-level pill (.char-box-above) and broke the
+   pass→warn→fail = green→orange→red signal. --error is a true red in EVERY theme.
+   Same wash recipe as .char-box-pass/-warn above so the trio reads as one set. */
+.char-box-fail { background: color-mix(in srgb, var(--error, #B23B30) 16%, var(--paper-raised)); border-color: var(--error, #B23B30); color: var(--error, #B23B30); box-shadow: none; }
 /* Done + user-skipped: placed AFTER the editorial .char-box base above so their
    distinct colors win the cascade (the base was clobbering them by source order). */
 .char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
@@ -1005,7 +1011,7 @@ canvas {
 /* Result tiles → paper with a colored hairline + tinted wash (no candy fills) */
 .sp-result-perfect   { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border: 1px solid var(--success, #4F7A3A); color: var(--ink, #1C1A17); box-shadow: none; }
 .sp-result-correct   { background: color-mix(in srgb, var(--teal, #4E7C76) 14%, var(--paper-raised)); border: 1px solid var(--teal, #4E7C76); color: var(--ink, #1C1A17); box-shadow: none; }
-.sp-result-incorrect { background: var(--seal-wash, #F3E0DB); border: 1px solid var(--seal, #C0392B); color: var(--ink, #1C1A17); box-shadow: none; }
+.sp-result-incorrect { background: color-mix(in srgb, var(--error, #B23B30) 14%, var(--paper-raised)); border: 1px solid var(--error, #B23B30); color: var(--ink, #1C1A17); box-shadow: none; }
 
 /* Primary action button → flat ink */
 .sp-btn-primary {
