@@ -35,7 +35,7 @@
   cursor: pointer;
   touch-action: manipulation;
   -webkit-appearance: none;
-  transition: background 0.16s ease, transform 0.1s ease, border-color 0.16s ease, color 0.16s ease;
+  transition: background 0.16s ease, transform 0.1s ease, border-color 0.16s ease, color 0.16s ease, filter 0.16s ease;
 }
 
 .app-shell .ui-btn:disabled {
@@ -78,8 +78,16 @@
 
 /* hover only on real pointers (iOS sticky-hover fix) */
 @media (hover: hover) {
+  /* Hover = DARKEN THE THEMED FACE, never force a fixed color. The old
+     `background: #000` was written for Paper/:root (dark ink face + cream text)
+     — but every dark theme (indigo/midnight/gold/silver) inverts this button to
+     a LIGHT gradient face with DARK text, so a forced black wiped the gradient
+     and left dark-on-black, unreadable. `filter: brightness()` deepens whatever
+     face the active theme set (ink, gold/jade/silver gradient, foil) while
+     preserving its text-contrast relationship — one rule, every theme legible.
+     Paper still reads as a clear press-darken; dark themes stay light-faced. */
   .app-shell .ui-btn--primary:hover:not(:disabled) {
-    background: #000;
+    filter: brightness(0.9);
   }
   .app-shell .ui-btn--secondary:hover:not(:disabled) {
     border-color: var(--ink);
