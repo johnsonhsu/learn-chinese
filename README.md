@@ -193,30 +193,41 @@ Vitest (TS) + pytest (the one Python parity test). Run on every PR and **gate ev
 
 ```bash
 npm test           # everything
-npm run test:unit  # fast pure-logic + theme unit tests (shared/ + platform/src)
+npm run test:unit  # fast unit tests (shared/ engine + platform/src/)
 npm run test:data  # data-integrity gate — run after a bake; checks the shipped artifacts
 pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip install opencc pytest)
 ```
 
 - **Engine** — sentence selection (target char is *binding*, parity/coverage), mastery/retention, "known"/level, char ranking, zhuyin.
 - **Glyph-canonicalization parity** — the TS importer (`canonicalizeTW`) and the Python scrub (`bank-fix.py canon()`) are checked against one shared golden fixture (`test/fixtures/glyph-canon.json`) so they can't drift: 台/臺 preserved, variant unification (汙→污…), Simplified→Traditional.
-- **Theme** — resolution, premium gating, per-profile override, `body[data-theme]` application, backup round-trip.
 - **Data-integrity gate** — the shipped DBs carry no Simplified/undrawable glyphs, are referentially sound, contain **no personal data**, and every curriculum char used in the bank is drawable offline.
+- *(A theme-resolution suite — selection, premium gating, per-profile override, `body[data-theme]` apply — is written and lands with the theme refactor it depends on.)*
 
 ## Deployment
 
-Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`):
+Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`) and gated on the tests + data-integrity check:
 
-- **Pull request → preview.** CI runs the tests, builds from the committed seeds, runs the data-integrity gate, then deploys a Cloudflare Pages **preview** (unique URL per PR).
-- **Merge to `master` → production.** Identical build + gate, pointed at the production branch — prod just mirrors the preview flow.
-- Requires repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (a Pages:Edit API token).
+- **Pull request → preview.** CI builds from the committed seeds, runs the gate, deploys a Cloudflare Pages **preview**, and comments its URLs on the PR — including the demo link `…/?app&demo`.
+- **Merge to `master` → production.** Identical build + gate. The Pages project is *direct-upload* with production branch **`learning-chinese`** (not `master`), so the workflow deploys `--branch=learning-chinese` on a master push (→ `learnchinese.hsu.mobi`) and `--branch=<PR head>` on a PR (→ preview).
+- **One-time setup:** repo secrets `CLOUDFLARE_API_TOKEN` (Pages:Edit) + `CLOUDFLARE_ACCOUNT_ID`, and the CF project's production branch set to `learning-chinese`.
 
-Local builds **no longer auto-deploy** — ship by merging a green PR. Reproducible builds: the working `platform.db` / `writing-challenge.db` hold your local progress and stay out of git; CI builds from scrubbed, content-only **`seed/`** DBs — regenerate after changing curriculum with `npm run seed:dbs`. Manual escape hatch (deploys a *preview*):
+**Shipping a change** — there's no manual deploy; open a PR, eyeball its preview, merge:
+
+| Change | Steps |
+|--------|-------|
+| Code | PR → preview → merge to `master`. Automatic. |
+| Content (`content.db` / module DB) | also `npm run seed:dbs`, commit `seed/*.db` + `content.db` → PR. The gate re-checks glyphs/coverage/privacy. |
+| Stroke override | add `platform/public/stroke-data/<char>.json`; drop that char from the gate's `STROKE_ALLOWLIST`. |
+| Demo data | bump `DEMO_VERSION` in `platform/src/offline/demo.ts`. |
+
+Reproducible builds: the working `platform.db` / `writing-challenge.db` hold local progress and stay out of git; CI builds from scrubbed, content-only **`seed/`** DBs. Local builds **no longer auto-deploy**. Manual escape hatch (deploys a *preview*):
 
 ```bash
 npm run build --workspace=platform
 npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch=<your-branch>
 ```
+
+**Try it (no install):** `learnchinese.hsu.mobi/?app&demo` boots the app pre-loaded with demo profiles, in an isolated demo storage jar (see [ARCHITECTURE.md §4.6](./ARCHITECTURE.md)).
 
 - **`build`** bakes the shipped DBs + `stroke-data.json` + `version.json`, then
   runs `vite build`. Every build stamps a **fresh per-deploy `version`** (and a
