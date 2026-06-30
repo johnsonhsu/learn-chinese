@@ -1,0 +1,9 @@
+# Issue chooser config. Blank issues stay enabled for quick freeform notes.
+blank_issues_enabled: true
+contact_links:
+  - name: 🌐 Try the live app first
+    url: https://learnchinese.hsu.mobi
+    about: The production PWA — reproduce your issue here before filing.
+  - name: 🎮 Demo mode (preset profiles)
+    url: https://learnchinese.hsu.mobi/?app&demo
+    about: Try the app with seeded demo profiles in isolated storage.

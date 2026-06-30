@@ -43,6 +43,7 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 - The Pages project is **direct-upload** (no Git connection); its **production branch is `learning-chinese`, NOT `master`**. The workflow (`.github/workflows/ci.yml`) deploys `--branch=learning-chinese` on a master push (→ prod) and `--branch=<PR head>` on a PR (→ preview). Don't "fix" this to `master`.
 - The **data-integrity gate (`test:data`) blocks every deploy** — bad content/code can't ship.
 - A local PostToolUse hook in `.claude/settings.local.json` used to deploy `dist` to **prod** on any `npm run build` — it has been **removed** (CI owns deploys now). That file is machine-local + gitignored, so a fresh clone never has it. To verify a build without deploying, `npm -w platform run bake:data` and/or `npx vite build` (in `platform/`).
+- **Issue + PR templates** live in `.github/` (PR #9): a Markdown issue chooser (bug / feature / content / performance + `config.yml`) and a PR template whose checklist mirrors the gates + cardinal rules. ⚠️ `gh pr create --body` **overrides** the PR template — so when opening a PR from the CLI, fill those sections in yourself (type, the test/living-docs/content checklists, cardinal-rule ticks).
 
 ## Testing (3 tiers)
 
@@ -86,5 +87,6 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 
 - Merged to `master` (prod live via the auto-deploy-on-merge pipeline): **tests + CI/CD** (#1), **demo mode** (#2), this **orientation guide** (#3), and the **theme + landing overhaul** (#4). #4 shipped the new default theme **Indigo**, the landing menu/dock, the char-tile **status frame** (`CharTile`'s `.char-tile::after` ring — the old corner pip is gone), and the `content.db` recovery noted below. The theme-resolution test landed with it.
 - **Open PR (#6)**: a landing menu/bar refinement — bar always opaque, the wordmark appears on dock (no fly/shrink), distinct frosted scrim when the menu opens.
+- **Open PR (#9)**: issue + PR templates under `.github/` (see *Deploy*); they activate once merged to the default branch.
 - `content.db` carries **~11,200 bank sentences** (`npm run analyze-bank` reports remaining gaps).
 - ⚠️ **`content.db` was once committed CORRUPT** (no binary gitattribute → `integrity_check` failed at build). It was recovered with `sqlite3 platform/content.db ".recover"`, and **`.gitattributes` now marks `*.db binary`**. So: don't blind-`git checkout platform/content.db` (you can restore a bad blob over a good working copy), `.recover` it if it's ever reported "malformed", and never commit a `.db` while the dev server still holds it open (WAL).
