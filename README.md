@@ -15,7 +15,7 @@ building modules see **[modules/README.md](./modules/README.md)**.
 
 ---
 
-## What it does — the four modules
+## What it does — the five modules
 
 The home screen is a grid of self-contained learning activities. You pick a
 profile (multiple learners can share a device), then a module:
@@ -32,6 +32,9 @@ profile (multiple learners can share a device), then a module:
 - **Copybook** (📝 `copybook`) — bring-your-own-text verbatim writing practice:
   paste any text and write it character by character. Optionally **Generate** a
   fresh Taiwan-Traditional sentence with Gemini.
+- **My Characters** (📊 `my-characters`) — your personal progress dashboard: every
+  character you've practiced as a stats table and a tile grid (mastery / retention
+  scores, known vs learning), with a tap-to-practice drill.
 
 **Who it's for:** learners (and families/kids) studying Traditional Chinese for
 Taiwan, who want focused handwriting practice driven by what they personally still
@@ -287,6 +290,6 @@ The app is local-first, so most of it runs with no server at all — the dev ser
 |------|------|
 | `shared/` | `@shared/character-stats` — ranking, mastery, "known", selection (pure) |
 | `platform/` | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions |
-| `modules/*` | the four learning activities (see [modules/README.md](./modules/README.md)) |
+| `modules/*` | the five learning activities (see [modules/README.md](./modules/README.md)) |
 | `ARCHITECTURE.md` | technical architecture (monorepo, module system, data, deploy) |
 | `platform/src/ui/README.md` | the shared UI kit reference |
