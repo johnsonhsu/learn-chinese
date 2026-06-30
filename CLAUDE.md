@@ -83,10 +83,21 @@ You're authorized to restart the dev server when needed: `lsof -ti:3000 | xargs 
 - **User working style**: concise + direct; wants to discuss the *why* before building; prefers configurable settings over hardcoded values; **manually curates content** (don't trust LLM output into the bank); pushes back and expects you to. Don't agree just to agree.
 - Match surrounding code style; the shared UI kit (`platform/src/ui`) is composed by modules — don't fork tokens per-module.
 
+## Working agreement — issues as specs
+
+Substantive work flows through GitHub issues, not ad-hoc edits. The loop: **intake → triage → refine to Ready → execute → PR → review → merge (auto-deploy)**.
+
+- **Propose, don't auto-file.** For anything non-trivial, offer to open an issue and let the user confirm; do trivial ops (one-off tooling, lookups) inline. (User chose *propose → confirm*.)
+- **File via the `🤖 Task (agent-ready spec)` template** (`.github/ISSUE_TEMPLATE/task.md`). `gh issue create` does **not** auto-apply templates — reproduce the spec sections in the body yourself.
+- **Definition of Ready** (label `status:ready`): Goal, testable acceptance criteria, affected files, applicable cardinal-rule constraints, a test/verification plan, and out-of-scope — all filled, so a cold future session can execute without re-discovery. Missing detail → `status:needs-info`; discuss here or in issue comments.
+- **Labels (labels-only tracking):** type = `bug`/`enhancement`/`content`/`performance`; status = `status:{triage,needs-info,ready,in-progress,in-review,blocked}` (done = closed); optional `priority:p0–p2`.
+- **Execute:** "work on #NN" → branch `claude/issue-NN-slug` → implement → run the gates → open a PR that `Closes #NN`, fill the PR template, set the issue `status:in-review`. Trace chain: issue → branch → PR → commit (`Co-Authored-By: Claude`) → preview → merge → prod.
+- **Automation:** manual handoff for now. Tier-1 (`anthropics/claude-code-action`, `@claude`/label-triggered) is **not installed** — adding it needs the Claude GitHub App + `ANTHROPIC_API_KEY` secret.
+
 ## Current state (2026-06-30)
 
 - Merged to `master` (prod live via the auto-deploy-on-merge pipeline): **tests + CI/CD** (#1), **demo mode** (#2), this **orientation guide** (#3), and the **theme + landing overhaul** (#4). #4 shipped the new default theme **Indigo**, the landing menu/dock, the char-tile **status frame** (`CharTile`'s `.char-tile::after` ring — the old corner pip is gone), and the `content.db` recovery noted below. The theme-resolution test landed with it.
 - **Open PR (#6)**: a landing menu/bar refinement — bar always opaque, the wordmark appears on dock (no fly/shrink), distinct frosted scrim when the menu opens.
-- **Open PR (#9)**: issue + PR templates under `.github/` (see *Deploy*); they activate once merged to the default branch.
+- **Open PR (#9)**: issue + PR templates + the `🤖 Task` agent-spec template under `.github/`, plus the *Working agreement* section above (see *Deploy*). Templates activate once merged to the default branch; the type/status/priority labels already exist on the repo.
 - `content.db` carries **~11,200 bank sentences** (`npm run analyze-bank` reports remaining gaps).
 - ⚠️ **`content.db` was once committed CORRUPT** (no binary gitattribute → `integrity_check` failed at build). It was recovered with `sqlite3 platform/content.db ".recover"`, and **`.gitattributes` now marks `*.db binary`**. So: don't blind-`git checkout platform/content.db` (you can restore a bad blob over a good working copy), `.recover` it if it's ever reported "malformed", and never commit a `.db` while the dev server still holds it open (WAL).
