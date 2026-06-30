@@ -36,9 +36,10 @@ export async function onRequestGet(context: {
   params: { id: string };
 }) {
   const { request, env, params } = context;
-  const url = new URL(request.url);
-  const provided =
-    request.headers.get(FEEDBACK_ADMIN_HEADER) || url.searchParams.get('secret') || undefined;
+  // Header ONLY — never accept the secret via `?secret=` (it would land in
+  // CF/access logs, browser history, and any Referer). The admin UI fetches this
+  // image with the `x-feedback-admin-secret` header and renders an object-URL.
+  const provided = request.headers.get(FEEDBACK_ADMIN_HEADER) || undefined;
   if (!secretMatches(provided, env.FEEDBACK_ADMIN_SECRET)) {
     return Response.json({ error: 'forbidden' }, { status: 403 });
   }

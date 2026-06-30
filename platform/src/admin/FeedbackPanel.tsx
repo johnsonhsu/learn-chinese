@@ -3,11 +3,13 @@
  * status" side). DEV-only admin panel. Reads the admin-gated endpoints in
  * platform/server/feedback-routes.ts:
  *   GET   /api/feedback?status=        → { counts, items }
- *   GET   /api/feedback/:id/screenshot → image bytes (used as <img src ?secret=>)
+ *   GET   /api/feedback/:id/screenshot → image bytes (fetched with the header,
+ *                                        rendered as an object-URL — see below)
  *   PATCH /api/feedback/:id { status } → set status
- * All gated by the `x-feedback-admin-secret` header (or `?secret=`), matched
- * against FEEDBACK_ADMIN_SECRET in the dev .env. The secret is entered once here
- * and kept in localStorage; nothing app/user/content-related is reachable.
+ * All gated by the `x-feedback-admin-secret` HEADER (no `?secret=` — that would
+ * leak the secret into logs/history/Referer), matched against
+ * FEEDBACK_ADMIN_SECRET in the dev .env. The secret is entered once here and kept
+ * in localStorage; nothing app/user/content-related is reachable.
  */
 import { useState, useEffect, useCallback } from 'react';
 
@@ -37,6 +39,70 @@ const CAT_LABEL: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   new: 'New', triaged: 'Triaged', 'in-progress': 'In progress', resolved: 'Resolved', wontfix: "Won't fix",
 };
+
+/**
+ * Header-authenticated screenshot thumbnail. Fetches the image bytes with the
+ * `x-feedback-admin-secret` HEADER (never a `?secret=` URL, which would leak into
+ * logs/history/Referer), then renders the result as an object-URL. The object-URL
+ * is revoked on unmount and whenever the id/secret changes, so blobs don't leak.
+ */
+function Screenshot({
+  id,
+  secret,
+  enlarged,
+  onClick,
+}: {
+  id: number;
+  secret: string;
+  enlarged: boolean;
+  onClick: () => void;
+}) {
+  const [objUrl, setObjUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let created: string | null = null;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/feedback/${id}/screenshot`, { headers: { [HEADER]: secret } });
+        if (!res.ok) return;
+        const blob = await res.blob();
+        if (cancelled) return;
+        created = URL.createObjectURL(blob);
+        setObjUrl(created);
+      } catch {
+        /* leave the thumbnail blank on failure */
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (created) URL.revokeObjectURL(created);
+    };
+  }, [id, secret]);
+
+  if (!objUrl) {
+    return (
+      <div
+        style={{
+          width: 72, height: 96, borderRadius: 8, border: '1px solid #ddd',
+          background: '#f4f4f4', flex: '0 0 auto',
+        }}
+      />
+    );
+  }
+  return (
+    <img
+      src={objUrl}
+      alt="screenshot"
+      onClick={onClick}
+      style={{
+        width: enlarged ? 360 : 72,
+        height: 'auto', maxHeight: enlarged ? 'none' : 96,
+        objectFit: 'cover', borderRadius: 8, border: '1px solid #ddd', cursor: 'zoom-in', flex: '0 0 auto',
+      }}
+    />
+  );
+}
 
 function fmtContext(json: string): string {
   if (!json) return '';
@@ -156,15 +222,11 @@ export function FeedbackPanel() {
           <div key={it.id} style={card}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               {it.has_screenshot ? (
-                <img
-                  src={`/api/feedback/${it.id}/screenshot?secret=${encodeURIComponent(secret)}`}
-                  alt="screenshot"
+                <Screenshot
+                  id={it.id}
+                  secret={secret}
+                  enlarged={enlarged === it.id}
                   onClick={() => setEnlarged(enlarged === it.id ? null : it.id)}
-                  style={{
-                    width: enlarged === it.id ? 360 : 72,
-                    height: 'auto', maxHeight: enlarged === it.id ? 'none' : 96,
-                    objectFit: 'cover', borderRadius: 8, border: '1px solid #ddd', cursor: 'zoom-in', flex: '0 0 auto',
-                  }}
                 />
               ) : null}
               <div style={{ flex: 1, minWidth: 0 }}>

@@ -748,9 +748,12 @@ Like the Gemini proxy, these live outside `platform/tsconfig`'s include (so
   transient error never blocks a legitimate submission.
 - **Admin gating.** The `GET` / `PATCH` / screenshot routes are gated by a shared
   secret (`FEEDBACK_ADMIN_SECRET`), supplied as the `x-feedback-admin-secret`
-  header (or `?secret=` for the screenshot `<img>`), compared constant-time-ish. If
-  the secret is unset the read/update routes are **closed (403), never open** —
-  fail-safe.
+  **header only** — never a `?secret=` URL param (that would leak the secret into
+  CF/access logs, browser history, and `Referer`). The admin screenshot thumbnail
+  fetches the image bytes with that header and renders an object-URL (revoked on
+  unmount), so the secret never appears in an `<img src>`. Compared
+  constant-time-ish. If the secret is unset the read/update routes are **closed
+  (403), never open** — fail-safe.
 - **Validation contract** is the portable helper `platform/server/feedback-shared.ts`
   (no Node/Worker imports, used by both runtimes — same pattern as the copybook
   Gemini helper). It enforces a known category + non-empty message, hard size caps
