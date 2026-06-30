@@ -13,6 +13,15 @@
     "build": "npm -w modules/writing-challenge run build:data && npm -w platform run build",
     "build:data": "npm -w modules/writing-challenge run build:data",
     "extract": "npm -w modules/writing-challenge run extract",
-    "analyze-bank": "python3 scripts/analyze-bank.py"
+    "analyze-bank": "python3 scripts/analyze-bank.py",
+    "seed:dbs": "tsx scripts/seed-dbs.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run shared/ platform/src/",
+    "test:data": "vitest run data-integrity",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "vitest": "^3.2.6"
   }
 }

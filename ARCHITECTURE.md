@@ -408,6 +408,49 @@ intentionally **not** Workbox-cached (the data layer manages them in IndexedDB);
 
 ---
 
+## 4.5 Testing & CI/CD
+
+Tests are **Vitest** (TypeScript, root `vitest.config.ts`) plus **one pytest** for the
+Python glyph scrub. Scripts: `npm test` (all), `npm run test:unit`
+(`shared/` + `platform/src/`, fast), `npm run test:data` (the deploy gate). Three tiers:
+
+- **Pure-logic units (`shared/src/__tests__`)** — the engine: `sentence-generator`
+  (the **binding** invariant — the chosen target char always appears in the returned
+  text — plus seeded-RNG parity/coverage), `mastery`, `char-knowledge`, `char-ranker`,
+  `zhuyin`. `DbQueryProvider` is faked in-memory; `Date.now()` is controlled with
+  `vi.setSystemTime`; RNG with a seeded `Math.random` stub.
+- **Glyph-canonicalization parity** — `canonicalizeTW()` (the TS importer, exported
+  from `content-db.ts`) and `bank-fix.py canon()` are two implementations of one rule
+  that **must agree**. Both run against a single shared golden fixture
+  (`test/fixtures/glyph-canon.json`): 台/臺 preserved both directions, `VARIANT_MAP`
+  unification, Simplified→Traditional, idempotency. `bank-fix.py`'s destructive pass is
+  guarded under `__main__` so the test can import `canon()`; the Python test
+  `pytest.importorskip("opencc")`s so it's a no-op locally without opencc.
+- **Data-integrity deploy gate (`platform/test/data-integrity.test.ts`)** — runs against
+  the **baked** `platform/public/data/*` (what ships): SQLite `integrity_check`; the bank
+  has no Simplified/undrawable glyphs (`canon(s) === s`) and is referentially sound; the
+  snapshots carry **no personal data** (`platform.db` users/stats scrubbed,
+  `writing-challenge.db` is `module_settings`-only); and every curriculum char used in the
+  bank has bundled stroke data (offline-drawable), with a small, documented allowlist for
+  chars no open dataset covers. See §3.5 / the glyph-normalization notes.
+
+**CI/CD — `.github/workflows/ci.yml`.** One job on `pull_request` and `push: master`:
+`npm ci` → unit tests → Python parity (`pip install opencc pytest`) → `npm run build -w
+platform` → **data-integrity gate** → `cloudflare/wrangler-action` deploy. The deploy
+branch is `github.head_ref || github.ref_name`, so a **PR deploys a preview** and a
+**merge to `master` deploys production** with the identical build + gate (prod mirrors
+preview). A failing step aborts before deploy, so bad content/code can't ship. Needs repo
+secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`.
+
+**Reproducible builds + seeds.** `bake-data.ts` reads each working DB if present, else a
+committed content-only **seed** (`seed/platform.db`, `seed/writing-challenge.db`) so CI
+can build without the gitignored working DBs (which hold the dev profile's progress).
+`npm run seed:dbs` regenerates the seeds, applying the same personal-data scrub `bake`
+does. `content.db` and `word-sets.db` are pure content and are committed at their working
+paths. There is **no** local auto-deploy — deploys happen only through CI.
+
+---
+
 ## 5. UI kit (`platform/src/ui`)
 
 The shared design primitives every module composes instead of re-implementing the

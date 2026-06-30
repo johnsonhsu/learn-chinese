@@ -1,0 +1,18 @@
+[
+  { "input": "台灣", "expected": "台灣", "note": "preserve 台 (never force to 臺)" },
+  { "input": "臺北", "expected": "臺北", "note": "preserve 臺" },
+  { "input": "我在台北和臺中見面", "expected": "我在台北和臺中見面", "note": "台 and 臺 preserved together in one string" },
+  { "input": "汙水很髒", "expected": "污水很髒", "note": "VARIANT_MAP 汙→污 (drawable + ranked canonical)" },
+  { "input": "秘密", "expected": "祕密", "note": "VARIANT_MAP 秘→祕" },
+  { "input": "祕密", "expected": "祕密", "note": "already-canonical 祕 left alone" },
+  { "input": "这是一个学生", "expected": "這是一個學生", "note": "Simplified→Traditional" },
+  { "input": "电脑", "expected": "電腦", "note": "Simplified→Traditional" },
+  { "input": "图书馆", "expected": "圖書館", "note": "Simplified→Traditional" },
+  { "input": "我喜欢学习中文", "expected": "我喜歡學習中文", "note": "Simplified→Traditional" },
+  { "input": "他们说话", "expected": "他們說話", "note": "Simplified→Traditional" },
+  { "input": "应该", "expected": "應該", "note": "Simplified→Traditional" },
+  { "input": "里面", "expected": "裡面", "note": "里→裡 Taiwan disambiguation (both configs agree)" },
+  { "input": "我愛你", "expected": "我愛你", "note": "already Traditional, unchanged" },
+  { "input": "繁體中文", "expected": "繁體中文", "note": "already Traditional, unchanged" },
+  { "input": "apple 123 蘋果", "expected": "apple 123 蘋果", "note": "non-Han characters untouched" }
+]

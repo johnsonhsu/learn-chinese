@@ -187,14 +187,35 @@ own. It's a best-effort online convenience:
 
 ---
 
-## Deployment
+## Testing
 
-Deployed to **Cloudflare Pages** as static assets — no production server.
+Vitest (TS) + pytest (the one Python parity test). Run on every PR and **gate every deploy** (see [ARCHITECTURE.md §4.5](./ARCHITECTURE.md)).
 
 ```bash
-npm -w platform run deploy
-# = npm run build (bake data + vite build)  &&  wrangler pages deploy dist
-#   --project-name=learning-chinese
+npm test           # everything
+npm run test:unit  # fast pure-logic + theme unit tests (shared/ + platform/src)
+npm run test:data  # data-integrity gate — run after a bake; checks the shipped artifacts
+pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip install opencc pytest)
+```
+
+- **Engine** — sentence selection (target char is *binding*, parity/coverage), mastery/retention, "known"/level, char ranking, zhuyin.
+- **Glyph-canonicalization parity** — the TS importer (`canonicalizeTW`) and the Python scrub (`bank-fix.py canon()`) are checked against one shared golden fixture (`test/fixtures/glyph-canon.json`) so they can't drift: 台/臺 preserved, variant unification (汙→污…), Simplified→Traditional.
+- **Theme** — resolution, premium gating, per-profile override, `body[data-theme]` application, backup round-trip.
+- **Data-integrity gate** — the shipped DBs carry no Simplified/undrawable glyphs, are referentially sound, contain **no personal data**, and every curriculum char used in the bank is drawable offline.
+
+## Deployment
+
+Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`):
+
+- **Pull request → preview.** CI runs the tests, builds from the committed seeds, runs the data-integrity gate, then deploys a Cloudflare Pages **preview** (unique URL per PR).
+- **Merge to `master` → production.** Identical build + gate, pointed at the production branch — prod just mirrors the preview flow.
+- Requires repo secrets `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` (a Pages:Edit API token).
+
+Local builds **no longer auto-deploy** — ship by merging a green PR. Reproducible builds: the working `platform.db` / `writing-challenge.db` hold your local progress and stay out of git; CI builds from scrubbed, content-only **`seed/`** DBs — regenerate after changing curriculum with `npm run seed:dbs`. Manual escape hatch (deploys a *preview*):
+
+```bash
+npm run build --workspace=platform
+npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch=<your-branch>
 ```
 
 - **`build`** bakes the shipped DBs + `stroke-data.json` + `version.json`, then
