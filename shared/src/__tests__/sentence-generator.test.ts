@@ -119,4 +119,73 @@ describe('generateNextSentence', () => {
     }));
     expect(r!.text).toBe('好的');
   });
+
+  // SCORING — which bank sentence wins among several that all contain the target
+  // char. The generator rewards sentences that ALSO carry pool chars (other target
+  // chars) and rank-near chars; above-level/unknown chars earn nothing. This backs
+  // CARDINAL RULE 3 (relevance/coverage) at the scoring layer, complementing the
+  // binding/coverage invariants above. `scoreSentence` is an inner closure, so we
+  // assert it behaviorally through the public generator with a seeded RNG.
+  it('SCORING: a pool-overlapping, rank-near sentence beats an unrelated one', () => {
+    vi.spyOn(Math, 'random').mockImplementation(seededRandom(3));
+    const r = generateNextSentence(params({
+      targetChars: ['好', '吃'],
+      // Explicit ranks: 好/吃 are nearby target-pool chars; 龘/靐 are far, above-level.
+      rankedChars: [
+        rankedChar('好', 100), rankedChar('吃', 150),
+        rankedChar('龘', 99999), rankedChar('靐', 99998),
+      ],
+      level: 50,
+      bankSentences: [
+        { sentence: '好吃', english: 'tasty' },     // shares pool char 吃, near rank → high score
+        { sentence: '好龘靐', english: 'noise' },     // only far, above-level chars → ~0 score
+      ],
+    }));
+    expect(r).not.toBeNull();
+    // The chosen char must still be bound into the result (never substituted).
+    expect(r!.text).toContain(r!.targetChar);
+    // When 好 is the chosen target, the higher-scoring 好吃 must win over 好龘靐.
+    if (r!.targetChar === '好') expect(r!.text).toBe('好吃');
+  });
+
+  it('SCORING: deterministic winner regardless of candidate shuffle (strict-max)', () => {
+    // Run across several seeds: the high-score sentence wins every time when 好 is
+    // chosen — the internal random tiebreak never demotes a strictly-better score.
+    for (const seed of [1, 2, 5, 11, 42]) {
+      vi.spyOn(Math, 'random').mockImplementation(seededRandom(seed));
+      const r = generateNextSentence(params({
+        targetChars: ['好'], // single target → 好 is always the chosen char
+        rankedChars: [
+          rankedChar('好', 100), rankedChar('吃', 150),
+          rankedChar('龘', 99999), rankedChar('靐', 99998),
+        ],
+        level: 50,
+        bankSentences: [
+          { sentence: '好龘靐', english: 'noise' },
+          { sentence: '好吃', english: 'tasty' },
+        ],
+      }));
+      expect(r!.text).toBe('好吃');
+      vi.restoreAllMocks();
+    }
+  });
+
+  // DISAMBIG ROUND-TRIP — the pronoun homophone hint (他/她/它) must actually reach
+  // the assembled charZhuyin via buildResult, not merely exist in the raw map.
+  it('DISAMBIG: the 他/她/它 hint is appended to the assembled zhuyin', () => {
+    const r = generateNextSentence(params({
+      targetChars: ['他'],
+      bankSentences: [{ sentence: '他好', english: 'he is well' }],
+      // contentDb.tocfl_words supplies single-char zhuyin (fakeDb returns these for
+      // every queryAll on contentDb — only the 他/好 rows are consumed here).
+      contentDb: fakeDb({ all: [
+        { word: '他', zhuyin: 'ㄊㄚ' },
+        { word: '好', zhuyin: 'ㄏㄠˇ' },
+      ] }),
+    }));
+    expect(r).not.toBeNull();
+    expect(r!.text).toContain('他');
+    expect(r!.charZhuyin['他']).toBe('ㄊㄚ(HE)'); // hint wired through buildResult
+    expect(r!.charZhuyin['好']).toBe('ㄏㄠˇ');     // non-homophone: no hint appended
+  });
 });
