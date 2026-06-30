@@ -305,6 +305,10 @@ app.get('/api/db-snapshot/:name', (req, res) => {
 
 // --- Serve frontend ---
 const PORT = 3000;
+// Bind to loopback by default so the dev-only server (no auth on /api/admin/*)
+// is not exposed on all interfaces / untrusted LANs. Override with SERVER_HOST
+// (e.g. SERVER_HOST=0.0.0.0) only when you intentionally need remote access.
+const HOST = process.env.SERVER_HOST || '127.0.0.1';
 const isDev = process.env.NODE_ENV !== 'production';
 
 async function start() {
@@ -322,8 +326,8 @@ async function start() {
     }
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Server running at http://localhost:${PORT} (bound to ${HOST})`);
     console.log(`Modules loaded: ${modules.map(m => m.manifest.name).join(', ')}`);
   });
 }
