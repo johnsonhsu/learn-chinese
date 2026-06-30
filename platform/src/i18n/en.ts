@@ -91,8 +91,6 @@ export default {
   'unlock.premiumUnlocked': 'Premium unlocked — now enter a theme code',
   'unlock.silverUnlocked': 'Silver theme unlocked',
   'unlock.goldUnlocked': 'Gold theme unlocked',
-  'unlock.needPremiumFirst': 'Enter the premium code first',
-  'unlock.needAdminFirst': 'Enter the admin code first',
   'settings.levers': 'Tuning levers',
   'levers.title': 'Tuning levers',
   'levers.intro': 'These control how characters are chosen and scored. Defaults come from the shipped app; your changes stay on this device and are included in backups.',

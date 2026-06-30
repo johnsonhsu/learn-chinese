@@ -11,6 +11,15 @@ import {
 //   8000 → 'admin-prereq'  (prerequisite; reveals nothing)
 //   8001 → 'admin'         (requires admin-prereq)
 // Removed: 9999, 8888 (no longer redeem). Unlocks are device-scoped (localStorage).
+//
+// SECURITY BY OBSCURITY (issue #40 revision): a valid-but-locked code entered
+// before its prerequisite (e.g. 9900 before 9000, or 8001 before 8000) must be
+// INDISTINGUISHABLE from a genuinely invalid code in the UI — same "Invalid
+// code", no hint the code is real or that a prerequisite exists. redeemCode
+// still returns the distinct 'prerequisite-missing' status here so the GATING
+// logic stays explicit and asserted; the keypad (CodeEntry) is what renders it
+// identically to 'unknown'. The invariant these tests pin is the one that makes
+// that safe: prerequisite-missing GRANTS NOTHING, exactly like unknown.
 
 beforeEach(() => {
   localStorage.clear();
@@ -38,13 +47,15 @@ describe('redeemCode — premium series', () => {
     expect(isFeatureUnlocked('theme-silver')).toBe(false);
   });
 
-  it('9900 WITHOUT 9000 → prerequisite-missing, nothing granted', () => {
+  // 9900 before its prerequisite grants nothing — and, like an unknown code, the
+  // keypad shows the generic "Invalid code" (UI equivalence is in CodeEntry).
+  it('9900 WITHOUT 9000 → prerequisite-missing, grants nothing (treated as invalid)', () => {
     expect(redeemCode('9900')).toEqual({ status: 'prerequisite-missing', required: 'premium-prereq' });
     expect(isFeatureUnlocked('theme-silver')).toBe(false);
     expect(getUnlockedFeatures()).toEqual([]);
   });
 
-  it('9901 WITHOUT 9000 → prerequisite-missing, nothing granted', () => {
+  it('9901 WITHOUT 9000 → prerequisite-missing, grants nothing (treated as invalid)', () => {
     expect(redeemCode('9901')).toEqual({ status: 'prerequisite-missing', required: 'premium-prereq' });
     expect(isFeatureUnlocked('theme-gold')).toBe(false);
     expect(getUnlockedFeatures()).toEqual([]);
@@ -71,10 +82,36 @@ describe('redeemCode — admin series', () => {
     expect(isFeatureUnlocked('admin')).toBe(true);
   });
 
-  it('8001 WITHOUT 8000 → prerequisite-missing, nothing granted', () => {
+  it('8001 WITHOUT 8000 → prerequisite-missing, grants nothing (treated as invalid)', () => {
     expect(redeemCode('8001')).toEqual({ status: 'prerequisite-missing', required: 'admin-prereq' });
     expect(isFeatureUnlocked('admin')).toBe(false);
     expect(getUnlockedFeatures()).toEqual([]);
+  });
+});
+
+// The behavioral invariant that backs the "no hint" UI (issue #40 revision): a
+// valid-but-locked code (prerequisite-missing) leaves the device in the SAME
+// state as a genuinely unknown code — nothing granted. The keypad then renders
+// both as the identical "Invalid code", so neither leaks that the code is real.
+describe('prerequisite-missing is indistinguishable from unknown (grants nothing)', () => {
+  it('9900-before-9000 and an unknown code both leave no unlocks', () => {
+    expect(redeemCode('9900').status).toBe('prerequisite-missing');
+    const afterLocked = getUnlockedFeatures();
+    localStorage.clear();
+    expect(redeemCode('5555').status).toBe('unknown');
+    const afterUnknown = getUnlockedFeatures();
+    expect(afterLocked).toEqual(afterUnknown);
+    expect(afterLocked).toEqual([]);
+  });
+
+  it('8001-before-8000 and an unknown code both leave no unlocks', () => {
+    expect(redeemCode('8001').status).toBe('prerequisite-missing');
+    const afterLocked = getUnlockedFeatures();
+    localStorage.clear();
+    expect(redeemCode('5555').status).toBe('unknown');
+    const afterUnknown = getUnlockedFeatures();
+    expect(afterLocked).toEqual(afterUnknown);
+    expect(afterLocked).toEqual([]);
   });
 });
 

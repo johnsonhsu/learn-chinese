@@ -8,16 +8,17 @@ const RESULT_TIMEOUT_MS = 2200;
 
 /**
  * The outcome of redeeming an entered code, as resolved by the caller's
- * {@link CodeEntry} `onSubmit`. A discriminated union with three cases the keypad
- * renders distinctly (matching utils/unlocks `redeemCode`):
+ * {@link CodeEntry} `onSubmit`. A discriminated union matching utils/unlocks
+ * `redeemCode`:
  *   · 'granted'              — `feature` is the granted key; the keypad fires
  *                              `onUnlocked(feature)` and shows that feature's
  *                              success message + emoji.
  *   · 'prerequisite-missing' — the code is valid but its prerequisite isn't
- *                              unlocked yet; `required` is the missing
- *                              prerequisite feature. Shown as its OWN distinct
- *                              "enter the … code first" rejection — never the
- *                              generic "Invalid code".
+ *                              unlocked yet; nothing was granted. SECURITY BY
+ *                              OBSCURITY: the keypad renders this EXACTLY like
+ *                              'unknown' (generic "Invalid code" ❌) so a
+ *                              valid-but-locked code gives NO hint that it's real
+ *                              or that a prerequisite exists.
  *   · 'unknown'              — unrecognised code → generic "Invalid code".
  * The keypad stays provider-agnostic: it only knows these shapes, not codes.
  */
@@ -59,7 +60,7 @@ function KeypadKey({ label, ariaLabel, onPress }: {
  *   · granted 'premium-prereq' → "Premium unlocked — enter a theme code" ✨
  *   · granted 'theme-silver'   → "Silver theme unlocked" 🥈
  *   · granted 'theme-gold'     → "Gold theme unlocked" 🥇
- *   · prerequisite-missing     → "Enter the premium/admin code first" 🔒
+ *   · prerequisite-missing     → "Invalid code" ❌ (identical to unknown — no hint)
  *   · unknown                  → "Invalid code" ❌
  * On a 'granted' outcome it fires {@link onUnlocked} with the feature key so the
  * caller can apply the unlock. The results modal auto-dismisses after ~2.2s
@@ -139,14 +140,10 @@ export function CodeEntry({ onSubmit, onUnlocked, onClose }: {
         default:               return { emoji: '✅', msg: t('unlock.unlocked') };
       }
     }
-    if (result.status === 'prerequisite-missing') {
-      // The 99xx series needs 'premium-prereq' (9000) first; the 8001 menu code
-      // needs 'admin-prereq' (8000) first. Distinct rejection — not "Invalid code".
-      const msg = result.required === 'premium-prereq'
-        ? t('unlock.needPremiumFirst')
-        : t('unlock.needAdminFirst');
-      return { emoji: '🔒', msg };
-    }
+    // 'prerequisite-missing' and 'unknown' both render as the generic invalid
+    // code — a valid-but-locked code (e.g. 9900 before 9000) is deliberately
+    // indistinguishable from a genuinely bad one, giving away no hint that the
+    // code is real or that a prerequisite exists. Neither grants anything.
     return { emoji: '❌', msg: t('unlock.invalid') };
   })();
 

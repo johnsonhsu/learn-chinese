@@ -89,8 +89,6 @@ export default {
   'unlock.premiumUnlocked': '已解鎖進階 — 請再輸入主題代碼',
   'unlock.silverUnlocked': '已解鎖銀色主題',
   'unlock.goldUnlocked': '已解鎖金色主題',
-  'unlock.needPremiumFirst': '請先輸入進階代碼',
-  'unlock.needAdminFirst': '請先輸入管理代碼',
   'settings.levers': '參數微調',
   'levers.title': '參數微調',
   'levers.intro': '這些參數控制選字與計分方式。預設值來自內建 App；你的變更只會留在這台裝置，並會包含在備份中。',

@@ -579,7 +579,8 @@ registry entry.
   premium prerequisite** (code `9000`): redeem `9000` first, then **`9900` → Silver**
   and/or **`9901` → Gold** (each theme entry carries an `unlockFeature` key — Silver
   ← `theme-silver`, Gold ← `theme-gold`). `9000` alone reveals **nothing**; a `99xx`
-  code entered before `9000` is **rejected** as prerequisite-missing. *Back-compat:*
+  code entered before `9000` is **rejected as an ordinary invalid code** (generic
+  "Invalid code", no hint it's real — see §5.6). *Back-compat:*
   a device that stored the legacy blanket `premium` feature (retired code `9999`)
   keeps **both** foils. Midnight/Sakura/Matcha are `premium: false`, so they are
   always available — no code required. There is **no per-profile unlock**: a profile
@@ -614,13 +615,18 @@ The keypad is **provider-agnostic** — it doesn't know what a code means. The c
 passes `onSubmit(code)`, which redeems the code in its own scope and returns a
 **discriminated `CodeResult`** — `{ status: 'granted', feature }`,
 `{ status: 'prerequisite-missing', required }`, or `{ status: 'unknown' }`. The
-keypad maps each to a distinct localized message + emoji and, on `granted`, fires
-`onUnlocked(feature)`. No valid redemption ever shows the generic "Invalid code".
+keypad maps each `granted` feature to its own localized success message + emoji
+and, on `granted`, fires `onUnlocked(feature)`. **`prerequisite-missing` and
+`unknown` render identically** — the generic "Invalid code" ❌ — by design
+(security by obscurity): a valid-but-locked code (e.g. `9900` before `9000`) is
+indistinguishable from a genuinely invalid one, leaking **no hint** that the code
+is real or that a prerequisite exists. Both grant nothing.
 
 Codes live in one place, `utils/unlocks.ts` `CODE_FEATURES`, as a **two-tier,
 prerequisite-chained** scheme. Each series opens with a **prerequisite** code that
 grants a flag revealing *nothing on its own*; the feature codes are **rejected
-until that prerequisite is present**:
+until that prerequisite is present** (granting nothing — and, in the keypad,
+shown as a plain "Invalid code", see below):
 
 - **Premium series** — **`9000`** grants `premium-prereq` (prerequisite, reveals
   nothing); **`9900`** → `theme-silver` (Silver) and **`9901`** → `theme-gold`
@@ -634,8 +640,11 @@ until that prerequisite is present**:
   keep the Admin menu — the gates honor those keys directly.
 
 `redeemCode` distinguishes the three outcomes (granted / prerequisite-missing /
-unknown). Used by **Device Settings** (device-scope redeem via `redeemCode`,
-→ `lc-unlocks`) and by the theme unlock flow.
+unknown) for the gating logic, but **the keypad renders `prerequisite-missing`
+identically to `unknown`** — the generic "Invalid code" — so a valid-but-locked
+code gives **no hint** it's real or that a prerequisite exists (security by
+obscurity, issue #40 revision). Used by **Device Settings** (device-scope redeem
+via `redeemCode`, → `lc-unlocks`) and by the theme unlock flow.
 
 ---
 

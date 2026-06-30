@@ -87,8 +87,9 @@ only Gold/Silver are premium and unlock **device-wide only**, each by its **own
 code** behind a premium **prerequisite** — redeem **`9000`** first (grants the
 prerequisite, reveals nothing), then **`9900`** → Silver and/or **`9901`** → Gold,
 **independently**, on the on-screen keypad (`CodeEntry`) under the Device ID in
-Device Settings (`lc-unlocks`). A `99xx` code entered before `9000` is **rejected**
-with a distinct "enter the premium code first" message. There is no per-profile
+Device Settings (`lc-unlocks`). A `99xx` code entered before `9000` is **rejected
+as an ordinary invalid code** — the same generic "Invalid code" an unknown code
+gets, with **no hint** that the code is real or that a prerequisite exists. There is no per-profile
 unlock (a profile can only *override* among themes already unlocked on the device).
 Once unlocked, the theme selectors list **only the available themes** (locked
 premium skins aren't shown), and the Profile Picker shows a per-profile crown only

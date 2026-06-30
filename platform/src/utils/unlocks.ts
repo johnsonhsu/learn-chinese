@@ -93,11 +93,19 @@ export function setUnlockedFeatures(keys: string[]): void {
 
 /**
  * The outcome of redeeming a code, as a discriminated union so callers can tell
- * the three cases apart (the keypad shows a distinct message for each):
+ * the three cases apart for logic/tests:
  *   · 'granted'              — code valid + prerequisite met; `feature` was added.
  *   · 'prerequisite-missing' — code valid but its prerequisite isn't unlocked yet;
  *                              nothing granted. `required` is the missing feature.
  *   · 'unknown'              — code not in CODE_FEATURES; nothing granted.
+ *
+ * NOTE — security by obscurity (issue #40 revision): the keypad deliberately
+ * renders 'prerequisite-missing' EXACTLY like 'unknown' (the generic "Invalid
+ * code" ❌), so a valid-but-locked code entered before its prerequisite is
+ * indistinguishable from a genuinely invalid code — no hint that the code is
+ * real or that a prerequisite exists. The status is still distinguished HERE
+ * (and in tests) so the gating logic stays explicit; only the user-facing
+ * message is identical. Both grant nothing.
  */
 export type RedeemResult =
   | { status: 'granted'; feature: string }
