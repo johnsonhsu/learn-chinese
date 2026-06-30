@@ -70,11 +70,15 @@
 `theme/theme-<id>.css` 檔並於 `main.tsx` 匯入（Midnight/Sakura/Matcha）。Default 不設定任何 token
 ——它*就是* `:root` 的外觀。你可以在裝置設定中為 **整台裝置** 設定主題，或在某個 profile 的設定中
 **針對該 profile** 設定；有效主題的解析為 `profileOverride ?? device ?? default`。三款新皮膚為免費；
-只有 Gold/Silver 是付費的，**僅限裝置層級解鎖**——在裝置設定的 Device ID 下，透過螢幕鍵盤（`CodeEntry`）輸入 **代碼 9999**
-（`lc-unlocks`）；沒有 per-profile 解鎖（profile 只能在裝置已解鎖的主題之間*覆寫*）。解鎖後，主題選擇器
-**只列出可用的主題**（鎖住的付費皮膚不顯示），而 Profile 選擇器只在某 profile *自己的*覆寫為
-Gold/Silver 時才顯示該 profile 的皇冠。所選主題與解鎖狀態都會隨 JSON 備份一起帶走。（`8888` 同樣
-用來解鎖開發用的 Admin 主控台。）細節見 [architecture.zh-TW.md §5.5–5.6](./architecture.zh-TW.md)。
+只有 Gold/Silver 是付費的，**僅限裝置層級解鎖**，且各以**自己的代碼**、在付費**前置**之後解鎖——
+先輸入 **`9000`**（授予前置，本身不顯示任何東西），再以 **`9900`** → Silver 及／或 **`9901`** → Gold，
+**彼此獨立**，在裝置設定的 Device ID 下透過螢幕鍵盤（`CodeEntry`）輸入（`lc-unlocks`）。在 `9000` 之前
+輸入 `99xx` 會被**拒絕**，並顯示明確的「請先輸入付費代碼」訊息。沒有 per-profile 解鎖（profile 只能在裝置
+已解鎖的主題之間*覆寫*）。解鎖後，主題選擇器**只列出可用的主題**（鎖住的付費皮膚不顯示），而 Profile
+選擇器只在某 profile *自己的*覆寫為 Gold/Silver 時才顯示該 profile 的皇冠。所選主題與解鎖狀態都會隨
+JSON 備份一起帶走。（開發用的 Admin 主控台同理解鎖：**`8000`** 前置再 **`8001`** 揭示。舊版總括代碼
+`9999`／`8888` 已**移除**，但先前已兌換的裝置仍保有其解鎖。）細節見
+[architecture.zh-TW.md §5.5–5.6](./architecture.zh-TW.md)。
 
 ---
 

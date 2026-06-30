@@ -10,11 +10,13 @@
  * EFFECTIVE THEME = profileOverride ?? deviceTheme ?? 'default'. The resolved id
  * is what AppInner writes to `body[data-theme]`; index.css does the rest.
  *
- * Premium gating: a premium theme (theme.premium) is selectable only if premium
- * is unlocked at the DEVICE level (utils/unlocks 'lc-unlocks' → all profiles).
- * There is no per-profile unlock — premium is unlocked once for the whole device
- * (code 9999 under the Device ID in Settings). A per-profile theme OVERRIDE can
- * still pick among themes that are available device-wide.
+ * Premium gating: each premium theme (theme.premium) is selectable only once its
+ * OWN unlock feature is present at the DEVICE level (utils/unlocks 'lc-unlocks' →
+ * all profiles): Silver ← 9900, Gold ← 9901, both gated behind the 9000 premium
+ * prerequisite. There is no per-profile unlock — unlocks are device-wide (entered
+ * under the Device ID in Settings). A per-profile theme OVERRIDE can still pick
+ * among themes that are available device-wide. BACK-COMPAT: a device that stored
+ * the legacy blanket 'premium' feature (retired code 9999) keeps BOTH foils.
  */
 
 import {
@@ -108,23 +110,32 @@ export function setProfileTheme(profileId: number, id: string | null): void {
 // ── Gating + resolution ───────────────────────────────────────────────────────
 
 /**
- * Whether premium is unlocked. Premium is DEVICE-LEVEL only — unlocked once, for
- * the whole device, by entering code 9999 under the Device ID in Device Settings
- * (utils/unlocks 'lc-unlocks'). There is no per-profile unlock: a profile can
- * only OVERRIDE the theme among themes that are already available device-wide.
+ * Whether ANY premium foil is unlocked on this device — true if the legacy
+ * blanket 'premium' feature is stored (retired code 9999, back-compat) OR either
+ * per-theme foil key is. Kept (and re-exported) for callers that want a coarse
+ * "is this device premium at all" signal; per-theme gating lives in
+ * isThemeAvailable. Unlocks are DEVICE-LEVEL only — there is no per-profile
+ * unlock; a profile can only OVERRIDE among themes available device-wide.
  */
 export function isDevicePremiumUnlocked(): boolean {
-  return isFeatureUnlocked(PREMIUM_FEATURE);
+  if (isFeatureUnlocked(PREMIUM_FEATURE)) return true;
+  return THEMES.some((th) => th.premium && th.unlockFeature != null && isFeatureUnlocked(th.unlockFeature));
 }
 
 /**
- * Is `theme` selectable? Free themes always are; premium themes require the
- * device-level premium unlock. The selectors use this to list ONLY available
- * themes — locked premium themes are not shown at all.
+ * Is `theme` selectable? Free themes always are. A premium theme is available
+ * when EITHER its own per-theme unlock feature is present (Silver ← 9900,
+ * Gold ← 9901) OR — for back-compat — the device stored the legacy blanket
+ * 'premium' feature (retired code 9999), which ungated both foils at once. The
+ * selectors use this to list ONLY available themes — locked premium themes are
+ * not shown at all.
  */
 export function isThemeAvailable(theme: Theme): boolean {
   if (!theme.premium) return true;
-  return isDevicePremiumUnlocked();
+  // Legacy blanket unlock ungates every premium theme.
+  if (isFeatureUnlocked(PREMIUM_FEATURE)) return true;
+  // Otherwise it needs its own per-theme key.
+  return theme.unlockFeature != null && isFeatureUnlocked(theme.unlockFeature);
 }
 
 /**
@@ -189,7 +200,9 @@ export function exportThemeState(profileIds: number[]): ThemeBackup {
  * Restore theme state from a backup. The device theme + per-profile overrides
  * are applied directly. Legacy per-profile unlocks are promoted to the
  * device-level unlock (premium is now device-wide), via setUnlockedFeatures so
- * existing device unlocks are never dropped.
+ * existing device unlocks are never dropped. A legacy backup carrying the
+ * blanket 'premium' feature is restored verbatim and keeps BOTH foils available
+ * (isThemeAvailable honors that key for back-compat — see the removal of 9999).
  */
 export function importThemeState(state: ThemeBackup | undefined): void {
   if (!state) return;

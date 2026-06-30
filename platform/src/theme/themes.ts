@@ -75,8 +75,20 @@ export interface Theme {
   name: string;
   /** Localized label key (optional) — when present the selector localizes via i18n. */
   nameKey?: string;
-  /** Premium themes are code-gated (code 9999); free themes are always available. */
+  /**
+   * Premium themes are code-gated; free themes are always available. Under the
+   * granular scheme (issue #40) each premium theme is keyed on its OWN unlock
+   * feature (see `unlockFeature`), gated behind the 9000 premium prerequisite.
+   */
   premium: boolean;
+  /**
+   * For a premium theme, the unlock feature key (in utils/unlocks CODE_FEATURES)
+   * that makes it available — Silver keys off 9900's grant, Gold off 9901's.
+   * Free themes leave this unset. A device that stored the LEGACY blanket
+   * 'premium' feature (old code 9999) still ungates every premium theme — see
+   * theme-store.isThemeAvailable's back-compat branch.
+   */
+  unlockFeature?: string;
   /** Module-selection layout variant. Defaults to 'grid'. */
   arrangement: ModuleArrangement;
   /**
@@ -90,10 +102,11 @@ export interface Theme {
 
 /**
  * THE REGISTRY. Order here is the order shown in the selectors. To add a theme:
- *   1) add an entry here (id, name, premium, arrangement),
+ *   1) add an entry here (id, name, premium, arrangement; premium → unlockFeature),
  *   2) add a `body[data-theme="<id>"] { … }` block in index.css filling the
  *      token contract,
- *   3) (premium only) optionally mint a new unlock code in utils/unlocks.ts.
+ *   3) (premium only) mint its unlock code in utils/unlocks.ts CODE_FEATURES,
+ *      gated behind the 'premium' prerequisite (code 9000).
  * Nothing else needs editing — selectors, storage, gating + resolution are
  * all data-driven off this list.
  */
@@ -104,8 +117,10 @@ export const THEMES: Theme[] = [
   { id: 'sakura',   name: 'Sakura',   nameKey: 'theme.sakura',   premium: false, arrangement: 'grid', cssDefined: true },
   { id: 'matcha',   name: 'Matcha',   nameKey: 'theme.matcha',   premium: false, arrangement: 'grid', cssDefined: true },
   // Premium foils — always listed LAST (the picker also sorts premium to the end).
-  { id: 'gold',     name: 'Gold',     nameKey: 'theme.gold',     premium: true,  arrangement: 'grid', cssDefined: true },
-  { id: 'silver',   name: 'Silver',   nameKey: 'theme.silver',   premium: true,  arrangement: 'grid', cssDefined: true },
+  // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
+  // behind the 9000 premium prerequisite.
+  { id: 'gold',     name: 'Gold',     nameKey: 'theme.gold',     premium: true,  unlockFeature: 'theme-gold',   arrangement: 'grid', cssDefined: true },
+  { id: 'silver',   name: 'Silver',   nameKey: 'theme.silver',   premium: true,  unlockFeature: 'theme-silver', arrangement: 'grid', cssDefined: true },
 ];
 
 /** The DEFAULT SELECTION for a new device/profile — what the picker starts on.
@@ -118,7 +133,14 @@ export const DEFAULT_THEME_ID = 'indigo';
  *  still has a no-attribute fallback. */
 export const ROOT_THEME_ID = 'default';
 
-/** Feature key (in utils/unlocks.ts CODE_FEATURES) that ungates premium themes. */
+/**
+ * LEGACY blanket premium feature key. Granted by the retired code 9999, it
+ * ungated BOTH foils at once. The granular scheme (issue #40) no longer mints it
+ * — 9000 grants it only as a PREREQUISITE that reveals nothing on its own (the
+ * per-theme keys 9900/9901 do the revealing). Kept as the BACK-COMPAT key:
+ * a device that already stored it keeps every premium theme available, and it
+ * remains the prerequisite that gates the 99xx codes (see utils/unlocks).
+ */
 export const PREMIUM_FEATURE = 'premium';
 
 const THEME_BY_ID = new Map(THEMES.map((th) => [th.id, th]));

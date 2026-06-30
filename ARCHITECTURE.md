@@ -572,17 +572,24 @@ registry entry.
     but premium isn't unlocked **on this device**, it falls back to `default` (so a
     revoked unlock or a restored backup never renders a gated look the user can't
     reach).
-- **Premium gating.** Gold/Silver are the **only** `premium: true` themes; they
-  unlock via **code 9999** (§5.6 below) at the **device level only** —
-  `utils/unlocks.ts` `lc-unlocks`, redeemed under the Device ID in Device Settings,
-  applying to every profile. Midnight/Sakura/Matcha are `premium: false`, so they
-  are always available — no code required. There is **no per-profile unlock**: a
-  profile can only *override* the theme among themes already available device-wide
-  (`isDevicePremiumUnlocked()` / `isThemeAvailable()` in `theme-store.ts`). The
-  theme selectors (`components/ThemeSelect.tsx`) therefore list **only the AVAILABLE
-  themes** — Default plus the three free skins always, plus Gold/Silver once premium
-  is unlocked; locked premium skins are **not shown at all** (no lock badge, no
-  redeem-on-select). The **Profile
+- **Premium gating.** Gold/Silver are the **only** `premium: true` themes; each
+  unlocks **independently** via its **own per-theme code** (§5.6 below) at the
+  **device level only** — `utils/unlocks.ts` `lc-unlocks`, redeemed under the Device
+  ID in Device Settings, applying to every profile. Both are **gated behind a
+  premium prerequisite** (code `9000`): redeem `9000` first, then **`9900` → Silver**
+  and/or **`9901` → Gold** (each theme entry carries an `unlockFeature` key — Silver
+  ← `theme-silver`, Gold ← `theme-gold`). `9000` alone reveals **nothing**; a `99xx`
+  code entered before `9000` is **rejected** as prerequisite-missing. *Back-compat:*
+  a device that stored the legacy blanket `premium` feature (retired code `9999`)
+  keeps **both** foils. Midnight/Sakura/Matcha are `premium: false`, so they are
+  always available — no code required. There is **no per-profile unlock**: a profile
+  can only *override* the theme among themes already available device-wide
+  (`isThemeAvailable()` is per-theme; `isDevicePremiumUnlocked()` is the coarse
+  "any foil" signal, in `theme-store.ts`). The theme selectors
+  (`components/ThemeSelect.tsx`) therefore list **only the AVAILABLE themes** —
+  Default plus the three free skins always, plus Silver once `9900` is redeemed and
+  Gold once `9901` is, **independently**; locked premium skins are **not shown at
+  all** (no lock badge, no redeem-on-select). The **Profile
   Picker** shows a per-profile crown (`👑` gold / `♔` silver) only when that
   profile's *own* override is Gold/Silver — a profile that merely inherits a premium
   *device* theme (no override) gets none.
@@ -605,15 +612,30 @@ Escape).
 
 The keypad is **provider-agnostic** — it doesn't know what a code means. The caller
 passes `onSubmit(code)`, which redeems the code in its own scope and returns a
-`{ feature }` outcome; the keypad maps that to a localized message + emoji and fires
-`onUnlocked(feature)`. Codes live in one place, `utils/unlocks.ts`
-`CODE_FEATURES`:
+**discriminated `CodeResult`** — `{ status: 'granted', feature }`,
+`{ status: 'prerequisite-missing', required }`, or `{ status: 'unknown' }`. The
+keypad maps each to a distinct localized message + emoji and, on `granted`, fires
+`onUnlocked(feature)`. No valid redemption ever shows the generic "Invalid code".
 
-- **`8888` → `admin`** — unlocks the Admin console (§8).
-- **`9999` → `premium`** — unlocks the Gold/Silver themes (§5.5).
+Codes live in one place, `utils/unlocks.ts` `CODE_FEATURES`, as a **two-tier,
+prerequisite-chained** scheme. Each series opens with a **prerequisite** code that
+grants a flag revealing *nothing on its own*; the feature codes are **rejected
+until that prerequisite is present**:
 
-Used by **Device Settings** (device-scope redeem via `redeemCode`, → `lc-unlocks`)
-and by the theme unlock flow.
+- **Premium series** — **`9000`** grants `premium-prereq` (prerequisite, reveals
+  nothing); **`9900`** → `theme-silver` (Silver) and **`9901`** → `theme-gold`
+  (Gold), each requiring `9000` first (else prerequisite-missing). Unlocks the
+  Gold/Silver themes, independently (§5.5).
+- **Admin series** — **`8000`** grants `admin-prereq` (prerequisite, reveals
+  nothing); **`8001`** → `admin`, requiring `8000` first. `8001` is the admin-menu
+  reveal that the **retired `8888`** used to do (§8).
+- **Removed:** `9999` (old blanket premium) and `8888` no longer redeem. *Back-compat:*
+  devices that already stored `premium` keep both foils; devices that stored `admin`
+  keep the Admin menu — the gates honor those keys directly.
+
+`redeemCode` distinguishes the three outcomes (granted / prerequisite-missing /
+unknown). Used by **Device Settings** (device-scope redeem via `redeemCode`,
+→ `lc-unlocks`) and by the theme unlock flow.
 
 ---
 
@@ -807,9 +829,10 @@ different audiences:
 - **Admin console** — the curation/debugging back office. Talks to the dev Express
   server's `/api/admin/*`, `/api/content/*`, and module routes, which **do not
   exist** in the production (Pages-only) deployment. Its entry button renders under
-  `import.meta.env.DEV` **or** when the `admin` feature has been unlocked (code
-  `8888`, §5.6) — so it can be opened on a production build, but the routes it
-  drives only resolve against the dev server.
+  `import.meta.env.DEV` **or** when the `admin` feature has been unlocked (codes
+  `8000` then `8001`, §5.6 — `8001` is what the retired `8888` did) — so it can be
+  opened on a production build, but the routes it drives only resolve against the
+  dev server.
 
 ### 8.1 Device Settings (`DeviceSettings` in `platform/src/App.tsx`)
 
@@ -821,11 +844,11 @@ per-profile. Back returns to the picker. Sections, top to bottom:
 | Section | What it does | Notes / gating |
 |---------|--------------|----------------|
 | **Language** | App UI language toggle (`繁體中文` / `English`). Writes account `settings.language`. | Always shown. |
-| **Theme** (`settings.theme`) | **Device-level** theme selector (`ThemeSelect`, scope=`device`) — the default look for every profile. Default is free; **Gold/Silver are premium** and listed **only after** premium is unlocked device-wide (code `9999`, redeemed under the Device ID below) — locked skins aren't shown here at all. Persists via `setDeviceTheme` → `localStorage` `lc-gold-mode`. | Always shown, on every device. Resolution + storage: §5.5. (Replaced the old gold-device-only "Premium" toggle.) |
+| **Theme** (`settings.theme`) | **Device-level** theme selector (`ThemeSelect`, scope=`device`) — the default look for every profile. Default is free; **Gold/Silver are premium** and each is listed **only after** its own code is redeemed device-wide (premium prerequisite `9000`, then `9900` → Silver / `9901` → Gold, under the Device ID below) — locked skins aren't shown here at all. Persists via `setDeviceTheme` → `localStorage` `lc-gold-mode`. | Always shown, on every device. Resolution + storage: §5.5. (Replaced the old gold-device-only "Premium" toggle.) |
 | **Backup & Restore** | **Back up now** exports a JSON of all profiles + prefs + theme state + unlocks (`exportBackup`). **Restore from file** parses a backup (`parseBackup`) and opens a modal for **selective** per-profile restore plus an optional "include prefs" toggle (`importBackupSelective`); reloads on success. | User data is per-device and never uploaded (§3); this manual JSON file is the only transfer path. |
-| **App version** (`settings.update`) | **Update app now** clears caches + reloads (`onForceUpdate`), enabled only when the origin is reachable (a no-store `GET /data/version.json` poke; disabled offline, with a Retry link). Shows **Device version** (`__CONTENT_VERSION__`, baked at build), **Server version** (from the same poke) with an up-to-date / update-available note, and the **Device ID** (read-or-create UUID in `localStorage` `lc-device-id`; tap to copy — for support). Also holds the **Enter code** link → the `CodeEntry` keypad (§5.6) for redeeming `8888` (admin) / `9999` (premium) at device scope. | Versions are truncated to 8 chars for display. See §4 for `version` vs `contentHash`. |
+| **App version** (`settings.update`) | **Update app now** clears caches + reloads (`onForceUpdate`), enabled only when the origin is reachable (a no-store `GET /data/version.json` poke; disabled offline, with a Retry link). Shows **Device version** (`__CONTENT_VERSION__`, baked at build), **Server version** (from the same poke) with an up-to-date / update-available note, and the **Device ID** (read-or-create UUID in `localStorage` `lc-device-id`; tap to copy — for support). Also holds the **Enter code** link → the `CodeEntry` keypad (§5.6) for redeeming the admin (`8000`→`8001`) and premium (`9000`→`9900`/`9901`) code series at device scope. | Versions are truncated to 8 chars for display. See §4 for `version` vs `contentHash`. |
 | **Advanced settings** (`settings.advanced`) | **Writing Challenge** → opens the **Levers** panel (§8.2). **Practice English** → opens the device **English voice** panel (§8.3). | These two are always shown. |
-| *(gated buttons)* | **UI Components** → the Styleguide (dev-only). **Admin** → the Admin console (§8.4). | Styleguide renders only under `import.meta.env.DEV`; **Admin** renders under `import.meta.env.DEV` **or** when the `admin` feature is unlocked (code `8888`). |
+| *(gated buttons)* | **UI Components** → the Styleguide (dev-only). **Admin** → the Admin console (§8.4). | Styleguide renders only under `import.meta.env.DEV`; **Admin** renders under `import.meta.env.DEV` **or** when the `admin` feature is unlocked (codes `8000` then `8001`). |
 
 Note: the **per-profile** settings screen (`AppSettings`, reached from the home
 screen once a profile is active) is separate and holds display name, a per-profile
@@ -858,7 +881,7 @@ in their own per-profile settings.
 ### 8.4 Admin console (`platform/src/admin/AdminPage.tsx`) — dev-server backed
 
 Opened from the Admin button in Device Settings (shown under `import.meta.env.DEV`
-or once the `admin` feature is unlocked via code `8888`). All the routes it calls
+or once the `admin` feature is unlocked via codes `8000` then `8001`). All the routes it calls
 are served by the **dev Express server only**, so even on a code-unlocked
 production build the panels have no backend to talk to. A header **Debug Overlay**
 toggle (gear) reads/writes the platform setting `debug_overlay` via
@@ -886,7 +909,7 @@ dictionary search or manual entry, with drag-free up/down reordering.
 
 > **Dev vs prod, in one line:** Device Settings, the Levers panel, and the English
 > voice panel ship and run in production. The Admin console's *button* can be opened
-> in production (dev build, or code `8888` unlock), but the routes behind it —
+> in production (dev build, or the `8000`+`8001` admin unlock), but the routes behind it —
 > `/api/admin/*`, `/api/writing-challenge/admin/*`, `/api/content/admin/*` (the
 > platform-owned content/bank curation), `/api/dictionaries`, and
 > `/api/platform-settings` — are served **only by the dev Express server** (§7), so

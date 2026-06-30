@@ -4,18 +4,60 @@
  * unlocks are shared across every profile on this device and survive reloads.
  *
  * Features are unlocked by redeeming a short numeric code. CODE_FEATURES is the
- * single, extensible source of truth mapping each code to the feature it grants;
- * add a new `'CODE': 'feature'` pair here to mint a new unlock.
+ * single, extensible source of truth mapping each code to what it grants — AND,
+ * for codes that belong to a series, the prerequisite feature that must already
+ * be unlocked before the code is accepted.
+ *
+ * TWO-TIER, PREREQUISITE-CHAINED SCHEME (issue #40). Each series opens with a
+ * SEPARATE prerequisite flag that reveals nothing on its own; the feature codes
+ * grant the actual reveals and are rejected until the prerequisite is present:
+ *   PREMIUM series
+ *     · 9000 → grants 'premium-prereq' (PREREQUISITE; reveals nothing alone).
+ *     · 9900 → grants 'theme-silver', REQUIRES 'premium-prereq' first.
+ *     · 9901 → grants 'theme-gold',   REQUIRES 'premium-prereq' first.
+ *   ADMIN series (analogous)
+ *     · 8000 → grants 'admin-prereq' (PREREQUISITE; reveals nothing alone).
+ *     · 8001 → grants 'admin', REQUIRES 'admin-prereq' first (this is the
+ *              admin-menu reveal that the retired code 8888 used to do).
+ *
+ * Why a SEPARATE prerequisite flag (not the blanket 'premium')? Two acceptance
+ * criteria would otherwise collide: "9000 alone reveals nothing" vs. "a device
+ * that already STORED 'premium' keeps its premium themes". So 9000 grants a
+ * distinct 'premium-prereq', and the legacy blanket 'premium' key is honored
+ * ONLY for back-compat (pre-stored devices / restored backups), never minted.
+ *
+ * REMOVED codes: the old flat 9999 ('premium', ungated BOTH foils) and 8888
+ * ('admin') no longer redeem. BACK-COMPAT: devices that already STORED 'premium'
+ * or 'admin' keep working — the legacy 'premium' still ungates both foils (see
+ * theme-store.isThemeAvailable), and 'admin' still drives the admin gate.
  */
 const UNLOCKS_KEY = 'lc-unlocks';
 
 /**
- * code → feature key. The only place codes are defined. Looking a code up here is
- * how redeemCode decides what (if anything) a code grants.
+ * What redeeming a single code does. `grant` is the feature key it adds to the
+ * device set; `requires`, when present, is the prerequisite feature key that
+ * MUST already be unlocked or the code is rejected (the prerequisite-missing
+ * outcome) and nothing is granted. Prerequisite codes (9000/8000) have no
+ * `requires` and grant a flag that reveals nothing on its own.
  */
-export const CODE_FEATURES: Record<string, string> = {
-  '9999': 'premium',
-  '8888': 'admin',
+export interface CodeDef {
+  grant: string;
+  requires?: string;
+}
+
+/**
+ * code → definition. The only place codes are defined. Looking a code up here is
+ * how redeemCode decides what (if anything) a code grants, and whether its
+ * prerequisite is satisfied.
+ */
+export const CODE_FEATURES: Record<string, CodeDef> = {
+  // — Premium series —
+  '9000': { grant: 'premium-prereq' },                          // prerequisite — reveals nothing alone
+  '9900': { grant: 'theme-silver', requires: 'premium-prereq' },
+  '9901': { grant: 'theme-gold', requires: 'premium-prereq' },
+  // — Admin series —
+  '8000': { grant: 'admin-prereq' },                            // prerequisite — reveals nothing alone
+  '8001': { grant: 'admin', requires: 'admin-prereq' },
 };
 
 /** The set of feature keys unlocked on this device. Empty when unset / blocked. */
@@ -50,13 +92,30 @@ export function setUnlockedFeatures(keys: string[]): void {
 }
 
 /**
- * Redeem a code. If it maps to a feature in CODE_FEATURES, add that feature to
- * the persisted set and return the feature key. Otherwise return null and change
- * nothing.
+ * The outcome of redeeming a code, as a discriminated union so callers can tell
+ * the three cases apart (the keypad shows a distinct message for each):
+ *   · 'granted'              — code valid + prerequisite met; `feature` was added.
+ *   · 'prerequisite-missing' — code valid but its prerequisite isn't unlocked yet;
+ *                              nothing granted. `required` is the missing feature.
+ *   · 'unknown'              — code not in CODE_FEATURES; nothing granted.
  */
-export function redeemCode(code: string): string | null {
-  const feature = CODE_FEATURES[code];
-  if (!feature) return null;
-  setUnlockedFeatures([feature]);
-  return feature;
+export type RedeemResult =
+  | { status: 'granted'; feature: string }
+  | { status: 'prerequisite-missing'; required: string }
+  | { status: 'unknown' };
+
+/**
+ * Redeem a code. Looks it up in CODE_FEATURES; if it has an unmet prerequisite
+ * the redemption is rejected ('prerequisite-missing') and nothing changes.
+ * Otherwise the granted feature is added to the persisted device set and
+ * returned ('granted'). Unknown codes return 'unknown' and change nothing.
+ */
+export function redeemCode(code: string): RedeemResult {
+  const def = CODE_FEATURES[code];
+  if (!def) return { status: 'unknown' };
+  if (def.requires && !isFeatureUnlocked(def.requires)) {
+    return { status: 'prerequisite-missing', required: def.requires };
+  }
+  setUnlockedFeatures([def.grant]);
+  return { status: 'granted', feature: def.grant };
 }
