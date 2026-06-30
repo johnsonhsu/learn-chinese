@@ -210,6 +210,10 @@ npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch
   ```
 
   （每個 profile 自帶的金鑰無須此設定即可運作；此 secret 是共用的後備。）
+- **意見回饋功能**（app 內的 💬 widget）是 **siloed（孤島化）**——專屬的 D1 + R2 + 管理 secret，且沒有任何
+  app／使用者／內容的 binding。其一次性佈建 runbook（`wrangler d1 create`／migration／`r2 bucket
+  create`／`pages secret put FEEDBACK_ADMIN_SECRET`／加入 Pages bindings → 重新部署）見
+  [architecture.zh-TW.md §6.5](./architecture.zh-TW.md)。
 
 ---
 

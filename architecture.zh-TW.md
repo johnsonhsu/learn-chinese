@@ -541,6 +541,113 @@ modules/copybook/server/gemini.ts → Google Gemini generateContent
 
 ---
 
+## 6.5 意見回饋（siloed）
+
+> English: [ARCHITECTURE.md "Feedback (siloed)"](./ARCHITECTURE.md)
+
+app 內的意見回饋（feedback）功能讓使用者可以從 app 的任何畫面送出一則分類後的回報，並讓擁有者有一個
+triage（分流）檢視。它最重要的特性是 **siloed（孤島化）**：正式環境的端點綁定到一個**只存放回饋的專屬
+D1 資料庫與 R2 bucket**，而且該 Function 上**沒有任何 app／使用者／內容的 binding**，因此從回饋的程式碼
+路徑「在物理上」就無法觸及 app 資料。開發環境的鏡像也以同樣方式孤島化（自己的 SQLite 檔）。此功能不與
+`platform.db`／`content.db`／裝置上的 user store 共用任何連線、檔案或程式碼路徑。
+
+### 回饋 widget（`platform/src/FeedbackWidget.tsx`）
+
+一個全域的浮動 💬 按鈕，位於右下角，**只在 app shell（`App.tsx`）掛載一次**，因此在整個 app 中都存在。
+它刻意**不**出現在行銷登陸頁。點開後是一個對話框，包含：**分類**（`bug`／`suggestion`／`content`／
+`confusing`／`other`）、**嚴重度**分段（`low`／`medium`／`high`）、自由輸入的**訊息**（上限 4000 字），
+以及一個**附上截圖**的勾選框。
+
+- **僅限線上。** 送出回饋需要網路；離線時送出按鈕會停用（以 `online`／`offline` 監聽追蹤
+  `navigator.onLine`）。
+- **延遲載入的截圖管線。** DOM 轉圖片的函式庫（`html-to-image`）**只在真正擷取截圖時才動態 import**，
+  因此永不進入離線 app shell 的關鍵路徑或 precache。擷取會把 `document.body` 渲染成一張縮小的 JPEG
+  （以 `pixelRatio` 把最長邊縮到約 900px 等效、品質從 0.7 起跳），並**逐步降低品質直到落在約 300 KB 的
+  目標以下**；若仍塞不下就優雅地捨棄（回饋照樣送出——缺少截圖從來不是錯誤）。
+- **不含 PII 的上下文。** 除了訊息之外，widget 只擷取非個人的上下文：目前的**畫面**
+  （`body[data-screen]`）、目前**模組**、app **版本**（`__CONTENT_VERSION__`）、**數字 profile id**、
+  **主題**、**語言**、**viewport** 尺寸、**online** 狀態、**user-agent**，以及一個**時間戳**。沒有顯示
+  名稱、沒有學習統計、沒有字符／句子——除了數字 profile id 以外，app 與使用者資料一律不送出。
+
+### 正式環境 API — Cloudflare Pages Functions（`platform/functions/api/feedback/`）
+
+| 路由 | Method | 對象 | 作用 |
+|------|--------|------|------|
+| `/api/feedback`（`index.ts`） | `POST` | **公開** | 送出。經驗證 + 大小上限（共用輔助函式）+ 每 IP 限流；資料列存入 D1、截圖位元組存入 R2（key `feedback/<id>.<ext>`），資料列只保留 R2 key。 |
+| `/api/feedback`（`index.ts`） | `GET` | **管理** | 列出供 triage（`?status=` 篩選、`?limit=`），並附每個狀態的計數。列表回應不含截圖。 |
+| `/api/feedback/:id`（`[id].ts`） | `PATCH` | **管理** | 設定單列的生命週期狀態（`new`／`triaged`／`in-progress`／`resolved`／`wontfix`）。 |
+| `/api/feedback/:id/screenshot`（`[id]/screenshot.ts`） | `GET` | **管理** | 從 R2 串流該列的截圖位元組。 |
+
+與 Gemini 代理一樣，這些 functions 位於 `platform/tsconfig` 的 include 之外（所以 `tsc`／vite 會忽略
+它們），由 wrangler 在部署時編譯。
+
+- **為何 siloed。** 送出／管理的 Functions **只**宣告 `FEEDBACK_DB`（D1）與 `FEEDBACK_R2`（R2）兩個
+  binding，外加 `FEEDBACK_ADMIN_SECRET`。它沒有綁定任何 app 資料庫，所以回饋端點原則上就無法讀寫
+  app／使用者／內容資料——孤島化是由「缺少 binding」來強制的，而非靠慣例。截圖存在 R2（而非內嵌於 D1）
+  以保持資料列精簡；若未綁定 R2，回饋仍可正常儲存。
+- **每 IP 限流。** POST handler 以 `cf-connecting-ip` 為單位限流，使用一張小的 `rate_hits` D1 表
+  （60 秒滑動視窗、每次 POST 清掃；超過上限 → HTTP 429）。它是**盡力而為**——表缺失或暫時性錯誤都不會
+  擋住正常的送出。
+- **管理閘門。** `GET`／`PATCH`／截圖路由由共用 secret（`FEEDBACK_ADMIN_SECRET`）把關，以
+  `x-feedback-admin-secret` header 提供（截圖 `<img>` 則用 `?secret=`），以近乎定時的方式比對。若 secret
+  未設定，讀取／更新路由就是**關閉（403），絕不開放**——fail-safe。
+- **驗證契約**是可攜式輔助函式 `platform/server/feedback-shared.ts`（不含 Node／Worker import，兩個
+  runtime 共用——與 copybook 的 Gemini 輔助函式同一模式）。它要求一個已知分類 + 非空訊息、對每個欄位都有
+  硬性大小上限、對序列化後的上下文 JSON 有 8 KB 上限，且只在截圖看起來像
+  `image/(png|jpeg|webp)` data URL 且在上限內時才接受（否則捨棄，從不視為錯誤）。
+
+### Schema（`platform/functions/migrations/0001_init.sql`）
+
+D1 migration 建立單一張 `feedback` 表（`id`、`created_at`、`category`、`option`、`message`、`screen`、
+`context_json`、`screenshot_key` → R2 key 或 `NULL`、`ua`、`app_version`、`profile_id` → 僅數字、
+`status`）加上 status／created-at 索引，以及 `rate_hits` 限流帳本表。開發鏡像建立相同的結構（以內嵌的
+`screenshot` 欄取代 R2 key）。
+
+### 管理 triage 面板（`platform/src/admin/FeedbackPanel.tsx`）
+
+Admin 主控台（§8）底下的一個**僅供開發**面板。擁有者輸入一次管理 secret（保存在 `localStorage`）；面板
+接著讀取受管理閘門保護的端點，以最新優先顯示回饋，並提供**依狀態的篩選 chips**（與計數）、行內**狀態變更**
+（`PATCH`）、每列一行的**不含 PII 上下文**，以及延遲載入的**截圖縮圖**（點擊放大）——後者經由截圖路由取得。
+從它無法觸及任何 app／使用者／內容相關資料。
+
+### 開發用 Express 鏡像（`platform/server/feedback-*.ts`）
+
+為了讓整個送出 → triage 流程在本機**完全無須 Cloudflare 佈建**即可運作，開發用 Express 伺服器（§7）原封
+不動地鏡像正式環境的契約：
+
+- `feedback-routes.ts` — 相同的四條路由（`POST` 公開；`GET`／`PATCH`／`:id/screenshot` 由開發 `.env` 的
+  `FEEDBACK_ADMIN_SECRET` 把關）、相同的驗證，以及一個記憶體內的每 IP 限流器。
+- `feedback-db.ts` — 一條**獨立的** `better-sqlite3` 連線連到 `platform/feedback.db`，與
+  `platform.db`／`content.db` 在物理上分離。沒有任何 app 程式碼 import 此模組；它是正式環境 D1 資料庫的
+  開發雙生。
+- `feedback-shared.ts` — 上述的共用驗證／secret 輔助函式，開發與正式環境共用。
+
+### 佈建 runbook（正式環境一次性設定——由帳號擁有者執行）
+
+孤島化的 D1／R2／secret／Pages binding **不會**由部署管線建立；它們是一次性的手動設定。（在它們存在之前，
+正式環境的回饋端點沒有可綁定的對象；開發鏡像則完全不需要這些。）
+
+```bash
+# 1. 建立專屬的 D1 資料庫（只存放回饋）。
+npx wrangler d1 create feedback
+
+# 2. 對它套用 schema（建立 feedback + rate_hits 兩張表）。
+npx wrangler d1 execute feedback --remote \
+  --file=platform/functions/migrations/0001_init.sql
+
+# 3. 建立專屬的 R2 bucket 存放截圖。
+npx wrangler r2 bucket create learning-chinese-feedback
+
+# 4. 設定管理 secret（任意隨機字串；用來把關讀取／triage 路由）。
+npx wrangler pages secret put FEEDBACK_ADMIN_SECRET --project-name=learning-chinese
+```
+
+接著，在 Pages 專案中（**Settings → Functions → bindings**），加入 **D1 binding `FEEDBACK_DB`**（→
+`feedback` 資料庫）與 **R2 binding `FEEDBACK_R2`**（→ `learning-chinese-feedback` bucket），然後**重新
+部署**。binding 刻意只限這兩個加上那個 secret——正是這份「缺少」讓功能保持孤島化。
+
+---
+
 ## 7. 開發伺服器（僅供開發）
 
 `platform/server/index.ts` 以 Vite 的 middleware 模式執行一個 Express 伺服器（`:3000`）。它載入各模組
