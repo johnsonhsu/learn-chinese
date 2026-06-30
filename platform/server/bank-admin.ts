@@ -38,8 +38,18 @@ import { createServer as createViteServer } from 'vite';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { readFileSync } from 'fs';
+import { loadEnv } from '../../modules/copybook/server/env.ts';
 import { contentAdminRoutes } from './content-admin.js';
 import { routes as copybookRoutes } from '../../modules/copybook/server/index.ts';
+
+// Load the local dev .env (repo root + platform/) into process.env BEFORE any
+// route runs, exactly as the :3000 server does (its Gemini-backed routes call the
+// same hand-rolled loadEnv() — no dotenv dependency). Without this, the
+// standalone bank-admin process starts with no GEMINI_API_KEY, so the gap-fill
+// prompt generation (content-admin /admin/ai-generate) and the copybook key probe
+// can't fall back to the dev key. loadEnv() never clobbers a real env var and is
+// idempotent, so calling it once at startup is safe and keeps it dev-only.
+loadEnv();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const platformRoot = join(__dirname, '..');
