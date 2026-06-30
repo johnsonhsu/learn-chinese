@@ -66,12 +66,12 @@ const SEMANTIC_TOKENS: { name: string; note: string; dark?: boolean }[] = [
   { name: '--paper-raised', note: 'upcoming pill fill' },
   { name: '--rule-strong', note: 'upcoming pill border' },
   { name: '--bg-raised-2', note: 'done pill (sunken)' },
-  { name: '--seal', note: 'above-level pill border (accent)', dark: true },
-  { name: '--seal-wash', note: 'above-level pill fill (accent)' },
-  { name: '--seal-deep', note: 'above-level pill text (accent)', dark: true },
+  { name: '--seal', note: 'theme accent (landing stat / outline) — NOT the above-level pill', dark: true },
+  { name: '--seal-wash', note: 'theme accent wash' },
+  { name: '--seal-deep', note: 'theme accent (deep)', dark: true },
   { name: '--success', note: 'pass · mastery≥80 · target', dark: true },
   { name: '--warning', note: 'warn · mastery≥50', dark: true },
-  { name: '--error', note: 'fail · stroke-result incorrect (true red, ≠ above-level)', dark: true },
+  { name: '--error', note: 'fail · stroke-result incorrect · above-level / auto-skip (true red, all share it)', dark: true },
   { name: '--text-dim', note: 'user-skipped text' },
 ];
 
@@ -321,7 +321,7 @@ export default function Styleguide() {
           </div>
           <div className="sg-legend-item">
             <span className="char-box char-box-above">預</span>
-            <code>above-level / auto-skip · .char-box-above</code>
+            <code>above-level / auto-skip (= fail red) · .char-box-above</code>
           </div>
           <div className="sg-legend-item">
             <span className="char-box char-box-skipped">計</span>
@@ -347,8 +347,9 @@ export default function Styleguide() {
         {/* Live combos: a COMPLETED char in the track carries BOTH .char-box-done AND
             the result class (e.g. `char-box-done char-box-fail`). These tiles reproduce
             exactly what the live track renders, and verify the result colour wins over
-            the grey done style — a completed-incorrect char must read RED, distinct from
-            the above-level accent pill. */}
+            the grey done style — a completed-incorrect char must read RED. The
+            above-level pill uses the SAME --error red (it IS a fail/negative state), so
+            it sits here as the matching red, not a contrast. */}
         <h3 className="sg-subhead">Completed-char result combos (live track)</h3>
         <div className="sg-track-surface sg-track-legend">
           <div className="sg-legend-item">
@@ -365,7 +366,7 @@ export default function Styleguide() {
           </div>
           <div className="sg-legend-item">
             <span className="char-box char-box-above">預</span>
-            <code>above-level (≠ fail) · .char-box-above</code>
+            <code>above-level / auto-skip (= fail) · .char-box-above</code>
           </div>
         </div>
       </Section>
