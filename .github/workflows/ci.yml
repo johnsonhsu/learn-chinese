@@ -46,20 +46,28 @@ jobs:
           pip install --quiet opencc pytest
           pytest test/test_glyph_canon.py -q
 
-      # 3) Build the shippable app from the committed content-only seeds
+      # 3) Type-check (tsc). The build (vite/esbuild) STRIPS types without
+      #    checking them, so a real TS error can rot silently on master — this
+      #    step is the only thing that runs `tsc`. Covers the platform project
+      #    graph (incl. app-consumed modules) via `tsc -b`, plus the shared
+      #    workspace's own suite (its __tests__ aren't in platform's graph).
+      - name: Type-check
+        run: npm run typecheck
+
+      # 4) Build the shippable app from the committed content-only seeds
       #    (reproducible; the working DBs aren't in the repo). Platform build
       #    only — the root build's writing-challenge build:data needs raw import
       #    sources that aren't committed and isn't part of deploy.
       - name: Build
         run: npm run build --workspace=platform
 
-      # 4) DEPLOY GATE — verify the baked artifacts before anything ships:
+      # 5) DEPLOY GATE — verify the baked artifacts before anything ships:
       #    no Simplified/undrawable glyphs, referential integrity, NO personal
       #    data in the snapshots, offline stroke coverage.
       - name: Data-integrity gate
         run: npm run test:data
 
-      # 5) Deploy. Cloudflare decides preview-vs-prod by comparing --branch to the
+      # 6) Deploy. Cloudflare decides preview-vs-prod by comparing --branch to the
       #    project's PRODUCTION BRANCH, which on this direct-upload project is
       #    `learning-chinese` (not `master`). So:
       #      push to master   -> --branch=learning-chinese -> PRODUCTION
@@ -76,7 +84,7 @@ jobs:
           workingDirectory: platform
           command: pages deploy dist --project-name=learning-chinese --branch=${{ github.event_name == 'push' && 'learning-chinese' || github.head_ref }}
 
-      # 6) Post (or update) the preview URL on the PR, so each open PR shows its
+      # 7) Post (or update) the preview URL on the PR, so each open PR shows its
       #    own link. Sticky via a marker comment → pushes update it in place
       #    instead of stacking new comments.
       - name: Comment preview URL on the PR
