@@ -127,6 +127,11 @@ export default function Styleguide() {
   // Local toggle so the candy press/active states are observable on touch too.
   const [armed, setArmed] = useState(false);
 
+  // Controlled text for the input specimens so legibility (typed text vs fill)
+  // is inspectable per-theme — the regression in #38 was light-text-on-white.
+  const [demoName, setDemoName] = useState('小明');
+  const [demoAge, setDemoAge] = useState('7');
+
   // THEME PREVIEW — drive body[data-theme] directly. Open on the app's DEFAULT
   // selection (Indigo) so the inspector reflects what new users actually see;
   // capture the real attribute on mount and restore it on unmount so previewing
@@ -236,6 +241,49 @@ export default function Styleguide() {
             >
               {armed ? 'Pressed (lip compressed)' : 'Tap me'}
             </Button>
+          </Specimen>
+        </div>
+      </Section>
+
+      {/* ── TEXT INPUTS ─────────────────────────────────────────────────── */}
+      <Section
+        title="Text input"
+        desc="Typed text and the input fill must always move together with the theme — both read theme tokens (background: var(--bg-input); color: var(--text)). The onboarding/welcome name + age fields use .welcome-popup-input; the shared kit uses .fb-* (.fb-select/.fb-textarea). Type here and switch themes: text stays legible on every theme (Paper white, Indigo navy, gold/silver dark) — no light-on-light or dark-on-dark. This specimen exists so the #38 invisibility class of bug is catchable from the inspector."
+      >
+        <div className="sg-row sg-row--wrap">
+          <Specimen label=".welcome-popup-input (profile name)">
+            <div className="welcome-popup-field">
+              <label className="welcome-popup-label" htmlFor="sg-name">Your name</label>
+              <input
+                id="sg-name"
+                className="welcome-popup-input"
+                type="text"
+                value={demoName}
+                onChange={(e) => setDemoName(e.target.value)}
+                placeholder="Type a name…"
+              />
+            </div>
+          </Specimen>
+          <Specimen label=".welcome-popup-input (native-speaker age)">
+            <div className="welcome-popup-field">
+              <label className="welcome-popup-label" htmlFor="sg-age">Age</label>
+              <input
+                id="sg-age"
+                className="welcome-popup-input"
+                type="number"
+                inputMode="numeric"
+                value={demoAge}
+                onChange={(e) => setDemoAge(e.target.value)}
+                placeholder="Age"
+              />
+            </div>
+          </Specimen>
+          <Specimen label=".fb-textarea (shared kit pattern)">
+            <textarea
+              className="fb-textarea"
+              defaultValue="The quick brown fox"
+              placeholder="Shared-kit field…"
+            />
           </Specimen>
         </div>
       </Section>

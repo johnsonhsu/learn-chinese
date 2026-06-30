@@ -3662,7 +3662,7 @@ body[data-screen="profile"]:not([data-theme]) .user-btn {
 .welcome-popup-field { display: flex; flex-direction: column; gap: 7px; width: 100%; text-align: left; }
 .welcome-popup-label { font-size: 13px; font-weight: 600; color: var(--text-muted); padding-left: 2px; }
 .welcome-popup-input {
-  width: 100%; box-sizing: border-box; background: #fff; color: var(--text);
+  width: 100%; box-sizing: border-box; background: var(--bg-input); color: var(--text);
   border: 1px solid rgba(0,0,0,0.12); border-radius: 14px; padding: 14px 16px;
   font-size: 17px; font-weight: 500; outline: none;
   transition: border-color 0.12s ease;
