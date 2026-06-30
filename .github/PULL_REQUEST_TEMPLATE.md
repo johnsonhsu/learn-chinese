@@ -30,8 +30,24 @@ merging to master ships PRODUCTION through the same build + gates. No manual dep
 - [ ] Sentence selection stays **binding** — the target char appears in the result
 - [ ] No new per-character `WritingCanvas` remount (reused one HanziWriter via `setCharacter()` / `quizSession`)
 
-## Preview
-<!-- CI posts a preview URL on this PR. Note anything specific to test there. -->
+## Verification
+<!-- Required on every PR (incl. docs-only — they merge on green with no human review). -->
 
-## Screenshots
-<!-- Before/after for UI changes. -->
+**How I verified** — the checks actually run for THIS change:
+- [ ] `npm run test:unit` (always)
+- [ ] `npm run test:data` (+ `npm run seed:dbs`) — if content / a DB changed
+- [ ] `pytest test/test_glyph_canon.py` — if glyphs / `canonicalizeTW` / `bank-fix.py canon()` changed
+- [ ] `npx vite build` to confirm the build — **never** `npm run build` (auto-deploy footgun)
+- [ ] Visual check on the **preview URL** (CI posts it below) for UI / theme changes — name the route + what you looked at, e.g. `?ui` (Styleguide) and/or `?app&demo`, which themes / elements
+<!-- Note the result of each (e.g. "test:unit → 89/89 green; vite build clean"). -->
+
+**How to verify (reviewer)** — a concrete reproduction on this PR's preview (the "Review: …" one-liner pattern):
+<!-- Route + themes/elements + expected result, e.g.
+     Review: open <preview>/?app&demo → Settings → Theme dropdown; under Indigo the
+     hovered row is a faint accent wash, not a solid gold bar. -->
+
+**Test impact** — added / updated / none-needed (and why):
+<!-- e.g. "+7 cases in demo-mode.test.ts" · "CSS-only, no engine change — none needed". -->
+
+**Screenshots** (UI changes): before / after.
+<!-- Paste below. -->
