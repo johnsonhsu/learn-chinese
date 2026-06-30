@@ -4,7 +4,8 @@ import type { CharStat, RankedChar, DbQueryProvider } from '../types.js';
 /** A fully-populated CharStat with zeroed defaults; override what a test cares about. */
 export function makeStat(p: Partial<CharStat> & { character: string }): CharStat {
   return {
-    character: p.character,
+    // `character` (required on the param) is supplied by the `...p` spread below,
+    // along with any other overrides; these zeroed fields are just the defaults.
     timesSeen: 0,
     timesPerfect: 0,
     timesCorrect: 0,
