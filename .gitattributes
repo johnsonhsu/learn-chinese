@@ -1,0 +1,5 @@
+# SQLite DBs are binary — git must never apply text/EOL normalization
+# (it silently corrupts them; content.db ships in the repo).
+*.db binary
+*.sqlite binary
+*.sqlite3 binary

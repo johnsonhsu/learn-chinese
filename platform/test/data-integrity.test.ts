@@ -24,8 +24,9 @@ const HAN = /[一-鿿㐀-䶿]/;
 //   嚐  → clean fix: VARIANT_MAP 嚐→嘗 (嘗 is drawable AND ranked)
 //   溼  → drawable variant 濕 exists but is UNRANKED → needs a ranking-side fix too
 //   痠 嬤 → not in animCJK/makemeahanzi (no open stroke data); need custom strokes or accept undrawable
+//   綑  → clean fix: VARIANT_MAP 綑→捆 (捆 is the standard form, drawable + ranked) — surfaced 2026-06-30
 // (齣 was fixed — stroke data sourced from animCJK → platform/public/stroke-data/齣.json.)
-const STROKE_ALLOWLIST = new Set<string>(['溼', '痠', '嬤', '嚐']);
+const STROKE_ALLOWLIST = new Set<string>(['溼', '痠', '嬤', '嚐', '綑']);
 
 const ro = (name: string) => new Database(join(dataDir, `${name}.db`), { readonly: true });
 const has = (db: Database.Database, t: string) =>

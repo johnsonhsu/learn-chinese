@@ -58,7 +58,6 @@ const T = {
     // ── Section-nav menu (the ☰ in the top bar) ──
     menuLabel: 'Menu',
     menuTitle: 'Jump to',
-    menuClose: 'Close menu',
     navTry: 'Try it',
     navMilestones: 'Milestones',
     navHow: 'How it works',
@@ -124,8 +123,10 @@ const T = {
     f5: 'Your data stays on your device', f6: 'Real Taiwan Traditional + Zhuyin',
 
     // ── Final CTA ──
-    finalEyebrow: 'Start tonight',
-    finalLine: 'Add it to your Home Screen and write your first characters tonight.',
+    finalEyebrow: 'Start {when}',
+    finalLine: 'Add it to your Home Screen and write your first characters {when}.',
+    // {when} = time-of-day word, swapped in at render by timeOfDayKey().
+    when: { morning: 'this morning', day: 'today', night: 'tonight' },
 
     // ── Install instructions (iOS + generic fallback) ──
     installBarIos: 'Add to your Home Screen',
@@ -158,7 +159,6 @@ const T = {
     // ── 區段導覽選單（頂部列的 ☰）──
     menuLabel: '選單',
     menuTitle: '跳到',
-    menuClose: '關閉選單',
     navTry: '讀讀看',
     navMilestones: '里程碑',
     navHow: '怎麼運作',
@@ -212,8 +212,10 @@ const T = {
     f3: '免註冊、免帳號', f4: '永遠沒有廣告',
     f5: '資料留在你的裝置', f6: '真正的台灣繁體＋注音',
 
-    finalEyebrow: '今晚就開始',
-    finalLine: '把它加進主畫面，今晚就寫下你的第一個字。',
+    finalEyebrow: '{when}就開始',
+    finalLine: '把它加進主畫面，{when}就寫下你的第一個字。',
+    // {when} 依使用者當下時段替換（見 timeOfDayKey）。
+    when: { morning: '今早', day: '今天', night: '今晚' },
 
     installBarIos: '加入主畫面',
     installIntroIos: '它會像真正的 App 一樣運作，進度也都存在你的裝置上。在 iPhone 或 iPad 的 Safari 裡：',
@@ -286,10 +288,10 @@ function scoreText(text: string, known: number): Scored {
 // carries the aria-label, so this stays aria-hidden.
 function MenuIcon() {
   return (
-    <svg className="lp-burger-ico" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-      <line x1="4" y1="7" x2="20" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <line x1="4" y1="12" x2="20" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <line x1="4" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <svg className="lp-burger-ico" viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+      <line x1="3" y1="7" x2="21" y2="7" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+      <line x1="3" y1="17" x2="21" y2="17" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
     </svg>
   );
 }
@@ -808,111 +810,181 @@ function scrollToSectionId(id: string) {
 // clicks, Esc closes (and returns focus to the burger), focus moves into the
 // panel on open, and the panel is keyboard-navigable (native buttons in order).
 interface NavItem { id: string; label: string; }
-function NavMenu({
-  open,
-  onClose,
-  items,
-  title,
-  closeLabel,
-  cta,
-  panelRef,
-}: {
-  open: boolean;
-  onClose: () => void;
+// ── Section-nav DROPDOWN (the ☰) ─────────────────────────────────────────────
+// A menu that flows DOWN from the top bar (no modal, no backdrop). It opens on
+// HOVER of the wrap and on CLICK (which pins it open), and closes on un-hover
+// (when not pinned), an outside click, or Esc. The button + panel share ONE
+// .lp-menu wrap so moving from the button into the panel never closes it
+// (mouseleave ignores descendants, even an absolutely-positioned one).
+function NavDropdown({ items, title, menuLabel, cta, onOpenChange }: {
   items: NavItem[];
   title: string;
-  closeLabel: string;
+  menuLabel: string;
   cta: ReactNode;
-  panelRef: RefObject<HTMLDivElement | null>;
+  /** Notified whenever the menu opens/closes, so the parent can render the scrim. */
+  onOpenChange?: (open: boolean) => void;
 }) {
-  // Move focus to the first item when the menu opens (so keyboard/SR users land
-  // inside the panel), and close on Esc.
+  const [open, setOpen] = useState(false);
+  const [pinned, setPinned] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
+  const close = () => { setOpen(false); setPinned(false); };
+  // Surface open-state to the parent (it renders the frosted scrim at root level).
+  useEffect(() => { onOpenChange?.(open); }, [open, onOpenChange]);
+
+  // While open: an outside pointerdown or Esc closes (and unpins). Capture phase
+  // so it runs before any item/section click elsewhere on the page.
   useEffect(() => {
     if (!open) return;
-    panelRef.current?.querySelector<HTMLElement>('[data-nav-first]')?.focus();
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onClose();
-      }
-    }
+    const onDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) { setOpen(false); setPinned(false); }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setOpen(false); setPinned(false); burgerRef.current?.focus(); }
+    };
+    document.addEventListener('pointerdown', onDown, true);
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, onClose, panelRef]);
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
-  if (!open) return null;
   return (
-    <div className="lp-navmenu-root">
-      {/* Backdrop: outside-click closes. aria-hidden — the panel below is the dialog. */}
-      <div className="lp-navmenu-backdrop" onClick={onClose} aria-hidden="true" />
+    <div
+      className="lp-menu"
+      ref={wrapRef}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => { if (!pinned) setOpen(false); }}
+    >
+      <button
+        ref={burgerRef}
+        type="button"
+        className="lp-burger"
+        aria-label={menuLabel}
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-controls="lp-navmenu"
+        onClick={() => {
+          // Click pins the menu open; clicking again (while pinned) closes it.
+          if (open && pinned) close();
+          else { setOpen(true); setPinned(true); }
+        }}
+      >
+        <MenuIcon />
+      </button>
       <div
         id="lp-navmenu"
-        className="lp-navmenu"
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
+        className={`lp-navmenu${open ? ' is-open' : ''}`}
         aria-label={title}
       >
         <p className="lp-navmenu-title">{title}</p>
         <nav className="lp-navmenu-list">
-          {items.map((it, i) => (
+          {items.map((it) => (
             <button
               key={it.id}
               type="button"
               className="lp-navmenu-item"
-              data-nav-first={i === 0 ? 'true' : undefined}
-              onClick={() => {
-                onClose();
-                scrollToSectionId(it.id);
-              }}
+              onClick={() => { close(); scrollToSectionId(it.id); }}
             >
               {it.label}
             </button>
           ))}
         </nav>
-        <div className="lp-navmenu-cta">{cta}</div>
-        <button type="button" className="lp-navmenu-close" onClick={onClose}>
-          {closeLabel}
-        </button>
+        {/* Clicking the CTA installs (its own onClick) and closes the menu. */}
+        <div className="lp-navmenu-cta" onClick={close}>{cta}</div>
       </div>
     </div>
   );
 }
 
-// ── Sticky-bar scroll snap ────────────────────────────────────────────────
-// The top bar is fixed to the viewport. At the very top (over the hero) it blends
-// into the navy field (transparent); once the user scrolls past a small threshold
-// it "snaps" to the solid bar treatment (navy fill + hairline + shadow) by getting
-// the `is-scrolled` class, and stays there. The transition between the two states
-// lives in CSS and is disabled under prefers-reduced-motion (solid bar, no animation).
-// We read scrollY on an rAF-throttled scroll listener (one class write per frame at
-// most) and only touch the DOM when the boolean actually flips, so it stays cheap.
-function useStickyBarScroll(ref: RefObject<HTMLElement | null>) {
+// ── Brand-splash → bar-wordmark dock ─────────────────────────────────────────
+// The large 學中文 splash SHRINKS INTO the bar's wordmark as you scroll — ONE
+// element travelling, NOT a cross-fade. A single fixed copy (.lp-fly) is pinned
+// to the bar wordmark's slot + size, then given a translate+scale that, at the
+// top, places & enlarges it exactly onto the splash, easing to identity (the
+// docked state) over the dock distance. The static splash word + the real bar
+// wordmark are hidden while it flies (.lp.is-flying) and are the reduced-motion /
+// no-JS fallback. Rects are measured once (and on resize / fonts-ready), so each
+// scroll frame is just cheap arithmetic.
+function useDockTransition(
+  rootRef: RefObject<HTMLElement | null>,
+  splashRef: RefObject<HTMLElement | null>,
+  markRef: RefObject<HTMLElement | null>,
+  flyRef: RefObject<HTMLElement | null>,
+) {
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const THRESHOLD = 8; // px scrolled before snapping to the solid bar
+    const root = rootRef.current, splash = splashRef.current, mark = markRef.current, fly = flyRef.current;
+    if (!root || !splash || !mark || !fly) return;
+    // Reduced motion → keep the flyer still; the static splash + bar wordmark show
+    // instead. We STILL track scroll to flip the bar's docked state (border/fill).
+    const motion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let m: { dx: number; dy: number; scaleUp: number; dist: number } | null = null;
     let raf = 0;
-    let scrolled = false;
+    let docked = false;
+
     const apply = () => {
       raf = 0;
-      const next = window.scrollY > THRESHOLD;
-      if (next !== scrolled) {
-        scrolled = next;
-        el.classList.toggle('is-scrolled', next);
+      if (!m) return;
+      const p = Math.min(1, Math.max(0, window.scrollY / m.dist));
+      if (motion) {
+        const k = 1 - p; // 1 at the top (splash), 0 once docked
+        fly.style.transform = `translate(${m.dx * k}px, ${m.dy * k}px) scale(${1 + (m.scaleUp - 1) * k})`;
       }
+      // The bar only goes solid (fill + bottom border) ONCE the wordmark is fully
+      // in place — never mid-flight.
+      const nowDocked = p >= 1;
+      if (nowDocked !== docked) { docked = nowDocked; root.classList.toggle('is-docked', docked); }
     };
+
+    const measure = () => {
+      const sy = window.scrollY;
+      const s = splash.getBoundingClientRect();
+      const d = mark.getBoundingClientRect();
+      const splashFont = parseFloat(getComputedStyle(splash).fontSize) || s.height || 1;
+      const dockFont = parseFloat(getComputedStyle(mark).fontSize) || d.height || 1;
+      if (motion) {
+        // Pin the flyer's base box to the bar wordmark slot (small, docked state).
+        fly.style.left = `${d.left}px`;
+        fly.style.top = `${d.top}px`;
+        fly.style.fontSize = `${dockFont}px`;
+      }
+      m = {
+        dx: s.left - d.left,                          // splash − dock (horizontal)
+        dy: (s.top + sy) - d.top,                     // splash@scroll0 − dock (vertical)
+        scaleUp: splashFont / dockFont,               // how much bigger the splash is
+        dist: Math.max(140, (s.bottom + sy) - d.top), // scroll distance over which it docks
+      };
+      if (motion) root.classList.add('is-flying');
+      apply();
+    };
+
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
-    apply(); // set initial state (e.g. restored scroll position on reload)
+    measure();
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', measure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure).catch(() => {});
     return () => {
       if (raf) cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', measure);
+      root.classList.remove('is-flying', 'is-docked');
     };
-  }, [ref]);
+  }, [rootRef, splashRef, markRef, flyRef]);
 }
 
 // Geo-ish default: Asian timezone or a Chinese browser language → 中文, else English.
+// Time-of-day word for the install section, per the product's local-time logic:
+//   06:00–10:59 → "this morning" / 今早 · 11:00–16:59 → "today" / 今天 ·
+//   everything else (evening, night, pre-dawn) → "tonight" / 今晚.
+function timeOfDayKey(): 'morning' | 'day' | 'night' {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 11) return 'morning';
+  if (h >= 11 && h < 17) return 'day';
+  return 'night';
+}
+
 function defaultLang(): Lang {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
@@ -1033,6 +1105,9 @@ function useBrushFontReady(sample: string): boolean {
 export default function LandingPage() {
   const [lang, setLang] = useState<Lang>(defaultLang);
   const t = T[lang];
+  // Time-of-day word (今早/今天/今晚 · this morning/today/tonight) for the install
+  // section — reflects the visitor's local time.
+  const whenWord = t.when[timeOfDayKey()];
   useEffect(() => { document.title = t.title; }, [t.title]);
   // Pull in the handwriting web font for the paperpad's Brush 楷 option.
   useHandwritingWebFont();
@@ -1087,21 +1162,20 @@ export default function LandingPage() {
   // install state can add or swap revealable nodes). No-op under reduced motion.
   useScrollReveal([lang, installState]);
 
-  // The fixed top bar snaps from transparent (over the hero) to a solid navy bar
-  // once the page scrolls past a small threshold (see useStickyBarScroll + CSS).
-  const barRef = useRef<HTMLElement>(null);
-  useStickyBarScroll(barRef);
+  // Brand-splash → bar-wordmark dock: the big 學中文 shrinks into the bar wordmark,
+  // and the bar flips to its solid/bordered state only once the wordmark lands.
+  const lpRef = useRef<HTMLDivElement>(null);
+  const splashRef = useRef<HTMLSpanElement>(null);
+  const markRef = useRef<HTMLSpanElement>(null);
+  const flyRef = useRef<HTMLSpanElement>(null);
+  useDockTransition(lpRef, splashRef, markRef, flyRef);
+  // Menu open-state lifted here so the frosted scrim — a root-level sibling of the
+  // bar — can sit below the bar/menu but above the page content.
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // ── Section-nav menu (the ☰) ──
-  // The burger toggles a small panel of jump-to-section links. burgerRef lets us
-  // return focus to the burger when the menu closes (Esc/outside-click/select).
-  const [menuOpen, setMenuOpen] = useState(false);
-  const burgerRef = useRef<HTMLButtonElement>(null);
-  const menuPanelRef = useRef<HTMLDivElement>(null);
-  const closeMenu = () => {
-    setMenuOpen(false);
-    burgerRef.current?.focus();
-  };
+  // Jump-to-section links shown in the bar-attached NavDropdown (which owns its
+  // own open/pinned/hover/outside-click/Esc state).
   const navItems: NavItem[] = [
     { id: 'try', label: t.navTry },
     { id: 'milestones', label: t.navMilestones },
@@ -1130,26 +1204,24 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="lp" lang={lang}>
-      {/* Fixed, compact top menu bar. Starts transparent over the hero and snaps to
-          a solid navy bar on scroll (useStickyBarScroll → .is-scrolled). The inner
+    <div className="lp" lang={lang} ref={lpRef}>
+      {/* Fixed, compact top menu bar. Stays transparent over the hero while the
+          wordmark docks, then snaps to a solid navy bar (.lp.is-docked, set by
+          useDockTransition once the wordmark lands). The inner
           wrapper keeps the bar's contents on the same centered 760px column as the
           rest of the page while the bar background runs full-bleed. */}
-      <header className="lp-bar" ref={barRef}>
+      <header className={`lp-bar${menuOpen ? ' is-menu-open' : ''}`}>
         <div className="lp-bar-inner">
-          <button
-            ref={burgerRef}
-            type="button"
-            className="lp-burger"
-            aria-label={t.menuLabel}
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
-            aria-controls="lp-navmenu"
-            onClick={() => setMenuOpen((o) => !o)}
-          >
-            <MenuIcon />
-          </button>
-          <span className="lp-mark">{t.wordmark}</span>
+          {/* Hamburger + its bar-attached dropdown (hover opens · click pins ·
+              outside-click/Esc closes) — see NavDropdown. */}
+          <NavDropdown
+            items={navItems}
+            title={t.menuTitle}
+            menuLabel={t.menuLabel}
+            cta={<Cta block />}
+            onOpenChange={setMenuOpen}
+          />
+          <span className="lp-mark" ref={markRef}>{t.wordmark}</span>
           <div className="lp-bar-right">
             <span className="lp-bar-region">{t.region}</span>
             <div className="lp-langtoggle" role="group" aria-label="Language">
@@ -1160,17 +1232,22 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Section-nav menu opened by the ☰ — jump-to links + the install CTA. */}
-      <NavMenu
-        open={menuOpen}
-        onClose={closeMenu}
-        items={navItems}
-        title={t.menuTitle}
-        closeLabel={t.menuClose}
-        panelRef={menuPanelRef}
-        cta={<Cta block onClick={() => { setMenuOpen(false); handleInstall(); }} />}
-      />
+      {/* Frosted-glass scrim — fades in behind the open menu to dim + blur the page
+          below the bar. Root-level sibling of the bar, so it sits under the bar +
+          menu but over the content. Clicking it closes the menu (caught by
+          NavDropdown's outside-pointerdown). */}
+      <div className={`lp-menu-scrim${menuOpen ? ' is-open' : ''}`} aria-hidden="true" />
 
+      {/* Brand splash: the large 學中文 that SHRINKS INTO the bar's wordmark as you
+          scroll. useDockTransition drives a single fixed copy (.lp-fly) from this
+          splash's spot+size down to the bar slot+size; the static splash word + the
+          bar wordmark are hidden while it flies (and are the reduced-motion / no-JS
+          fallback). The splash box stays in flow to reserve the height that pushes
+          the hero down. */}
+      <span className="lp-fly" ref={flyRef} aria-hidden="true">{t.wordmark}</span>
+      <div  className="lp-splash" aria-hidden="true">
+        <span className="lp-splash-word" ref={splashRef}>{t.wordmark}</span>
+      </div>
       <section id="top" className="lp-hero">
         <h1 className="lp-title">
           {/* Static script word — the read+write duality stated plainly (no toggle). */}
@@ -1291,9 +1368,9 @@ export default function LandingPage() {
       </section>
 
       <section className="lp-section lp-final-section lp-reveal" id="install">
-        <p className="lp-eyebrow">{t.finalEyebrow}</p>
+        <p className="lp-eyebrow">{t.finalEyebrow.replace('{when}', whenWord)}</p>
         <div className="lp-install">
-          <p className="lp-install-final">{t.finalLine}</p>
+          <p className="lp-install-final">{t.finalLine.replace('{when}', whenWord)}</p>
           <p className="lp-madefor lp-madefor-install">
             <DevicesIcon />
             {t.madeFor}

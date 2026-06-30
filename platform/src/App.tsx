@@ -11,7 +11,7 @@ import { ThemeSelect } from './components/ThemeSelect.tsx';
 import { CodeEntry } from './components/CodeEntry.tsx';
 import {
   getDeviceTheme, setDeviceTheme, getProfileTheme, setProfileTheme,
-  resolveEffectiveTheme,
+  resolveEffectiveTheme, applyThemeToBody,
 } from './theme/theme-store.ts';
 import { getTheme } from './theme/themes.ts';
 import UpdateBanner from './UpdateBanner.tsx';
@@ -111,9 +111,9 @@ function shouldShowLanding(): boolean {
   return !isDevHost && !standalone;
 }
 
-// Dev/reference entry: `?ui` opens the living UI-kit styleguide directly,
-// mirroring the `?landing`/`?app` query-param pattern. Kept out of the learner
-// flow; also reachable from Device Settings → Advanced.
+// Dev/reference entry: `?ui` is the styleguide's OWN distinct URL (mirrors the
+// `?landing`/`?app` query-param pattern). It is deliberately NOT linked from
+// anywhere in the app UI — reachable only by visiting `/?ui` directly.
 function shouldShowStyleguide(): boolean {
   return new URLSearchParams(location.search).has('ui');
 }
@@ -151,7 +151,6 @@ function AppInner() {
   const [showLevers, setShowLevers] = useState(false);
   const [showEnglishVoice, setShowEnglishVoice] = useState(false);
   const [showDeviceSettings, setShowDeviceSettings] = useState(false);
-  const [showStyleguide, setShowStyleguide] = useState(false);
   // THEME state. The effective theme = profileOverride ?? deviceTheme ?? default
   // (see theme-store). It depends on the active profile AND the device/profile
   // selections; `themeBump` forces a re-resolve after a selector writes a change.
@@ -208,7 +207,7 @@ function AppInner() {
   // the navigation-based "new version" check.
   const screen = useMemo<string>(() => {
     if (!user) {
-      return (showAdmin || showLevers || showEnglishVoice || showDeviceSettings || showStyleguide) ? 'settings' : 'profile';
+      return (showAdmin || showLevers || showEnglishVoice || showDeviceSettings) ? 'settings' : 'profile';
     }
     // Onboarding / placement renders on its OWN screen value (not 'home') so it
     // never inherits the home/profile premium shell — placement must look normal.
@@ -221,7 +220,7 @@ function AppInner() {
     if (activeModule === 'word-sets') return 'wordsets';
     if (activeModule) return 'writing';
     return 'home';
-  }, [user, activeModule, showSettings, showAdmin, showLevers, showEnglishVoice, showDeviceSettings, showStyleguide, placementNeeded]);
+  }, [user, activeModule, showSettings, showAdmin, showLevers, showEnglishVoice, showDeviceSettings, placementNeeded]);
 
   // Per-screen background color (the design uses a different hue per screen).
   useEffect(() => {
@@ -233,8 +232,7 @@ function AppInner() {
   // tokens come from :root, so the attribute is REMOVED (not set to "default")
   // when default is active, keeping the cascade byte-identical to pre-theming.
   useEffect(() => {
-    if (effectiveTheme === 'default') delete document.body.dataset.theme;
-    else document.body.dataset.theme = effectiveTheme;
+    applyThemeToBody(effectiveTheme);
   }, [effectiveTheme]);
 
   // Check for a new app version every time the user LANDS on the profile-picker
@@ -256,11 +254,7 @@ function AppInner() {
         <UpdateBanner needRefresh={needRefresh} onUpdate={applyUpdate} onDismiss={() => setNeedRefresh(false)} />
         {/* Settings panels take precedence so the WelcomePopup gear (0-profile
             first run) and the ProfilePicker gear both reach them. */}
-        {showStyleguide ? (
-          <Suspense fallback={<div className="loading">Loading...</div>}>
-            <Styleguide onBack={() => setShowStyleguide(false)} />
-          </Suspense>
-        ) : showAdmin ? (
+        {showAdmin ? (
           <Suspense fallback={<div className="loading">Loading...</div>}>
             <AdminPage onBack={() => setShowAdmin(false)} />
           </Suspense>
@@ -280,7 +274,6 @@ function AppInner() {
             onOpenAdmin={() => setShowAdmin(true)}
             onOpenLevers={() => setShowLevers(true)}
             onOpenEnglishVoice={() => setShowEnglishVoice(true)}
-            onOpenStyleguide={() => setShowStyleguide(true)}
             onBack={() => setShowDeviceSettings(false)}
             deviceTheme={getDeviceTheme()}
             onSetDeviceTheme={(id) => { setDeviceTheme(id); bumpTheme(); }}
@@ -772,14 +765,13 @@ function AppSettings({ user, onUpdateDisplayName, onRetakePlacement, onBack, onT
 
 // --- Device Settings (account-wide: backup, app update, admin) ---
 
-function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin, onOpenLevers, onOpenEnglishVoice, onOpenStyleguide, onBack, deviceTheme, onSetDeviceTheme }: {
+function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin, onOpenLevers, onOpenEnglishVoice, onBack, deviceTheme, onSetDeviceTheme }: {
   settings: UserSettings;
   onUpdateSettings: (patch: Partial<UserSettings>) => Promise<void>;
   onForceUpdate: () => Promise<void>;
   onOpenAdmin: () => void;
   onOpenLevers: () => void;
   onOpenEnglishVoice: () => void;
-  onOpenStyleguide: () => void;
   onBack: () => void;
   // Device-level theme — the default for every profile (each profile can
   // override). Free Default + code-gated Gold/Silver; the selector handles the
@@ -1027,11 +1019,6 @@ function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin
         <button className="settings-option" style={{ marginTop: 8 }} onClick={onOpenEnglishVoice}>
           {t('settings.modEnglish')}
         </button>
-        {import.meta.env.DEV && (
-          <button className="settings-option" style={{ marginTop: 8 }} onClick={onOpenStyleguide}>
-            {t('settings.styleguide')}
-          </button>
-        )}
         {(import.meta.env.DEV || adminUnlocked) && (
           <button className="settings-logout" style={{ marginTop: 8 }} onClick={onOpenAdmin}>
             {t('settings.admin')}
