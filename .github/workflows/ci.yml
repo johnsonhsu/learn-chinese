@@ -67,6 +67,24 @@ jobs:
       - name: Data-integrity gate
         run: npm run test:data
 
+      # 5a) DEPENDENCY-AUDIT GATE (blocking) — fail the build (and so the deploy)
+      #     only on a HIGH/CRITICAL vuln in the SHIPPED prod-runtime deps
+      #     (`--omit=dev`). The dev/build toolchain (vite, esbuild, workbox, babel,
+      #     etc.) is intentionally OUT of scope: those vulns are dev-box / build-time
+      #     only, never reach the static prod bundle, and treating them as a deploy
+      #     blocker would wedge the pipeline on routine toolchain advisories. This
+      #     gate is the narrow, high-signal one: a real, shippable, high-severity
+      #     runtime vuln halts the deploy. (See security audit #51 finding M3.)
+      - name: Dependency-audit gate (prod runtime, high+)
+        run: npm audit --omit=dev --audit-level=high
+
+      # 5b) FULL AUDIT (informational, non-blocking) — surface the complete picture,
+      #     dev/build toolchain included, in the CI log so new vulns are visible
+      #     without blocking deploys. `continue-on-error` keeps it advisory.
+      - name: Dependency-audit report (full tree, advisory)
+        continue-on-error: true
+        run: npm audit
+
       # 6) Deploy. Cloudflare decides preview-vs-prod by comparing --branch to the
       #    project's PRODUCTION BRANCH, which on this direct-upload project is
       #    `learning-chinese` (not `master`). So:
