@@ -832,10 +832,16 @@ body {
   color: var(--text, #2D1B00);
   cursor: pointer;
 }
+/* Hover = a restrained ACCENT WASH (the same accent-wash contract the selected
+   row and .settings-option.active / .lever-pill.active use), NOT the solid
+   primary-CTA face (--gold). Reaching for --gold here painted a solid gold bar
+   under every gold-accent theme (Indigo most visibly) and an invisible
+   ink-on-ink row under :root/Paper (where --gold == --text == ink). The wash
+   re-points per theme, so every theme gets a legible, on-brand hover. */
 .voice-dd-opt:hover,
 .voice-dd-opt:focus-visible {
   outline: none;
-  background: var(--gold, #FFD700);
+  background: var(--accent-bg, #FFE8C9);
   color: var(--text, #2D1B00);
 }
 .voice-dd-opt.selected {
@@ -843,7 +849,11 @@ body {
   color: var(--accent, #C44F00);
   font-weight: 700;
 }
-.voice-dd-opt.selected:hover { background: var(--gold, #FFD700); }
+/* Selected row already wears the wash; on hover deepen it a touch (still a
+   wash, never a solid fill) and keep the accent text. */
+.voice-dd-opt.selected:hover {
+  background: color-mix(in srgb, var(--accent, #C44F00) 24%, transparent);
+}
 .voice-dd-check {
   flex: 0 0 auto;
   width: 16px;
