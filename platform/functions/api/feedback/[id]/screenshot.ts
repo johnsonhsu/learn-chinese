@@ -8,21 +8,21 @@
  *
  * Outside platform/tsconfig's include — wrangler compiles at deploy time.
  */
-import { secretMatches, FEEDBACK_ADMIN_HEADER } from '../../../../server/feedback-shared.ts';
+import { secretMatches, FEEDBACK_ADMIN_HEADER } from "../../../../server/feedback-shared.ts";
 
 interface D1PreparedStatement {
-  bind(...vals: unknown[]): D1PreparedStatement;
+  bind(..._vals: unknown[]): D1PreparedStatement;
   first<T = unknown>(): Promise<T | null>;
 }
 interface D1Database {
-  prepare(sql: string): D1PreparedStatement;
+  prepare(_sql: string): D1PreparedStatement;
 }
 interface R2ObjectBody {
   body: ReadableStream;
   httpMetadata?: { contentType?: string };
 }
 interface R2Bucket {
-  get(key: string): Promise<R2ObjectBody | null>;
+  get(_key: string): Promise<R2ObjectBody | null>;
 }
 interface Env {
   FEEDBACK_DB: D1Database;
@@ -43,27 +43,27 @@ export async function onRequestGet(context: {
   // Audit M2 / issue #55. (#59)
   const provided = request.headers.get(FEEDBACK_ADMIN_HEADER) || undefined;
   if (!secretMatches(provided, env.FEEDBACK_ADMIN_SECRET)) {
-    return Response.json({ error: 'forbidden' }, { status: 403 });
+    return Response.json({ error: "forbidden" }, { status: 403 });
   }
 
   const id = parseInt(params.id, 10);
   if (!Number.isFinite(id) || !env.FEEDBACK_R2) {
-    return Response.json({ error: 'no screenshot' }, { status: 404 });
+    return Response.json({ error: "no screenshot" }, { status: 404 });
   }
 
-  const row = await env.FEEDBACK_DB.prepare('SELECT screenshot_key FROM feedback WHERE id = ?1')
+  const row = await env.FEEDBACK_DB.prepare("SELECT screenshot_key FROM feedback WHERE id = ?1")
     .bind(id)
     .first<{ screenshot_key: string | null }>();
-  const key = (row as { screenshot_key?: string | null } | null)?.screenshot_key;
-  if (!key) {
-    return Response.json({ error: 'no screenshot' }, { status: 404 });
+  const rowKey = (row as { screenshot_key?: string | null } | null)?.screenshot_key;
+  if (!rowKey) {
+    return Response.json({ error: "no screenshot" }, { status: 404 });
   }
 
-  const obj = await env.FEEDBACK_R2.get(key);
+  const obj = await env.FEEDBACK_R2.get(rowKey);
   if (!obj) {
-    return Response.json({ error: 'no screenshot' }, { status: 404 });
+    return Response.json({ error: "no screenshot" }, { status: 404 });
   }
   return new Response(obj.body, {
-    headers: { 'Content-Type': obj.httpMetadata?.contentType || 'image/jpeg' },
+    headers: { "Content-Type": obj.httpMetadata?.contentType || "image/jpeg" },
   });
 }
