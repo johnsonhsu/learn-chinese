@@ -30,10 +30,10 @@ interface OfflineState {
   dataLayer: OfflineDataLayer | null;
   user: LocalUser | null;
   profiles: Profile[];
-  settings: { language: Language; theme: Theme };
+  settings: { language: Language; theme: Theme; orientationLock?: '0' | '1' };
   strokeReady: boolean;
   refresh: () => Promise<void>;
-  updateSettings: (patch: Partial<{ language: Language; theme: Theme }>) => Promise<void>;
+  updateSettings: (patch: Partial<{ language: Language; theme: Theme; orientationLock?: '0' | '1' }>) => Promise<void>;
   updateDisplayName: (name: string) => Promise<void>;
   selectProfile: (id: number) => Promise<void>;
   createProfile: (name: string) => Promise<Profile>;
@@ -161,7 +161,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
     if (dataLayer) await dataLayer.refreshFromServer();
   }, [dataLayer]);
 
-  const updateSettings = useCallback(async (patch: Partial<{ language: Language; theme: Theme }>) => {
+  const updateSettings = useCallback(async (patch: Partial<{ language: Language; theme: Theme; orientationLock?: '0' | '1' }>) => {
     if (dataLayer) await dataLayer.updateSettingsPrefs(patch);
     setSettings((prev) => ({ ...prev, ...patch }));
   }, [dataLayer]);

@@ -7,7 +7,8 @@
 一個 **本地優先（local-first）、可離線運作的 PWA**，用來學習台灣實際使用的繁體中文
 （繁體中文 + 注音／ㄅㄆㄇㄈ）。把它安裝到主畫面，無須帳號、無須伺服器、無須網路即可練習
 ——你所有的學習進度都存在自己的裝置上。本專案以 npm-workspace monorepo 建置，並以靜態資源
-部署到 Cloudflare Pages。
+部署到 Cloudflare Pages。安裝後 app 預設為 **直式**，裝置設定中另外提供
+**鎖定直式**，避免練習時因翻轉而中斷。
 
 技術深入細節請見 **[architecture.zh-TW.md](./architecture.zh-TW.md)**（英文版見
 [ARCHITECTURE.md](./ARCHITECTURE.md)）；模組開發請見

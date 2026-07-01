@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useCallback, useMemo, useRef, lazy, Suspense, type ComponentType } from 'react';
+import { useOrientationLock } from './hooks/useOrientationLock.ts';
 import { LanguageContext, useT } from './i18n/index.ts';
 import type { Language } from './i18n/index.ts';
 import { DebugProvider, useDebug } from './DebugOverlay.tsx';
@@ -49,6 +50,7 @@ interface User {
 interface UserSettings {
   language: Language;
   theme: 'dark' | 'light';
+  orientationLock?: '0' | '1';
 }
 
 interface ModuleProps {
@@ -251,6 +253,8 @@ function AppInner() {
   useEffect(() => {
     applyThemeToBody(effectiveTheme);
   }, [effectiveTheme]);
+
+  useOrientationLock(settings.orientationLock);
 
   // Check for a new app version every time the user LANDS on the profile-picker
   // or module-selection (home) screen. Keying the effect on `screen` means it
@@ -956,6 +960,17 @@ function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin
           refreshKey={unlockBump}
           onChange={(id) => { setThemeValue(id); onSetDeviceTheme(id); }}
         />
+      </div>
+
+      <div className="settings-section">
+        <h3>{t('settings.orientation')}</h3>
+        <p className="settings-hint" style={{ marginTop: 0, marginBottom: 14 }}>{t('settings.orientationLockHint')}</p>
+        <button
+          className={`settings-option${settings.orientationLock === '1' ? ' active' : ''}`}
+          onClick={() => onUpdateSettings({ orientationLock: settings.orientationLock === '1' ? '0' : '1' })}
+        >
+          {t('settings.orientationLock')}
+        </button>
       </div>
 
       <div className="settings-section">
