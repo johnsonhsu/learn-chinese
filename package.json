@@ -20,10 +20,31 @@
     "test:unit": "vitest run shared/ platform/src/",
     "test:data": "vitest run data-integrity",
     "test:watch": "vitest",
-    "typecheck": "npm -w platform run typecheck && tsc -p shared/tsconfig.json --noEmit"
+    "typecheck": "npm -w platform run typecheck && tsc -p shared/tsconfig.json --noEmit",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check \"**/*.{json,md,css,ts,tsx}\"",
+    "format": "prettier --write \"**/*.{json,md,css,ts,tsx}\"",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "eslint": "^9.16.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
+    "lint-staged": "^15.2.10",
+    "prettier": "^3.4.2",
     "vitest": "^3.2.6"
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx}": [
+      "eslint --fix --report-unused-disable-directives --max-warnings=0"
+    ],
+    "**/*.{json,md,css,ts,tsx}": [
+      "prettier --write"
+    ]
   }
 }
