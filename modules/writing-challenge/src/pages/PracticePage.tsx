@@ -159,7 +159,7 @@ export function PracticePage({
       setCharIndex(firstNonRed);
     } else if (firstNonRed >= chars.length) {
       setCharResults(results);
-      finishSentenceRef.current(results);
+      Promise.resolve().then(() => finishSentenceRef.current(results));
     }
   }, [sentence?.sentenceId]); // only on new sentence
 
