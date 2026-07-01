@@ -117,11 +117,13 @@ jobs:
             // expose the same routes so a reviewer can pick latest vs pinned.
             const prBase = alias || url;
             const marker = '<!-- cf-preview -->';
+            const demoOverride = `${prBase}/?app&demo&nodevicegate`;
             const body = [
               marker,
               '🔎 **Preview deploy** — updates on every push to this PR.',
               '',
               '**PR Link** — always-latest for this branch:',
+              `- 🔎 Demo bypass (desktop testing): ${demoOverride}`,
               `- 🎮 Try the demo: ${prBase}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${prBase}/?app`,
               `- UI components (styleguide): ${prBase}/?ui`,
@@ -129,6 +131,7 @@ jobs:
               `- Marketing: ${prBase}`,
               '',
               '**Commit** — this exact build:',
+              `- 🔎 Demo bypass (desktop testing): ${url}/?app&demo&nodevicegate`,
               `- 🎮 Try the demo: ${url}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${url}/?app`,
               `- UI components (styleguide): ${url}/?ui`,

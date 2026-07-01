@@ -553,6 +553,14 @@ check. The in-app **landing** (`LandingPage.tsx`) links to the demo (`?app&demo`
 via a "Try the live demo" CTA under the read-along notebook; on desktop that link lands on
 the QR fallback rather than a dead end.
 
+**Device-gate override for desktop testing (`?nodevicegate`, #76).** To make the demo
+reviewable on desktop — especially from PR preview deployments — a URL query param
+`?nodevicegate` bypasses the device gate. When present, `isDemoDeviceAllowed()` returns
+`true`, so `isDemoDeviceGated()` is `false` and `<DemoGate>` is skipped. The PR preview
+comment also appends `${prBase}/?app&demo&nodevicegate` so reviewers can click straight
+into the desktop-bypassed demo. This is explicitly **not a security control**: it only
+lets a desktop visitor enter the already-isolated demo jar, so prod exposure is fine.
+
 ---
 
 ## 5. UI kit (`platform/src/ui`)

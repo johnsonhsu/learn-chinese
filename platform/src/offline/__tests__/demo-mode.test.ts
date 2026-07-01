@@ -83,6 +83,10 @@ describe('isDemoDeviceAllowed (issue #66 device gate)', () => {
     // mouse-only desktops.
     expect(isDemoDeviceAllowed(dev({ coarsePointer: false, hoverNone: false, touchCapable: true }))).toBe(true);
   });
+
+  it('?nodevicegate bypasses the gate on a desktop (#76)', () => {
+    expect(isDemoDeviceAllowed(dev({ override: true }))).toBe(true);
+  });
 });
 
 // The gate is the CONJUNCTION of the two independent decisions. This mirrors the
@@ -110,5 +114,11 @@ describe('demo gate composition (evaluateDemoMode × isDemoDeviceAllowed)', () =
     expect(gated({ search: '?app', hostname: 'localhost' }, {})).toBe(false);
     expect(gated({ search: '' }, {})).toBe(false);
     expect(gated({ search: '?landing' }, {})).toBe(false);
+  });
+
+  it('override bypasses the desktop gate but only when ?nodevicegate is present (#76)', () => {
+    expect(gated({ search: '?app&demo&nodevicegate' }, { override: true })).toBe(false);
+    expect(gated({ search: '?app&nodevicegate' }, { override: true })).toBe(false);
+    expect(gated({ search: '?app&demo' }, {})).toBe(true);
   });
 });

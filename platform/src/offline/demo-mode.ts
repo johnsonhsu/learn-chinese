@@ -51,6 +51,8 @@ export interface DeviceEnv {
   coarsePointer: boolean;
   hoverNone: boolean;
   touchCapable: boolean;
+  /** Testing escape hatch: issue #76 — `?nodevicegate` bypasses the device gate. */
+  override?: boolean;
 }
 
 /**
@@ -97,6 +99,7 @@ export function evaluateDemoMode(env: DemoModeEnv): boolean {
  * detection, not UA sniffing — a device is allowed if ANY signal is touch-ish.
  */
 export function isDemoDeviceAllowed(dev: DeviceEnv): boolean {
+  if (dev.override) return true;
   return dev.coarsePointer || dev.hoverNone || dev.touchCapable;
 }
 
@@ -126,10 +129,14 @@ function readDeviceEnv(): DeviceEnv {
       (typeof window !== 'undefined' && 'ontouchstart' in window) ||
       (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
   } catch { /* no DOM (e.g. tests) */ }
+  const override =
+    typeof location !== 'undefined' &&
+    new URLSearchParams(location.search).has('nodevicegate');
   return {
     coarsePointer: mm('(pointer: coarse)'),
     hoverNone: mm('(hover: none)'),
     touchCapable,
+    override,
   };
 }
 
