@@ -1,0 +1,332 @@
+/* ======================================================================
+   🖥️ THEME — "90s / Retro OS" / 「90年代」 (registry id: retro)
+   ----------------------------------------------------------------------
+   A playful 1990s desktop/skin aesthetic: teal desktop ground,
+   battleship-grey raised/sunken panels, Win95-style 3D bevel borders,
+   faux window title-bar cards, segmented pixel progress bars, and an
+   MS Paint treatment for the stroke-writing canvas.
+
+   Fonts:
+     - VT323 and Share Tech Mono are bundled locally under /fonts/.
+       Derived from Google Fonts SIL Open Font License releases.
+   ====================================================================== */
+
+@font-face {
+  font-family: "VT323";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/VT323.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Share Tech Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/ShareTechMono.ttf") format("truetype");
+}
+
+/* ── (A) Contract tokens re-pointed → themes EVERYTHING ─────────────── */
+body[data-theme="retro"] {
+  /* Grounds + surfaces */
+  --paper: #007d76;
+  --paper-raised: #637a7c;
+  --paper-sunken: #2b3b3c;
+  --bg: var(--paper);
+  --bg-raised: #637a7c;
+  --bg-raised-2: #6b7e80;
+  --bg-card: #c0c0c0;
+  --bg-card2: #a8aba8;
+  --bg-input: #ffffff;
+  --panel-bg: #c0c0c0;
+
+  /* Ink */
+  --ink: #141414;
+  --ink-soft: rgba(20, 20, 20, 0.72);
+  --ink-faint: rgba(20, 20, 20, 0.55);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairlines + recessed edges */
+  --rule: #161616;
+  --rule-strong: #1e1e1e;
+  --border: #2c2c2c;
+  --border-hover: #141414;
+  --panel-border: #161616;
+  --tile-edge: #141414;
+  --key-edge: #2a2a2a;
+
+  /* Accent: teal/teal-dark */
+  --seal: #148f8a;
+  --seal-deep: #126c68;
+  --seal-wash: rgba(20, 143, 138, 0.18);
+  --accent: #148f8a;
+  --accent-bg: rgba(20, 143, 138, 0.18);
+  --accent-hover: #0d6360;
+  --screen-accent: #148f8a;
+
+  /* Primary CTA face */
+  --gold: #148f8a;
+  --gold-dark: #0f6e6a;
+  --grad-primary: linear-gradient(180deg, #2fa9a3 0%, #148f8a 50%, #0f6e6a 100%);
+
+  /* Status */
+  --error: #c53929;
+  --danger: #c53929;
+  --red: #c53929;
+  --red-dark: #9c2b22;
+  --success: #3a7f3c;
+  --warning: #a86b16;
+
+  /* Module hues — desktop chrome family */
+  --teal: #167a75;
+  --teal-dark: #0f5f5b;
+  --pink: #8c5e7a;
+  --pink-dark: #734a65;
+  --blue: #4a6e8a;
+  --blue-dark: #3a5a73;
+  --orange: #a07232;
+  --orange-dark: #806028;
+  --purple: #6a5888;
+  --purple-dark: #544670;
+  --green: #3a7f3c;
+  --green-dark: #2c6630;
+  --green-bright: #3a7f3c;
+  --green-bright-dark: #2c6630;
+
+  /* Depth */
+  --shadow-sm: 1px 1px 0 #141414;
+  --shadow-md: 2px 2px 0 #141414;
+  --shadow-glow: 1px 1px 0 #2a2a2a;
+  --shadow-glow-success: 1px 1px 0 #2a2a2a;
+
+  /* Typography */
+  --font-display: "VT323", "Share Tech Mono", monospace;
+  --text-weight: 400;
+}
+
+/* ── (B) Styled application: Win95-inspired retro chrome ────────────── */
+body[data-theme="retro"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    linear-gradient(180deg, rgba(20, 143, 138, 0.08) 0%, transparent 22%), var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Retro Latin display font on chrome only; CJK keeps system face */
+body[data-theme="retro"] .welcome-header h1,
+body[data-theme="retro"] .user-picker h1,
+body[data-theme="retro"] .app-shell .ui-btn,
+body[data-theme="retro"] .settings-section h2,
+body[data-theme="retro"] .settings-option,
+body[data-theme="retro"] .welcome-level,
+body[data-theme="retro"] .char-tile-level,
+body[data-theme="retro"] .char-tile-rank,
+body[data-theme="retro"] input,
+body[data-theme="retro"] button {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+/* Faux title-bar chrome on cards/sections */
+body[data-theme="retro"] .module-card {
+  border-top: 18px solid #637a7c;
+  border-right: 2px solid #2a2a2a;
+  border-bottom: 2px solid #2a2a2a;
+  border-left: 2px solid #2a2a2a;
+  background: #c0c0c0;
+  color: #141414;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+body[data-theme="retro"] .module-card .module-icon {
+  background: #6b7e80;
+  border: 1px solid #2a2a2a;
+  box-shadow:
+    inset 1px 1px 0 #ffffff,
+    1px 1px 0 #141414;
+}
+
+@media (hover: hover) {
+  body[data-theme="retro"] .module-card:hover {
+    border-color: #141414;
+    box-shadow: 2px 2px 0 #141414;
+  }
+
+  body[data-theme="retro"] .module-card:active {
+    box-shadow: 1px 1px 0 #141414;
+  }
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+body[data-theme="retro"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #141414;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+body[data-theme="retro"] .app-shell .ui-btn--primary:active {
+  border-top: 2px solid #141414;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  border-left: 2px solid #141414;
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+body[data-theme="retro"] .app-shell .ui-btn--secondary {
+  background: #c0c0c0;
+  color: #141414;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+body[data-theme="retro"] .app-shell .ui-btn--secondary:active,
+body[data-theme="retro"] .app-shell .ui-btn--secondary[aria-pressed="true"] {
+  border-top: 2px solid #141414;
+  border-right: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  border-left: 2px solid #141414;
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+/* ── SETTINGS ────────────────────────────────────────────────────────────── */
+body[data-theme="retro"] .settings-section,
+body[data-theme="retro"] .placement-card,
+body[data-theme="retro"] .restore-modal {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #2a2a2a;
+  border-bottom: 2px solid #2a2a2a;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+body[data-theme="retro"] .settings-option,
+body[data-theme="retro"] .lever-pill,
+body[data-theme="retro"] .lever-reset-all {
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #2a2a2a;
+  border-bottom: 2px solid #2a2a2a;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  color: #141414;
+}
+
+body[data-theme="retro"] .settings-option.active,
+body[data-theme="retro"] .lever-pill.active {
+  background: #a8aba8;
+  color: #141414;
+}
+
+body[data-theme="retro"] .welcome-level {
+  background: #637a7c;
+  color: #141414;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="retro"] .app-shell .char-tile {
+  --ct-face: #c0c0c0;
+  --ct-line: #141414;
+  --ct-ink: #141414;
+  --ct-ink-soft: var(--ink-soft);
+}
+
+body[data-theme="retro"][data-screen="mychars"] .char-tile {
+  --ct-face: #a8aba8;
+  --ct-line: #141414;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+body[data-theme="retro"][data-screen="mychars"] .char-tile--known {
+  border-color: #141414;
+  box-shadow:
+    inset 0 0 0 1px #ffffff,
+    1px 1px 0 #141414;
+}
+
+body[data-theme="retro"][data-screen="mychars"] .char-tile-glyph {
+  color: #141414;
+}
+
+body[data-theme="retro"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+
+body[data-theme="retro"][data-screen="mychars"] .char-tile-level {
+  color: #141414;
+  background: #c0c0c0;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+@media (hover: hover) {
+  body[data-theme="retro"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: #141414;
+    box-shadow:
+      inset 0 0 0 1px #ffffff,
+      2px 2px 0 #141414;
+  }
+}
+
+/* Segmented pixel-style progress bar on char tile */
+body[data-theme="retro"] .char-tile-bar {
+  background: repeating-linear-gradient(90deg, #8a9494, #8a9494 2px, #a8aba8 2px, #a8aba8 4px);
+  border-top: 1px solid #ffffff;
+  border-right: 1px solid #141414;
+  border-bottom: 1px solid #141414;
+  border-left: 1px solid #ffffff;
+}
+body[data-theme="retro"] .char-tile-bar-fill {
+  background: repeating-linear-gradient(90deg, #148f8a, #148f8a 4px, #0f6e6a 4px, #0f6e6a 8px);
+}
+
+/* ── MS PAINT CANVAS ─────────────────────────────────────────────────────── */
+body[data-theme="retro"] .canvas-wrapper {
+  background: #ffffff;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  box-shadow: 1px 1px 0 #141414;
+}
+
+body[data-theme="retro"] .sp-canvas-frame {
+  background: #7a7a7a;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  border-left: 2px solid #ffffff;
+  box-shadow: inset 1px 1px 0 #5a5a5a;
+}

@@ -27,38 +27,38 @@
  */
 export const THEME_TOKENS = [
   // — Backgrounds (per surface) —
-  'theme-bg-profile',   // profile-selection screen field
-  'theme-bg-home',      // module-selection / home screen field
-  'theme-bg-module',    // each module's main background field
-  'theme-halo',         // optional top vignette / overlay tint
+  "theme-bg-profile", // profile-selection screen field
+  "theme-bg-home", // module-selection / home screen field
+  "theme-bg-module", // each module's main background field
+  "theme-halo", // optional top vignette / overlay tint
   // — Decorative foil family (premium skins; default leaves unset) —
-  'theme-foil',
-  'theme-foil-edge',
-  'theme-foil-glow',
-  'theme-foil-ink',
-  'theme-foil-halo',
-  'theme-foil-edge-shadow',
-  'theme-foil-text-shadow',
-  'theme-emblem',       // crown/marker glyph used by premium shells
-  'theme-title-sweep',  // shimmering wordmark gradient
+  "theme-foil",
+  "theme-foil-edge",
+  "theme-foil-glow",
+  "theme-foil-ink",
+  "theme-foil-halo",
+  "theme-foil-edge-shadow",
+  "theme-foil-text-shadow",
+  "theme-emblem", // crown/marker glyph used by premium shells
+  "theme-title-sweep", // shimmering wordmark gradient
   // — My-Characters tile —
-  'theme-tile-face',    // CharTile face fill
-  'theme-tile-frame',   // CharTile border / frame
-  'theme-tile-glyph',   // CharTile glyph color
-  'theme-tile-glow',    // CharTile shadow / glow
+  "theme-tile-face", // CharTile face fill
+  "theme-tile-frame", // CharTile border / frame
+  "theme-tile-glyph", // CharTile glyph color
+  "theme-tile-glow", // CharTile shadow / glow
   // — Buttons —
-  'theme-btn-bg',
-  'theme-btn-border',
-  'theme-btn-font',
-  'theme-btn-shadow',
-  'theme-btn-radius',
-  'theme-btn-ink',      // button text color
+  "theme-btn-bg",
+  "theme-btn-border",
+  "theme-btn-font",
+  "theme-btn-shadow",
+  "theme-btn-radius",
+  "theme-btn-ink", // button text color
   // — Text —
-  'theme-font',         // body / UI font family
-  'theme-font-display', // heading / wordmark font family
-  'theme-text-scale',   // multiplier applied to the base size scale
-  'theme-text-weight',  // base body weight
-  'theme-text-style',   // normal | italic
+  "theme-font", // body / UI font family
+  "theme-font-display", // heading / wordmark font family
+  "theme-text-scale", // multiplier applied to the base size scale
+  "theme-text-weight", // base body weight
+  "theme-text-style", // normal | italic
 ] as const;
 
 export type ThemeToken = (typeof THEME_TOKENS)[number];
@@ -66,7 +66,7 @@ export type ThemeToken = (typeof THEME_TOKENS)[number];
 /** How the module-selection grid is laid out for a theme. The home screen reads
  *  this off the theme so a future theme can re-arrange the activity tiles
  *  without touching App.tsx. */
-export type ModuleArrangement = 'grid' | 'list';
+export type ModuleArrangement = "grid" | "list";
 
 export interface Theme {
   /** Stable id — also the value of `body[data-theme]` + the persisted key. */
@@ -111,17 +111,83 @@ export interface Theme {
  * all data-driven off this list.
  */
 export const THEMES: Theme[] = [
-  { id: 'indigo',   name: 'Indigo',   nameKey: 'theme.indigo',   premium: false, arrangement: 'grid', cssDefined: true },
-  { id: 'default',  name: 'Paper',    nameKey: 'theme.default',  premium: false, arrangement: 'grid', cssDefined: true },
-  { id: 'midnight', name: 'Midnight', nameKey: 'theme.midnight', premium: false, arrangement: 'grid', cssDefined: true },
-  { id: 'sakura',   name: 'Sakura',   nameKey: 'theme.sakura',   premium: false, arrangement: 'grid', cssDefined: true },
-  { id: 'matcha',   name: 'Matcha',   nameKey: 'theme.matcha',   premium: false, arrangement: 'grid', cssDefined: true },
-  { id: '80s-motiv', name: '80s Motiv', nameKey: 'theme.80s-motiv', premium: false, arrangement: 'grid', cssDefined: true },
+  {
+    id: "indigo",
+    name: "Indigo",
+    nameKey: "theme.indigo",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "default",
+    name: "Paper",
+    nameKey: "theme.default",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "midnight",
+    name: "Midnight",
+    nameKey: "theme.midnight",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "sakura",
+    name: "Sakura",
+    nameKey: "theme.sakura",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "matcha",
+    name: "Matcha",
+    nameKey: "theme.matcha",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "retro",
+    name: "90s",
+    nameKey: "theme.retro",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "80s-motiv",
+    name: "80s Motiv",
+    nameKey: "theme.80s-motiv",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
   // Premium foils — always listed LAST (the picker also sorts premium to the end).
   // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
   // behind the 9000 premium prerequisite.
-  { id: 'gold',     name: 'Gold',     nameKey: 'theme.gold',     premium: true,  unlockFeature: 'theme-gold',   arrangement: 'grid', cssDefined: true },
-  { id: 'silver',   name: 'Silver',   nameKey: 'theme.silver',   premium: true,  unlockFeature: 'theme-silver', arrangement: 'grid', cssDefined: true },
+  {
+    id: "gold",
+    name: "Gold",
+    nameKey: "theme.gold",
+    premium: true,
+    unlockFeature: "theme-gold",
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "silver",
+    name: "Silver",
+    nameKey: "theme.silver",
+    premium: true,
+    unlockFeature: "theme-silver",
+    arrangement: "grid",
+    cssDefined: true,
+  },
 ];
 
 /** The DEFAULT SELECTION for a new device/profile — what the picker starts on.
@@ -129,7 +195,7 @@ export const THEMES: Theme[] = [
  *  Typed as `string` (not the literal) so it composes with the other id-typed
  *  values and so callers may legitimately compare it against ROOT_THEME_ID
  *  (these two are config knobs that COULD be set equal). */
-export const DEFAULT_THEME_ID: string = 'indigo';
+export const DEFAULT_THEME_ID: string = "indigo";
 
 /** The id whose tokens ARE :root — applied by REMOVING `body[data-theme]` (the
  *  editorial "Paper" baseline). Kept DISTINCT from DEFAULT_THEME_ID so the
@@ -137,7 +203,7 @@ export const DEFAULT_THEME_ID: string = 'indigo';
  *  still has a no-attribute fallback. Typed as `string` so the "are these two
  *  configured equal?" guards in callers type-check instead of being flagged as
  *  a provably-false literal comparison (TS2367). */
-export const ROOT_THEME_ID: string = 'default';
+export const ROOT_THEME_ID: string = "default";
 
 /**
  * LEGACY blanket premium feature key. Granted by the retired code 9999, it
@@ -147,7 +213,7 @@ export const ROOT_THEME_ID: string = 'default';
  * a device that already stored it keeps every premium theme available, and it
  * remains the prerequisite that gates the 99xx codes (see utils/unlocks).
  */
-export const PREMIUM_FEATURE = 'premium';
+export const PREMIUM_FEATURE = "premium";
 
 const THEME_BY_ID = new Map(THEMES.map((th) => [th.id, th]));
 
