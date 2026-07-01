@@ -242,6 +242,10 @@ Deployed to **Cloudflare Pages** as static assets — no production server. **De
 
 **PR-title convention** — title PRs `[PR-###][<type>][<issue#>] <title>` (e.g. `[PR-016][bug][14] Stroke-result fail + above-level read red`) so the PR list stays scannable and each PR ties to its type and issue at a glance. `[PR-###]` is the PR number zero-padded to 3 digits; `[<type>]` is the issue type label (`bug` / `enhancement` / `content` / `performance`); `[<issue#>]` is the linked issue (omit the bracket if there's none); `<title>` is concise. Because the PR number only exists after creation, **backfill `[PR-###]` right after `gh pr create`** with `gh pr edit <n> --title …`.
 
+**Workflow convention** — before starting work on an issue, **pull the latest `master`**, then create your feature branch from that fresh `master` checkout—not from older local history.
+
+**PR description convention** — **always link the related issue** in the PR description, e.g. `Closes #NN` or `Related to #NN`, so the work is traceable back to its requirement.
+
 | Change | Steps |
 |--------|-------|
 | Code | PR → preview → merge to `master`. Automatic. |
