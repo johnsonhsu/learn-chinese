@@ -9,24 +9,18 @@
  */
 import { secretMatches, isStatus, FEEDBACK_ADMIN_HEADER } from "../../../server/feedback-shared.ts";
 
-interface D1Result {
-  meta?: { changes?: number };
-}
-interface D1PreparedStatement {
-  bind(..._vals: unknown[]): D1PreparedStatement;
-  run(): Promise<D1Result>;
-}
-interface D1Database {
-  prepare(_sql: string): D1PreparedStatement;
-}
-interface Env {
-  FEEDBACK_DB: D1Database;
-  FEEDBACK_ADMIN_SECRET?: string;
-}
-
 export async function onRequestPatch(context: {
   request: Request;
-  env: Env;
+  env: {
+    FEEDBACK_DB: {
+      prepare(_sql: string): {
+        bind(..._vals: unknown[]): {
+          run(): Promise<{ meta?: { changes?: number } }>;
+        };
+      };
+    };
+    FEEDBACK_ADMIN_SECRET?: string;
+  };
   params: { id: string };
 }) {
   const { request, env, params } = context;
@@ -41,7 +35,9 @@ export async function onRequestPatch(context: {
     return Response.json({ error: "valid id and status required" }, { status: 400 });
   }
 
-  const r = await env.FEEDBACK_DB.prepare("UPDATE feedback SET status = ?1 WHERE id = ?2")
+  const db = env.FEEDBACK_DB;
+  const r = await db
+    .prepare("UPDATE feedback SET status = ?1 WHERE id = ?2")
     .bind(body.status, id)
     .run();
   if (!r.meta?.changes) {

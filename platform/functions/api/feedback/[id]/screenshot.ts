@@ -54,12 +54,12 @@ export async function onRequestGet(context: {
   const row = await env.FEEDBACK_DB.prepare("SELECT screenshot_key FROM feedback WHERE id = ?1")
     .bind(id)
     .first<{ screenshot_key: string | null }>();
-  const _key = (row as { screenshot_key?: string | null } | null)?.screenshot_key;
-  if (!_key) {
+  const rowKey = (row as { screenshot_key?: string | null } | null)?.screenshot_key;
+  if (!rowKey) {
     return Response.json({ error: "no screenshot" }, { status: 404 });
   }
 
-  const obj = await env.FEEDBACK_R2.get(_key);
+  const obj = await env.FEEDBACK_R2.get(rowKey);
   if (!obj) {
     return Response.json({ error: "no screenshot" }, { status: 404 });
   }

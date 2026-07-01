@@ -14,6 +14,7 @@ import type { NextSentenceResponse, CharAttemptResult, CharResult } from "../uti
 import { useT } from "../i18n/index.ts";
 
 interface Props {
+  userId: number;
   onStop: () => void;
 }
 
