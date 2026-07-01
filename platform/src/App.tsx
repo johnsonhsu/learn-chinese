@@ -264,7 +264,7 @@ function AppInner() {
     applyThemeToBody(effectiveTheme);
   }, [effectiveTheme]);
 
-  useOrientationLock(settings.orientationLock);
+  useOrientationLock(settings.orientationLock, settings.language);
 
   // Check for a new app version every time the user LANDS on the profile-picker
   // or module-selection (home) screen. Keying the effect on `screen` means it

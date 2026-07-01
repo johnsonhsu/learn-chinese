@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
+import { t } from '../i18n/index.js';
+import type { Language } from '../i18n/index.js';
 
 const PORTRAIT_CLASS = 'lock-portrait';
 const OVERLAY_ID = 'rotate-overlay';
 
-export function useOrientationLock(orientationLock: '0' | '1' | undefined) {
+export function useOrientationLock(orientationLock: '0' | '1' | undefined, lang: Language) {
   useEffect(() => {
     const root = document.documentElement;
     const enabled = orientationLock === '1';
@@ -22,7 +24,7 @@ export function useOrientationLock(orientationLock: '0' | '1' | undefined) {
         node = document.createElement('div');
         node.id = OVERLAY_ID;
         node.className = 'rotate-overlay';
-        node.innerHTML = `<div><p>🔁 Please rotate back to portrait to continue.</p><button id="rotate-overlay-dismiss" class="rotate-overlay__dismiss">Use portrait</button></div>`;
+        node.innerHTML = `<div><p>${t('settings.orientationLock.rotateMessage', lang)}</p><button id="rotate-overlay-dismiss" class="rotate-overlay__dismiss">${t('settings.orientationLock.dismissButton', lang)}</button></div>`;
         document.body.appendChild(node);
 
         const btn = node.querySelector<HTMLButtonElement>('#rotate-overlay-dismiss');
@@ -55,5 +57,5 @@ export function useOrientationLock(orientationLock: '0' | '1' | undefined) {
       remove();
       try { safeScreen?.orientation?.unlock?.(); } catch {}
     };
-  }, [orientationLock]);
+  }, [orientationLock, lang]);
 }

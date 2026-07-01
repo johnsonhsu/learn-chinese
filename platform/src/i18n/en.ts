@@ -36,6 +36,8 @@ export default {
   "settings.orientation": "Orientation",
   "settings.orientationLock": "Lock to portrait",
   "settings.orientationLockHint": "Keeps the app in portrait mode even when the device rotates.",
+  "settings.orientationLock.rotateMessage": "🔁 Rotate back to portrait to continue.",
+  "settings.orientationLock.dismissButton": "Use portrait",
   "settings.displayName": "Display Name",
   "settings.language": "Language",
   "settings.languageHint": "Choose the app’s interface language.",
