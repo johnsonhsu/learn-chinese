@@ -5813,5 +5813,14 @@ body[data-theme="silver"][data-screen="mychars"] .char-tile-level {
     justify-content: center;
     text-align: center;
     padding: 24px;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .rotate-overlay__dismiss {
+    background: transparent;
+    border: 1px solid var(--rule-strong);
+    color: var(--accent);
+    padding: 10px 14px;
+    border-radius: 10px;
   }
 }

@@ -185,6 +185,16 @@ function AppInner() {
   // home screen so a theme can re-arrange tiles without touching layout code.
   const arrangement = useMemo(() => getTheme(effectiveTheme).arrangement, [effectiveTheme]);
 
+  // App-level escape hatch for the iOS portrait-lock fallback overlay.
+  useEffect(() => {
+    (window as any).__setPortraitLock = (val: '0' | '1') => {
+      updateSettings({ orientationLock: val }).catch(() => {});
+    };
+    return () => {
+      try { delete (window as any).__setPortraitLock; } catch {}
+    };
+  }, [updateSettings]);
+
   // Single app-level SW registration; drives the "new version" banner + lets us
   // force a re-check on demand (see the navigation-keyed effect below).
   const { needRefresh, setNeedRefresh, updateServiceWorker, checkForUpdate } = useAppUpdate();

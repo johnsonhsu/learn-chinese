@@ -15,8 +15,17 @@ export function useOrientationLock(orientationLock: '0' | '1' | undefined) {
       node = document.createElement('div');
       node.id = OVERLAY_ID;
       node.className = 'rotate-overlay';
-      node.innerHTML = '<div><p>🔁 Please rotate back to portrait to continue.</p></div>';
+      node.innerHTML = '<div><p>🔁 Please rotate back to portrait to continue.</p><button id="rotate-overlay-dismiss" class="rotate-overlay__dismiss">Disable portrait lock</button></div>';
       document.body.appendChild(node);
+
+      const btn = node.querySelector<HTMLButtonElement>('#rotate-overlay-dismiss');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          try {
+            if (typeof (window as any).__setPortraitLock === 'function') (window as any).__setPortraitLock('0');
+          } catch {}
+        });
+      }
     }
     const safeScreen = screen as unknown as { orientation?: { lock: (o: string) => Promise<void>; unlock: () => void } };
     return cleanup;
