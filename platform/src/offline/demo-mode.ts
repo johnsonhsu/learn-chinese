@@ -36,6 +36,24 @@ export interface DemoModeEnv {
 }
 
 /**
+ * Device-capability inputs for the demo-access gate (issue #66) — separate from
+ * {@link DemoModeEnv} so the "is this a demo session" decision and the "is this
+ * device allowed into the demo" decision stay independently unit-testable, and
+ * so the capability read (matchMedia / touch) is injectable in tests.
+ *
+ * NOT UA sniffing — capability detection only, so it's not spoofable/brittle the
+ * way `isIos()` is. A device passes if ANY signal says "touch/coarse":
+ *  - `coarsePointer` — `matchMedia('(pointer: coarse)')` (primary pointer is a finger).
+ *  - `hoverNone`     — `matchMedia('(hover: none)')` (can't hover — touch-first).
+ *  - `touchCapable`  — `('ontouchstart' in window) || navigator.maxTouchPoints > 0`.
+ */
+export interface DeviceEnv {
+  coarsePointer: boolean;
+  hoverNone: boolean;
+  touchCapable: boolean;
+}
+
+/**
  * A dev / LAN / .local host — where `?app` is a developer driving the REAL jar,
  * not a public demo visitor. Mirrors the host check in App.tsx's shouldShowLanding().
  */
@@ -63,6 +81,25 @@ export function evaluateDemoMode(env: DemoModeEnv): boolean {
   return false;
 }
 
+/**
+ * The demo-ACCESS device gate (issue #66). SEPARATE from {@link evaluateDemoMode}
+ * on purpose: this decides whether the CURRENT DEVICE may enter a demo session,
+ * NOT whether the load is a demo. Keeping them apart means the jar-isolation
+ * decision (which jar to open — driven by evaluateDemoMode) is UNCHANGED on
+ * desktop: a desktop `?demo`/`?app` visitor is still a "demo session" and still
+ * lands in the isolated `-demo` jar; the app just doesn't BOOT the demo for them
+ * and shows the "open on your phone" fallback instead. This guarantees a gated
+ * desktop visitor is never silently routed onto the REAL `learning-chinese-user`
+ * jar.
+ *
+ * The demo is a mobile PWA experience (install + touch UI); on desktop it's a
+ * poor showcase, so we admit only touch/coarse-pointer devices. Capability
+ * detection, not UA sniffing — a device is allowed if ANY signal is touch-ish.
+ */
+export function isDemoDeviceAllowed(dev: DeviceEnv): boolean {
+  return dev.coarsePointer || dev.hoverNone || dev.touchCapable;
+}
+
 function readEnv(): DemoModeEnv {
   let standalone = false;
   try {
@@ -77,6 +114,25 @@ function readEnv(): DemoModeEnv {
   };
 }
 
+/** Read the live device capabilities for the demo-access gate (issue #66). */
+function readDeviceEnv(): DeviceEnv {
+  const mm = (q: string): boolean => {
+    try { return typeof window !== 'undefined' && window.matchMedia(q).matches; }
+    catch { return false; }
+  };
+  let touchCapable = false;
+  try {
+    touchCapable =
+      (typeof window !== 'undefined' && 'ontouchstart' in window) ||
+      (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0);
+  } catch { /* no DOM (e.g. tests) */ }
+  return {
+    coarsePointer: mm('(pointer: coarse)'),
+    hoverNone: mm('(hover: none)'),
+    touchCapable,
+  };
+}
+
 // Memoize: query params + standalone state are fixed for the page session, and
 // the jar name in user-store is locked in at its module load — every later
 // caller MUST see the same value.
@@ -88,4 +144,28 @@ export function isDemoMode(): boolean {
     try { cached = evaluateDemoMode(readEnv()); } catch { cached = false; }
   }
   return cached;
+}
+
+// Memoize the device-allowed answer too — the device's capabilities don't change
+// within a page session, and callers must agree.
+let cachedDeviceAllowed: boolean | null = null;
+
+/** True when the CURRENT DEVICE is allowed to enter the demo (touch/coarse). */
+export function isDemoDeviceAllowedNow(): boolean {
+  if (cachedDeviceAllowed === null) {
+    try { cachedDeviceAllowed = isDemoDeviceAllowed(readDeviceEnv()); }
+    catch { cachedDeviceAllowed = false; }
+  }
+  return cachedDeviceAllowed;
+}
+
+/**
+ * True when this is a demo session BUT the device is gated out (issue #66) — the
+ * signal App.tsx uses to render the "open on your phone" fallback instead of
+ * booting the demo. NOT a demo session (real app, dev/LAN, standalone) → false,
+ * so the real app is never gated. A touch/coarse device in a demo session →
+ * false, so the demo boots as before.
+ */
+export function isDemoDeviceGated(): boolean {
+  return isDemoMode() && !isDemoDeviceAllowedNow();
 }

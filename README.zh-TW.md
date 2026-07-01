@@ -206,7 +206,7 @@ npm run build --workspace=platform
 npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch=<你的分支>
 ```
 
-**試用（免安裝）：** `learnchinese.hsu.mobi/?app&demo` 會以預設 demo profiles 啟動 app，並使用隔離的 demo 儲存（見 [architecture.zh-TW.md §4.6](./architecture.zh-TW.md)）。
+**試用（免安裝）：** `learnchinese.hsu.mobi/?app&demo` 會以預設 demo profiles 啟動 app，並使用隔離的 demo 儲存（見 [architecture.zh-TW.md §4.6](./architecture.zh-TW.md)）。示範**僅限手機／觸控**——桌機會被閘門擋下（用戶端能力檢查，非 UA 嗅探），改顯示「用手機開啟」的 QR 面板；真實／已安裝的 app 永不被擋。應用內 landing 以「打開線上示範」CTA（en + zh-TW）連到示範。
 
 - **`build`** 會烘焙（bake）出貨的資料庫 + `stroke-data.json` + `version.json`，然後執行
   `vite build`。每次 build 都會蓋上一個 **每次部署都全新的 `version`**（以及一個獨立的、僅關乎資料的

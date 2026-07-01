@@ -498,6 +498,23 @@ things:
    `shouldShowLanding` change or a `_redirects` rule — deliberately deferred to avoid
    touching `App.tsx` while the theme refactor is in flight.)
 
+**Device gate — mobile/touch only (#66).** The demo is a mobile PWA experience (install +
+touch UI), so a **desktop** visitor on a demo path is gated OUT and shown an "open it on
+your phone" QR panel instead of a broken mouse-driven demo. The gate is a **separate**
+predicate from `evaluateDemoMode` so jar isolation is unchanged: a desktop demo visitor is
+STILL a demo session (isolated `-demo` jar) — the app just doesn't BOOT the demo for them,
+and is therefore never routed onto the real `learning-chinese-user` jar. `demo-mode.ts`
+exports `isDemoDeviceAllowed(DeviceEnv)` (pure — `pointer: coarse` OR `hover: none` OR
+`ontouchstart`/`maxTouchPoints > 0`; capability detection, **not** UA sniffing) and the
+memoized `isDemoDeviceGated()` = `isDemoMode() && !isDemoDeviceAllowedNow()`. `App.tsx`
+renders the lazy `DemoGate` (QR from the tiny dependency-free encoder in `utils/qr.ts`,
+lazily loaded so it never touches the app shell) instead of `<AppInner>` when gated. The
+real/installed app, dev/LAN hosts, and `?landing` are NEVER gated. **Client-side only** —
+static Pages has no runtime server to enforce a device gate; this is a browser capability
+check. The in-app **landing** (`LandingPage.tsx`) links to the demo (`?app&demo`, en + zh-TW)
+via a "Try the live demo" CTA under the read-along notebook; on desktop that link lands on
+the QR fallback rather than a dead end.
+
 ---
 
 ## 5. UI kit (`platform/src/ui`)

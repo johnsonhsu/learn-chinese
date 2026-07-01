@@ -18,6 +18,7 @@ import UpdateBanner from './UpdateBanner.tsx';
 import DemoBadge from './DemoBadge.tsx';
 import { useAppUpdate } from './useAppUpdate.ts';
 import { OfflineProvider, useOffline } from './offline/offline-context.tsx';
+import { isDemoDeviceGated } from './offline/demo-mode.ts';
 import { exportBackup, parseBackup, importBackupSelective, type BackupSummary } from './offline/backup.ts';
 
 const AdminPage = lazy(() => import('./admin/AdminPage.tsx'));
@@ -28,6 +29,7 @@ const Onboarding = lazy(() => import('./Onboarding.tsx'));
 const WelcomePopup = lazy(() => import('./WelcomePopup.tsx'));
 const LandingPage = lazy(() => import('./LandingPage.tsx'));
 const Styleguide = lazy(() => import('./Styleguide.tsx'));
+const DemoGate = lazy(() => import('./DemoGate.tsx'));
 
 interface ModuleManifest {
   name: string;
@@ -131,6 +133,20 @@ export default function App() {
     return (
       <Suspense fallback={<div className="loading" />}>
         <LandingPage />
+      </Suspense>
+    );
+  }
+  // Demo device gate (issue #66): a DESKTOP visitor who reaches a demo path is
+  // gated OUT of the mobile-only demo and handed a "open it on your phone" QR
+  // instead of booting a mobile-on-mouse session. This is checked BEFORE
+  // <OfflineProvider>/<AppInner> so the demo never seeds or opens a session for a
+  // gated device. It only fires for a DEMO session on a non-touch device — the
+  // real/installed app, dev/LAN, and `?landing` are never gated (see
+  // isDemoDeviceGated / evaluateDemoMode in demo-mode.ts).
+  if (isDemoDeviceGated()) {
+    return (
+      <Suspense fallback={<div className="loading" />}>
+        <DemoGate />
       </Suspense>
     );
   }

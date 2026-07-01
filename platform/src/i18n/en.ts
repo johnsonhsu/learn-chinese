@@ -14,6 +14,17 @@ export default {
   'demo.badge': 'Demo',
   'demo.note': 'Demo site — refresh resets progress',
 
+  // Demo device gate (issue #66): the demo is a mobile PWA experience, so a
+  // DESKTOP visitor who reaches the demo path is gated out and handed a QR to
+  // open it on their phone (capability check, not UA sniffing). These strings
+  // fill the "open on your phone" fallback panel.
+  'demo.gate.eyebrow': 'Try it on your phone',
+  'demo.gate.title': 'The demo is made for your phone',
+  'demo.gate.body': 'This is a mobile app you install to your Home Screen. Scan the code with your phone’s camera to open the demo there.',
+  'demo.gate.scan': 'Scan to open on your phone',
+  'demo.gate.urlLabel': 'Or open this link on your phone:',
+  'demo.gate.qrAlt': 'QR code linking to the demo',
+
   'user.whoLearning': "Who's learning today?",
   'user.newName': 'New user name',
   'user.create': 'Create',

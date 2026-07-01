@@ -244,7 +244,7 @@ npm run build --workspace=platform
 npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch=<your-branch>
 ```
 
-**Try it (no install):** `learnchinese.hsu.mobi/?app&demo` boots the app pre-loaded with demo profiles, in an isolated demo storage jar (see [ARCHITECTURE.md §4.6](./ARCHITECTURE.md)).
+**Try it (no install):** `learnchinese.hsu.mobi/?app&demo` boots the app pre-loaded with demo profiles, in an isolated demo storage jar (see [ARCHITECTURE.md §4.6](./ARCHITECTURE.md)). The demo is **mobile/touch-only** — on desktop it's gated (a client capability check, not UA sniffing) and shows an "open it on your phone" QR panel instead; the real/installed app is never gated. The in-app landing links the demo via a "Try the live demo" CTA (en + zh-TW).
 
 - **`build`** bakes the shipped DBs + `stroke-data.json` + `version.json`, then
   runs `vite build`. Every build stamps a **fresh per-deploy `version`** (and a
