@@ -1,0 +1,8 @@
+{
+  "name": "reading-english",
+  "displayName": "Reading English",
+  "displayNameZh": "閱讀英文",
+  "icon": "📗",
+  "apiPrefix": "/api/reading-english",
+  "order": 7
+}

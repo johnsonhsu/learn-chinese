@@ -7,7 +7,7 @@
 A **module** is a self-contained learning activity that the platform discovers,
 lists on the home screen, and mounts. Modules share the platform's profiles,
 language, UI kit, and on-device data layer; they don't manage any of that
-themselves. This doc covers the six existing modules, the module contract, and
+themselves. This doc covers the seven existing modules, the module contract, and
 how to add a new one.
 
 See also: [../ARCHITECTURE.md](../ARCHITECTURE.md) (the module system end-to-end)
@@ -15,7 +15,7 @@ and [../platform/src/ui/README.md](../platform/src/ui/README.md) (the UI kit).
 
 ---
 
-## The six existing modules
+## The seven existing modules
 
 ### writing-challenge (✍️) — `modules/writing-challenge/`
 The flagship. Stroke-by-stroke handwriting practice on bank sentences, driven by
@@ -88,6 +88,28 @@ characters in order. **No HanziWriter/WritingCanvas is used at all.**
   stats (`character_stats_reading` / IndexedDB `profileStatsReading`), which never
   touch the writing `character_stats`. Reading level/targets/mastery are computed
   from that slice by the same pure engine. No shipped DB, no server routes.
+
+### reading-english (📗) — `modules/reading-english/`
+The English analogue of reading-chinese. Same tap-to-reconstruct mechanics, but the
+learner rebuilds the ENGLISH translation of a bank sentence by tapping its **words
+in order** from a shuffled pool of the sentence's own words. **No HanziWriter is
+used.**
+- `src/App.tsx` — landing (`<ModuleScreen>` + `<Button>`) ↔ the tap-to-reconstruct
+  `src/pages/ReadingPage.tsx`.
+- Fully self-contained like practice-english: its **own** `src/offline/` layer +
+  `src/cloze.ts` word tokenizer + `src/speech.ts` (English voice, sharing
+  practice-english's `pe-en-voice` device pref). Pure consumer of `content.db`'s
+  `bank_sentences.english`; no second bank, no LLM.
+- The pure tile-pool / auto-skip-filter / tap state-machine is a module-local mirror
+  of reading-chinese's engine (`src/reading.ts`), generalized to WORD units with a
+  MASTERY-based auto-skip predicate; unit-tested in the fast tier
+  (`platform/src/offline/__tests__/reading-english-engine.test.ts`).
+- **Separate reading/English skill track:** records per-word into its OWN IndexedDB
+  (`learning-english-reading-user`), disjoint from practice-english's spelling store
+  (`learning-english-user`) — a reading session never mutates spelling stats, and
+  vice-versa (guarded by `reading-english-stat-isolation.test.ts`). Auto-skip omits
+  words the reader has already mastered (≥3 of last 4 correct, from the reading
+  store). No shipped DB, no server routes.
 
 ---
 
@@ -175,7 +197,7 @@ the same portable helper your dev route uses, as copybook does (see
 The platform only lists modules in the allow-set in `platform/src/App.tsx`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese', 'reading-english']);
 ```
 
 Add your module's `name` here once it works fully on-device.
