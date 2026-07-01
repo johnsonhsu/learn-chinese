@@ -7,12 +7,12 @@
  * Output: src/data/chars.json
  */
 
-import { readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFileSync, writeFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUTPUT_PATH = join(__dirname, '..', 'src', 'data', 'base-chars.json');
+const OUTPUT_PATH = join(__dirname, "..", "src", "data", "base-chars.json");
 
 interface TopWord {
   word: string;
@@ -74,8 +74,8 @@ interface ExtractedChar {
 }
 
 function extractChars(dictPath: string): ExtractedChar[] {
-  const raw = readFileSync(dictPath, 'utf-8');
-  const lines = raw.split('\n').filter(Boolean);
+  const raw = readFileSync(dictPath, "utf-8");
+  const lines = raw.split("\n").filter(Boolean);
 
   const chars: ExtractedChar[] = [];
   const seen = new Set<string>();
@@ -95,14 +95,14 @@ function extractChars(dictPath: string): ExtractedChar[] {
     seen.add(entry.trad);
 
     // Extract primary pinyin from items
-    const pinyinItem = entry.items?.find(i => i.pinyin);
-    const pinyin = pinyinItem?.pinyin || '';
+    const pinyinItem = entry.items?.find((i) => i.pinyin);
+    const pinyin = pinyinItem?.pinyin || "";
 
     chars.push({
       char: entry.trad,
       simp: entry.simp,
       pinyin,
-      gloss: entry.gloss || '',
+      gloss: entry.gloss || "",
       hskLevel: stats.hskLevel,
       frequency: {
         movieWordRank: stats.movieWordRank,
@@ -127,13 +127,15 @@ function extractChars(dictPath: string): ExtractedChar[] {
 function main() {
   const dictPath = process.argv[2];
   if (!dictPath) {
-    console.log('Usage: npm run extract <path-to-dictionary-word.jsonl>');
-    console.log('');
-    console.log('Example:');
-    console.log('  npm run extract ../../input-lists/writing-challenge/dictionary_word_2025-12-27.jsonl');
-    console.log('');
-    console.log('Extracts single-character entries with full data (HSK level, frequency,');
-    console.log('topWords) and writes to src/data/base-chars.json');
+    console.log("Usage: npm run extract <path-to-dictionary-word.jsonl>");
+    console.log("");
+    console.log("Example:");
+    console.log(
+      "  npm run extract ../../input-lists/writing-challenge/dictionary_word_2025-12-27.jsonl",
+    );
+    console.log("");
+    console.log("Extracts single-character entries with full data (HSK level, frequency,");
+    console.log("topWords) and writes to src/data/base-chars.json");
     process.exit(1);
   }
 
@@ -147,17 +149,21 @@ function main() {
   for (const c of chars) {
     byLevel[c.hskLevel] = (byLevel[c.hskLevel] || 0) + 1;
   }
-  Object.keys(byLevel).sort((a: any, b: any) => a - b).forEach(k => {
-    console.log(`  HSK ${k}: ${byLevel[Number(k)]} chars`);
-  });
+  Object.keys(byLevel)
+    .sort((a: string, b: string) => Number(a) - Number(b))
+    .forEach((k) => {
+      console.log(`  HSK ${k}: ${byLevel[Number(k)]} chars`);
+    });
 
   // Top 20 most frequent
   console.log(`\nTop 20 by book frequency:`);
   chars.slice(0, 20).forEach((c, i) => {
-    console.log(`  ${i + 1}. ${c.char} (${c.pinyin}) — ${c.gloss} [HSK ${c.hskLevel}, rank ${c.frequency.bookCharRank}]`);
+    console.log(
+      `  ${i + 1}. ${c.char} (${c.pinyin}) — ${c.gloss} [HSK ${c.hskLevel}, rank ${c.frequency.bookCharRank}]`,
+    );
   });
 
-  writeFileSync(OUTPUT_PATH, JSON.stringify(chars, null, 2), 'utf-8');
+  writeFileSync(OUTPUT_PATH, JSON.stringify(chars, null, 2), "utf-8");
   console.log(`\nWritten to: ${OUTPUT_PATH}`);
   console.log(`File size: ${(readFileSync(OUTPUT_PATH).length / 1024 / 1024).toFixed(1)} MB`);
 }
