@@ -5794,3 +5794,24 @@ body[data-theme="silver"][data-screen="mychars"] .char-tile-level {
   body[data-theme="gold"]::before,
   body[data-theme="silver"]::before { animation: none; }
 }
+
+/* --- Orientation fallback overlay -------------------------------------------
+   iOS/iPadOS does not allow JS orientation locking from the web. When the
+   user enables Lock to portrait, this full-screen overlay blocks landscape. */
+.rotate-overlay {
+  display: none;
+}
+@media (orientation: landscape) {
+  .lock-portrait .rotate-overlay {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    color: var(--ink);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+}
