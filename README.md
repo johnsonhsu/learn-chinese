@@ -209,6 +209,11 @@ own. It's a best-effort online convenience:
   characters, so every candidate is validated (Traditional-only, contains the
   target char, 6–15 Han chars) and retried up to 3× before giving up.
 
+### Local LLM tooling
+
+Optional sentence-generation scripts use a local Ollama runtime. See
+[`docs/local-llm-setup.md`](./docs/local-llm-setup.md).
+
 ---
 
 ## Testing

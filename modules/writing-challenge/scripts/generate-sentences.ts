@@ -1,9 +1,17 @@
-import { readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+/**
+ * Generate HSK practice sentences via Ollama.
+ *
+ * Usage: npx tsx modules/writing-challenge/scripts/generate-sentences.ts
+ *
+ * Requires local Ollama runtime; see docs/local-llm-setup.md.
+ */
+
+import { readFileSync, writeFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, '..', 'src', 'data');
+const DATA_DIR = join(__dirname, "..", "src", "data");
 
 interface WordData {
   simp: string;
@@ -19,13 +27,13 @@ interface Sentence {
   english: string;
 }
 
-const OLLAMA_URL = 'http://localhost:11434/api/generate';
-const MODEL = 'qwen2.5:7b';
+const OLLAMA_URL = "http://localhost:11434/api/generate";
+const MODEL = "qwen2.5:7b";
 
 async function generate(prompt: string): Promise<string> {
   const res = await fetch(OLLAMA_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: MODEL,
       prompt,
@@ -39,14 +47,14 @@ async function generate(prompt: string): Promise<string> {
 
 function getTopWords(level: string, count: number): WordData[] {
   const words: Record<string, WordData[]> = JSON.parse(
-    readFileSync(join(DATA_DIR, 'words-by-level.json'), 'utf-8')
+    readFileSync(join(DATA_DIR, "words-by-level.json"), "utf-8"),
   );
   return (words[level] || []).slice(0, count);
 }
 
 async function generateSentencesForLevel(level: string, count: number): Promise<Sentence[]> {
   const words = getTopWords(level, 80);
-  const wordList = words.map(w => `${w.trad}(${w.gloss})`).join(', ');
+  const wordList = words.map((w) => `${w.trad}(${w.gloss})`).join(", ");
 
   const prompt = `You are a Chinese language teacher creating practice sentences for HSK level ${level} students.
 
@@ -79,7 +87,7 @@ JSON array:`;
   try {
     const sentences: Sentence[] = JSON.parse(jsonMatch[0]);
     // Validate
-    return sentences.filter(s => s.trad && s.pinyin && s.english);
+    return sentences.filter((s) => s.trad && s.pinyin && s.english);
   } catch (e) {
     console.error(`  JSON parse error for level ${level}: ${e}`);
     return [];
@@ -87,18 +95,18 @@ JSON array:`;
 }
 
 async function main() {
-  console.log('Generating sentences using Ollama (qwen2.5:7b)...\n');
+  console.log("Generating sentences using Ollama (qwen2.5:7b)...\n");
 
   const allSentences: Record<string, Sentence[]> = {};
 
-  for (const level of ['1', '2', '3', '4', '5', '6']) {
-    const count = level <= '2' ? 30 : level <= '4' ? 25 : 20;
+  for (const level of ["1", "2", "3", "4", "5", "6"]) {
+    const count = level <= "2" ? 30 : level <= "4" ? 25 : 20;
     const sentences = await generateSentencesForLevel(level, count);
     allSentences[level] = sentences;
     console.log(`  → HSK ${level}: ${sentences.length} sentences\n`);
   }
 
-  const outPath = join(DATA_DIR, 'sentences.json');
+  const outPath = join(DATA_DIR, "sentences.json");
   writeFileSync(outPath, JSON.stringify(allSentences, null, 2));
   console.log(`Done! Written to ${outPath}`);
 
