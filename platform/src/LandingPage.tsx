@@ -86,6 +86,11 @@ const T = {
     readCustomTab: 'Custom',
     readCustomPlaceholder: 'Paste any Traditional Chinese — a menu, a text, an article — and see how much you could read right now.',
     readCustomEmpty: 'Paste some Chinese above to check it against your level.',
+    // Demo hand-off (issue #66): a real link into the isolated `?app&demo` demo.
+    // On a phone it opens the demo; on desktop the device gate hands it off with
+    // a QR (the demo is a mobile PWA experience).
+    demoCta: 'Try the live demo',
+    demoCtaHint: 'Opens the app pre-loaded with progress — best on your phone.',
 
     // ── Fifteen minutes a day: A → B (no hard timeline — outcome, not a deadline) ──
     pitchEyebrow: 'Fifteen minutes a day',
@@ -181,6 +186,10 @@ const T = {
     readCustomTab: '自訂',
     readCustomPlaceholder: '在這裡貼上任何繁體中文——菜單、訊息、文章都可以——看看以你現在的程度能讀懂多少。',
     readCustomEmpty: '在上方貼上中文，對照你現在的程度看看。',
+    // Demo 連結（issue #66）：連到隔離的 `?app&demo` 示範。手機上會直接開啟示範；
+    // 桌機則由裝置閘門以 QR code 轉交到手機（示範是手機 PWA 體驗）。
+    demoCta: '打開線上示範',
+    demoCtaHint: '會開啟預先載入進度的 App —— 用手機體驗最佳。',
 
     pitchEyebrow: '每天十五分鐘',
     pitchA: '今天，那份菜單還像一面看不懂的牆。',
@@ -772,6 +781,20 @@ function OpenBook({ t, lang }: { t: (typeof T)[Lang]; lang: Lang }) {
 
       {/* The throughline: learning to write → the page reads. */}
       <p className="lp-book-tie">{t.bookTie}</p>
+
+      {/* Demo hand-off (issue #66). A REAL link into the isolated `?app&demo`
+          demo — the read-along above is the preview, this is the real thing.
+          It's a plain <a href> so on a phone it opens the demo directly, while
+          on desktop the demo device gate (App.tsx / demo-mode.ts) intercepts the
+          same URL and shows the "open it on your phone" QR fallback instead of a
+          mobile-on-mouse session. */}
+      <div className="lp-demo-cta">
+        <a className="lp-cta lp-cta-light" href="?app&demo">
+          {t.demoCta}
+          <span className="lp-cta-arrow" aria-hidden="true">→</span>
+        </a>
+        <p className="lp-cta-hint">{t.demoCtaHint}</p>
+      </div>
     </section>
   );
 }

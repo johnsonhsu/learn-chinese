@@ -14,6 +14,17 @@ export default {
   'demo.badge': '示範',
   'demo.note': '示範網站 — 重新整理會清除進度',
 
+  // Demo device gate (issue #66): the demo is a mobile PWA experience, so a
+  // DESKTOP visitor who reaches the demo path is gated out and handed a QR to
+  // open it on their phone (capability check, not UA sniffing). These strings
+  // fill the "open on your phone" fallback panel.
+  'demo.gate.eyebrow': '用手機試試看',
+  'demo.gate.title': '這個示範是為手機打造的',
+  'demo.gate.body': '這是一個安裝到主畫面使用的手機 App。用手機相機掃描下方的 QR code，就能在手機上開啟示範。',
+  'demo.gate.scan': '掃描即可用手機開啟',
+  'demo.gate.urlLabel': '或在手機上開啟這個連結：',
+  'demo.gate.qrAlt': '連到示範的 QR code',
+
   'user.whoLearning': '今天誰來學？',
   'user.newName': '新使用者名稱',
   'user.create': '建立',
