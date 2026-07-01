@@ -45,7 +45,6 @@ export default {
   'settings.themeUseDevice': 'Use device theme',
   'theme.default': 'Paper',
   'theme.80s-motiv': '80s Motiv',
-  'theme.cyberblitz': 'Cyber Blitz',
   'theme.indigo': 'Indigo',
   'theme.gold': 'Gold',
   'theme.silver': 'Silver',

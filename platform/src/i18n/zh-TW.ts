@@ -43,7 +43,6 @@ export default {
   'settings.themeUseDevice': '使用裝置主題',
   'theme.default': '宣紙',
   'theme.80s-motiv': '八零動力',
-  'theme.cyberblitz': '電腦突撃',
   'theme.indigo': '靛藍',
   'theme.gold': '黃金',
   'theme.silver': '白銀',
