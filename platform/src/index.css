@@ -3890,7 +3890,7 @@ body[data-screen="result"]     { --screen-accent: #4F7A3A; }
 @media (max-width: 480px) { .lp { --lp-bar-h: 54px; } }
 /* Center the reading column, but let full-bleed bands + the fixed top bar escape
    it (the bar centers its own inner content via .lp-bar-inner). */
-.lp > *:not(.lp-band):not(.lp-bar):not(.lp-fly):not(.lp-menu-scrim) { max-width: 760px; margin-left: auto; margin-right: auto; }
+.lp > *:not(.lp-band):not(.lp-bar):not(.lp-fly) { max-width: 760px; margin-left: auto; margin-right: auto; }
 
 /* ── Top bar: FIXED, compact menu bar — hamburger + wordmark + region + EN/中 ──
    Pinned to the top of the viewport, full-bleed (own background), above the hero
@@ -3913,29 +3913,13 @@ body[data-screen="result"]     { --screen-accent: #4F7A3A; }
   transition: background 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
 }
 .lp.is-docked .lp-bar {
-  /* Slightly translucent navy so it reads as a bar even where it overlaps lighter
-     content lower down, with a hairline + soft shadow to lift it off the field. */
-  background: color-mix(in srgb, var(--char) 92%, transparent);
-  -webkit-backdrop-filter: saturate(1.1) blur(8px);
-  backdrop-filter: saturate(1.1) blur(8px);
+  /* SOLID opaque navy (= the page background) — content scrolling under the bar is
+     fully hidden, never tinted or frosted. The hairline + soft shadow lift it off
+     the field. The bar's look does NOT change when the menu opens; the menu is just
+     this same opaque navy extended downward. */
+  background: var(--char);
   border-bottom-color: var(--rule-strong);
   box-shadow: 0 6px 20px -10px rgba(0,0,0,0.7);
-}
-/* Browsers without color-mix: fall back to the flat navy token (still a solid bar). */
-@supports not (background: color-mix(in srgb, red, blue)) {
-  .lp.is-docked .lp-bar { background: var(--char); }
-}
-/* When the menu is OPEN, the bar matches the menu exactly: SOLID opaque navy, no
-   blur/translucency tint, no bottom border — so bar + dropdown read as one navy
-   block. The second selector (0,4,0) out-ranks the docked rule (0,3,0) so it wins
-   even after scrolling. */
-.lp-bar.is-menu-open,
-.lp.is-docked .lp-bar.is-menu-open {
-  background: var(--char);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  border-bottom-color: transparent;
-  box-shadow: none;
 }
 /* Reduced motion: show the solid bar immediately, with no animated snap. */
 @media (prefers-reduced-motion: reduce) {
@@ -4064,28 +4048,6 @@ body[data-screen="result"]     { --screen-accent: #4F7A3A; }
 @media (max-width: 480px) {
   .lp-navmenu { width: min(280px, calc(100vw - 24px)); }
 }
-
-/* ── Frosted-glass scrim behind the open menu ────────────────────────────────
-   Dims + blurs the page BELOW the bar so the menu reads clearly. Starts at the
-   bar's bottom edge (so the bar itself is never frosted), and sits at z 45 —
-   above page content + the flyer (z 40) but below the bar (50) + menu, so those
-   stay crisp. Closed: invisible + click-through; open: catches clicks (which
-   NavDropdown's outside-pointerdown turns into a close). */
-.lp-menu-scrim {
-  position: fixed;
-  top: var(--lp-bar-h); left: 0; right: 0; bottom: 0;
-  z-index: 45;
-  background: color-mix(in srgb, var(--char) 42%, transparent);
-  -webkit-backdrop-filter: blur(7px) saturate(1.1);
-  backdrop-filter: blur(7px) saturate(1.1);
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.22s ease;
-}
-.lp-menu-scrim.is-open { opacity: 1; pointer-events: auto; }
-@supports not (background: color-mix(in srgb, red, blue)) {
-  .lp-menu-scrim { background: rgba(7, 52, 100, 0.5); }
-}
-@media (prefers-reduced-motion: reduce) { .lp-menu-scrim { transition: none; } }
 
 /* ── Brand splash: the large 學中文 above the hero that docks into the bar ─────
    In normal flow — its box reserves the height that pushes the hero down. The
