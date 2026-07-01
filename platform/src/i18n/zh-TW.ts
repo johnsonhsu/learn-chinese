@@ -221,4 +221,50 @@ export default {
   "feedback.thanks": "謝謝！你的意見已送出。",
   "feedback.failed": "無法送出 — 請檢查網路連線後再試一次。",
   "feedback.offline": "你目前離線 — 傳送意見需要網路連線。",
+
+  // Styleguide inspector（僅開發線上的 ?ui 頁面）。
+  "styleguide.themeLabel": "主題",
+  "styleguide.themeNote": "僅預覽 — 不會更改已儲存的佈景主題",
+  "styleguide.title": "UI 元件",
+  "styleguide.subtitle":
+    "<code>platform/src/ui</code>＋<code>:root</code> token 的即時風格總覽——真的渲染，不是文件。用上方主題切換逐面檢查。",
+  "styleguide.section.button.title": "按鈕",
+  "styleguide.section.button.desc":
+    "立體糖果按鈕，三個樣式共用同一基底，底部粗陰影是可按下的唇邊——:active 時按鈕本體與唇邊合體。Hover 抬升只出現在 pointer；reduced-motion 會中和 transform。",
+  "styleguide.section.textInput.title": "文字輸入",
+  "styleguide.section.textInput.desc":
+    "輸入文字與輸入格Fill 必須跟著主題一起移動——兩邊都讀 theme token（background: var(--bg-input); color: var(--text)）。onboarding/welcome 的姓名與年齡欄位使用 .welcome-popup-input；profile picker 的新增欄位使用 .user-create input；Settings 的顯示名稱與 Gemini key 欄位使用 .settings-name-row input；共用元件庫使用 .fb-*（.fb-select/.fb-textarea）。在這裡隨意輸入並切換主題：每個主題都應該看得清楚（Paper 白、Indigo 海軍、金/銀深色）——不會出現 light-on-light 或 dark-on-dark。這個 specimen 是為了讓 #38 那種看不見 input 的 bug 可以被 inspector 抓到——第一版就漏掉 .user-create/.settings-name-row，因為後面有一條 hardcoded background:#fff 蓋掉了 token fill。",
+  "styleguide.section.charTile.title": "字卡（CharTile）",
+  "styleguide.section.charTile.desc":
+    "全 App 共用的單一字卡。在我的字卡頁會強化——金/銀面、填滿的等級徽章、更亮的 glyph——離開該頁（Next-up、詞庫 chips）則使用較安靜的基底樣式。用上方的 Screen 切換比對，這裡都跟裝置一致。結果小點依序為：P 完美 · C 正確 · I 錯誤 · S 跳過。",
+  "styleguide.section.charTile.screenMyCharacters": "我的字卡",
+  "styleguide.section.charTile.screenOther": "Next-up / chips",
+  "styleguide.section.writingTrack.title": "寫字挑戰字卡列",
+  "styleguide.section.writingTrack.desc":
+    "句子以「語意狀態」pill 列的捲軸呈現——current、upcoming、done、above-level/auto-skip、user-skipped。使用寫字挑戰模組的【真實】stylesheet（已經 import），這裡看到的會跟 live module 在每個主題下一模一樣。",
+  "styleguide.section.card.title": "Card",
+  "styleguide.section.card.desc":
+    "共享奶油糖果面板（.module-tile 外觀），可在完整 ModuleScreen 外單獨使用。",
+  "styleguide.section.backButton.title": "BackButton",
+  "styleguide.section.backButton.desc":
+    "共享的 back pill（.module-back）單獨元件。ModuleScreen 在收到 onBack 時內部會渲染相同的 pill。",
+  "styleguide.section.moduleScreen.title": "ModuleScreen",
+  "styleguide.section.moduleScreen.desc":
+    "標準模組主畫面外殼：可選 back pill + shared card + title，再接 children。這裡在 framed stage 中以縮小比例呈現。",
+  "styleguide.section.colorTokens.title": "色彩 token",
+  "styleguide.section.colorTokens.desc":
+    "index.css 原先的 :root custom properties。每個色塊由其 live var() 上色，永遠等於【上方目前選擇的主題】解析值。",
+  "styleguide.section.semanticColors.title": "語意與狀態色彩",
+  "styleguide.section.semanticColors.desc":
+    "寫字挑戰字卡列與字卡實際讀取的 token。字卡列建立在 ink/paper/seal 調色盤——所以像 Midnight 那樣重映射的主題會自動重繪所有狀態。跨主題比對看看。",
+  "styleguide.section.screenBackgrounds.title": "各畫面背景",
+  "styleguide.section.screenBackgrounds.desc":
+    "每個 app 畫面各宣告一組 --screen-bg / --screen-bg-dark pair（宣告在 .screen-* class 上）。下面的 chips【就是】這些 class，所以它們顯示真實的背景。",
+  "styleguide.section.surfaces.title": "共用樣板 class",
+  "styleguide.section.surfaces.desc": "各畫面共用的 chrome class，以真實 selector 渲染。",
+  "styleguide.section.typography.title": "字型",
+  "styleguide.section.typography.desc":
+    "Display 與 body 共用一個 canonical family：--font（alias 為 --font-display）。下方的尺寸對應真實 kit/title scale。",
+  "styleguide.footer":
+    "Source：<code>platform/src/ui</code> · tokens：<code>platform/src/index.css :root</code> · 字卡列：<code>modules/writing-challenge/src/App.css</code>",
 } as const;
