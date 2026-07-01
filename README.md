@@ -231,6 +231,17 @@ pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip ins
 
 **Verification on every PR.** The PR template's **Verification** section is required on **every** PR (including docs-only ones, which merge on green with no human review). Record both _how I verified_ — the checks actually run for this change (`npm run test:unit` always; `test:data`/`seed:dbs` for content; the glyph-parity pytest for glyphs; `npx vite build`, never `npm run build`; a named visual check on the preview's `?ui` Styleguide / `?app&demo` for UI/theme work) — and _how to verify (reviewer)_: a concrete preview reproduction (route + themes/elements + expected result), the "Review: …" one-liner our PRs already carry.
 
+## Marketing screenshots
+
+A small Playwright harness in `platform/` captures marketing/build images.
+It is **not** an app integration test and is **not** wired into CI yet.
+
+- Config: `platform/playwright.config.ts`
+- Specs: `platform/scripts/marketing-screenshots/marketing.spec.ts`
+- Outputs: `platform/public/marketing/` (`landing.png`, `styleguide.png`, plus `*.meta.json`)
+- Run: `cd platform && npx playwright test --project=desktop`
+- When: run manually when marketing assets need refreshing; no deploy step, no app-code change.
+
 ## Deployment
 
 Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`) and gated on the tests + data-integrity check:

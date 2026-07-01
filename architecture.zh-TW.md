@@ -330,6 +330,16 @@ IndexedDB 連線與記憶體中的 sql.js heap 都是長壽且容易洩漏的—
 `bank-fix.py` 另外還會合併正規化後相撞的列（刪除重複者），是冪等的，會先備份 DB，且只回報數量。
 它針對 `platform/content.db` 執行。
 
+## 3.6 行銷截圖 / Playwright
+
+`platform/` 包含一個小型的 Playwright 截圖 harness，用於擷取行銷畫面。
+這**不是** module code 的 integration/e2e gate；這是為了 landing、styleguide、app-home 行銷素材而存的 file-local capture tool，且**尚未**接到 CI。
+
+- 設定：`platform/playwright.config.ts`
+- TypeScript 設定：`platform/tsconfig.playwright.json`
+- 截圖 spec：`platform/scripts/marketing-screenshots/marketing.spec.ts`
+- 輸出：`platform/public/marketing/` — PNG 與 `*.meta.json`，app 執行期忽略，也不會成為出貨資料的一部分，除非額外明確收納
+
 ---
 
 ## 4. Bake／deploy 資料管線
