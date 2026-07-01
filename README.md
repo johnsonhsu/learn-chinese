@@ -315,6 +315,8 @@ servers before committing `content.db` (don't commit it while a server holds it 
   put `GEMINI_API_KEY=...` in a `.env` the dev server reads (the client BYO key
   takes precedence when present). `GEMINI_MODEL` optionally overrides the default
   `gemini-2.5-flash`.
+- **Local LLM scripts** — a few dev-only sentence-generation scripts use a local
+  Ollama runtime instead of cloud AI. See [`docs/local-llm-setup.md`](./docs/local-llm-setup.md).
 
 ---
 
