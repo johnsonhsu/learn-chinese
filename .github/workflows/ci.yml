@@ -54,6 +54,12 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
+      # Lint: report issues without blocking deploy/preview.
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        run: npm run lint
+
       # 4) Build the shippable app from the committed content-only seeds
       #    (reproducible; the working DBs aren't in the repo). Platform build
       #    only — the root build's writing-challenge build:data needs raw import
