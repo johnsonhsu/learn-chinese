@@ -344,6 +344,17 @@ extracted so every module is a pure _consumer_ of one shared curriculum
 (writing-challenge drills it, practice-english reads it for cloze, the dev admin
 curates it).
 
+## 3.6 Marketing screenshots / Playwright
+
+`platform` includes a small Playwright screenshot harness for marketing visuals.
+This is **not** an integration/e2e gate on module code; it’s a file-local capture
+tool for landing, styleguide, and app-home marketing assets.
+
+- Config: `platform/playwright.config.ts`
+- TypeScript config: `platform/tsconfig.playwright.json`
+- Screenshot specs: `platform/scripts/marketing-screenshots/marketing.spec.ts`
+- Outputs: `platform/public/marketing/` — PNGs and `*.meta.json`, ignored by the app at runtime and not part of shipped data unless explicitly included
+
 - **The accessor** is `shared/src/content-db.ts`, exported as
   `@shared/character-stats/content-db`. It opens `content.db` with
   better-sqlite3 (Node side only — dev server + scripts), idempotently ensures the
