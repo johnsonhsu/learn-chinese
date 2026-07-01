@@ -54,6 +54,15 @@ function getDb(): InstanceType<typeof Database> {
     db = new Database(CONTENT_DB_PATH);
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
+    // Two dev servers may hold a read-write handle to content.db at once (the
+    // :3000 app server + the standalone Sentence Bank admin server, issue #49).
+    // WAL allows concurrent readers + a single writer across processes, but
+    // better-sqlite3 is synchronous, so a write that lands while the other
+    // process is mid-write would otherwise throw SQLITE_BUSY immediately. A
+    // busy_timeout makes such a momentary lock RETRY (block up to 5s) instead of
+    // erroring — ample for the single-curator workload (you don't actually write
+    // from two tabs simultaneously). Harmless for the single-process case.
+    db.pragma('busy_timeout = 5000');
     createSchema(db);
   }
   return db;

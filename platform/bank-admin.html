@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sentence Bank Admin (dev)</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- Standalone, dev-only entry (issue #49). Renders ONLY the Sentence Bank
+         admin, served by server/bank-admin.ts on its own port so curation
+         survives :3000 restarts. NEVER part of the production build. -->
+    <script type="module" src="/src/bank-admin-main.tsx"></script>
+  </body>
+</html>

@@ -274,6 +274,10 @@ npm install                  # installs all workspaces
 npm run dev                  # Express + Vite dev server on http://localhost:3000
                              #   (full dev server: modules' APIs + admin UI)
 
+npm run dev:bank-admin       # standalone Sentence Bank admin on http://localhost:3100
+                             #   (dev-only, localhost-only; own process so curation
+                             #    survives :3000 restarts. Port: BANK_ADMIN_PORT)
+
 npm run build                # bake data + vite build  (writes platform/dist)
 npm -w platform run preview  # serve the production build (vite preview, :4173)
 npm -w platform run bake:data  # re-bake shipped DBs / version.json only
@@ -281,6 +285,14 @@ npm -w platform run bake:data  # re-bake shipped DBs / version.json only
 
 The app is local-first, so most of it runs with no server at all — the dev server
 (`:3000`) is mainly for admin/curation and producing the baked data.
+
+For long curation sessions, run the **standalone Sentence Bank admin**
+(`npm run dev:bank-admin`, default `:3100`) in its own process: it serves only the
+Sentence Bank tab (with all its sub-tabs) and reads/writes the same `content.db`, so
+restarting `:3000` while iterating on code doesn't interrupt importing/browsing.
+Both servers can run at once (`content.db` is WAL + a `busy_timeout`, so concurrent
+access is safe). It binds localhost only and never ships to production. Stop both
+servers before committing `content.db` (don't commit it while a server holds it open).
 
 **Optional extras:**
 

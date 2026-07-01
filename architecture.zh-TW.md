@@ -674,6 +674,33 @@ npx wrangler pages secret put FEEDBACK_ADMIN_SECRET --project-name=learning-chin
 的伺服器、提供共用的平台路由（字典瀏覽、字符統計、字符排名、供 PWA 使用的 DB 快照），並驅動 admin／策劃
 UI。**這一切都不在正式環境執行**——它的存在是為了開發此 app，以及產生／策劃那些會被烘焙並出貨的資料。
 
+### 7.1 獨立的句庫管理伺服器（`platform/server/bank-admin.ts`）—— issue #49
+
+改程式碼時 `:3000` 會不斷重啟／熱重載，連帶讓**句庫管理介面**一起中斷，打斷策劃工作（匯入 AI 批次、
+缺口填補的 prompt 迴圈、多回合批次自動填補、瀏覽涵蓋率）。`bank-admin.ts` 是一個**獨立、僅供開發**的
+Express 程序，在自己的連接埠（`BANK_ADMIN_PORT`，預設 **3100**）上**只**提供句庫管理介面，因此 `:3000`
+重啟時策劃工作仍持續。以 `npm run dev:bank-admin` 啟動。
+
+它重用與 `:3000` 完全相同的元件，不另外分叉：
+- 在 `/api/content` 掛載 `contentAdminRoutes`（`server/content-admin.ts`，§8.4）——完整的句庫 CRUD +
+  涵蓋率／排名／TOCFL 等級 + AI 生成；
+- 在 `/api/copybook` 掛載 copybook 模組的 `routes`，供 Prompt 分頁用的 Gemini 金鑰驗證探針
+  （`POST /api/copybook/test-key`）；
+- 提供一個極小的獨立 Vite 進入點（`bank-admin.html` → `src/bank-admin-main.tsx`），只渲染
+  `<SentenceBankPanel />`（六個分頁 + 「檢視全部」彈窗 + 單字詳情）。它使用 `appType: 'custom'`，
+  避免 Vite 自動提供完整 app 的 `index.html`；UI 與 `/api/content/*` 提供於**同源**，因此面板的同源
+  `fetch('/api'+path)` 能解析。開發模式下 `useAdminRead` 走 `/api` 讀取路徑、完全不碰離線資料層，
+  因此**不需要 `OfflineProvider`**（不啟動 sql.js／IndexedDB）。
+
+**並行（方案一）。** 兩個伺服器都以 WAL 模式讀寫開啟 `content.db`。WAL 允許跨程序的並行讀取 + 單一寫入；
+`shared/src/content-db.ts` 的 `getDb()` 也設定了 `PRAGMA busy_timeout = 5000`，因此短暫的寫入鎖會**重試**
+而非立即丟出 `SQLITE_BUSY`——對單一策劃者的工作量綽綽有餘。編輯落在同一個 `content.db`，因此正常的
+策劃 → `npm run seed:dbs` → 提交流程不變。既有的注意事項延伸為：**提交 `content.db` 前先停掉兩個伺服器**
+（或確保都未在寫入）——伺服器持有時（WAL）絕不要提交 `.db`。
+
+**安全。** 僅供開發；預設綁定 **`127.0.0.1`（localhost）**，不是 `0.0.0.0`，因此未驗證的 admin／AI 路由
+不會暴露在區域網路上。永不部署。
+
 ---
 
 ## 8. Admin 與裝置設定

@@ -826,6 +826,40 @@ middleware mode. It loads module servers, serves the shared platform routes
 the admin/curation UI. **None of this runs in production** — it exists to develop
 the app and to produce/curate the data that gets baked and shipped.
 
+### 7.1 Standalone Sentence Bank admin (`platform/server/bank-admin.ts`) — issue #49
+
+The `:3000` server restarts/hot-reloads constantly while iterating on app/server
+code, which takes the **Sentence Bank admin** down with it and interrupts curation
+(importing AI batches, the gap-fill prompt loop, the multi-run batch auto-fill,
+browsing coverage). `bank-admin.ts` is a **separate, dev-only Express process** on
+its own port (`BANK_ADMIN_PORT`, default **3100**) that serves **only** the Sentence
+Bank admin, so curation survives `:3000` bounces. Start it with `npm run dev:bank-admin`.
+
+It reuses the exact same pieces as `:3000` — no fork:
+- mounts `contentAdminRoutes` (`server/content-admin.ts`, §8.4) at `/api/content` —
+  the full bank CRUD + coverage/ranking/TOCFL-levels + AI generation;
+- mounts the copybook module's `routes` at `/api/copybook` for the Gemini
+  key-validation probe (`POST /api/copybook/test-key`) the Prompt tab uses;
+- serves a tiny standalone Vite entry (`bank-admin.html` → `src/bank-admin-main.tsx`)
+  that renders just `<SentenceBankPanel />` (all six tabs + the View-all modal +
+  per-char detail). It uses `appType: 'custom'` so Vite doesn't auto-serve the full
+  app's `index.html`; the UI is served on the **same origin** as `/api/content/*` so
+  the panel's same-origin `fetch('/api'+path)` resolves. In dev, `useAdminRead` takes
+  its `/api` read path and never touches the offline data layer, so **no
+  `OfflineProvider`** (no sql.js / IndexedDB boot) is needed.
+
+**Concurrency (Option 1).** Both servers open `content.db` read-write in WAL. WAL
+permits concurrent readers + a single writer across processes; `getDb()` in
+`shared/src/content-db.ts` also sets `PRAGMA busy_timeout = 5000`, so a momentary
+write-lock RETRIES instead of throwing `SQLITE_BUSY` — ample for the single-curator
+workload. Edits land in the same `content.db`, so the normal curate → `npm run
+seed:dbs` → commit flow is unchanged. The existing footgun extends: **stop BOTH
+servers (or ensure neither is mid-write) before committing `content.db`** — never
+commit a `.db` while a server holds it open (WAL).
+
+**Security.** Dev-only; binds **`127.0.0.1` (localhost) by default**, NOT `0.0.0.0`,
+so the unauthenticated admin/AI routes are not exposed on the LAN. Never deployed.
+
 ---
 
 ## 8. Admin & device settings

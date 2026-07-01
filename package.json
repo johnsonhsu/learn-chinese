@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "dev": "npm --workspace=platform run dev",
+    "dev:bank-admin": "npm --workspace=platform run dev:bank-admin",
     "build": "npm -w modules/writing-challenge run build:data && npm -w platform run build",
     "build:data": "npm -w modules/writing-challenge run build:data",
     "extract": "npm -w modules/writing-challenge run extract",

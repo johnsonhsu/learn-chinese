@@ -27,6 +27,7 @@ progress lives entirely on-device in IndexedDB.
 
 ```bash
 npm run dev                  # Express + Vite dev server on :3000 (admin/curation + client)
+npm run dev:bank-admin       # STANDALONE Sentence Bank admin, own port (BANK_ADMIN_PORT, default 3100), localhost-only — survives :3000 restarts (issue #49)
 npm test                     # all Vitest
 npm run test:unit            # fast units (shared/ + platform/src)
 npm run test:data            # data-integrity gate (run AFTER a bake)

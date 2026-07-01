@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch server/index.ts",
+    "dev:bank-admin": "tsx watch server/bank-admin.ts",
     "bake:data": "tsx scripts/bake-data.ts",
     "build": "tsx scripts/bake-data.ts && vite build",
     "typecheck": "tsc -b",
