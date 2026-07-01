@@ -7,7 +7,7 @@
 A **module** is a self-contained learning activity that the platform discovers,
 lists on the home screen, and mounts. Modules share the platform's profiles,
 language, UI kit, and on-device data layer; they don't manage any of that
-themselves. This doc covers the five existing modules, the module contract, and
+themselves. This doc covers the six existing modules, the module contract, and
 how to add a new one.
 
 See also: [../ARCHITECTURE.md](../ARCHITECTURE.md) (the module system end-to-end)
@@ -15,7 +15,7 @@ and [../platform/src/ui/README.md](../platform/src/ui/README.md) (the UI kit).
 
 ---
 
-## The five existing modules
+## The six existing modules
 
 ### writing-challenge (✍️) — `modules/writing-challenge/`
 The flagship. Stroke-by-stroke handwriting practice on bank sentences, driven by
@@ -72,6 +72,22 @@ with a tap-to-practice drill.
 - Reads on-device char stats + rankings via `useOffline()` (`@platform/offline`)
   and scores them with the shared mastery engine (`@shared/character-stats/mastery`).
 - No shipped DB, no server routes — pure consumer of on-device progress.
+
+### reading-chinese (📖) — `modules/reading-chinese/`
+Reading-comprehension practice. Mirrors writing-challenge's flow (English prompt +
+audio + the in-order sentence) but REPLACES the HanziWriter writing pad with a
+shuffled pool of tappable char tiles: reconstruct the sentence by tapping its
+characters in order. **No HanziWriter/WritingCanvas is used at all.**
+- `src/App.tsx` — landing (`<ModuleScreen>` + `<Button>` + `<CharTile>`) ↔ the
+  tap-to-reconstruct `src/pages/ReadingPage.tsx`.
+- Reuses the BINDING `generateNextSentence` engine and the `NextSentenceResponse`
+  shape via `useOffline()`'s reading-track methods (no second bank).
+- The pure tile-pool / auto-skip-filter / tap state-machine lives in
+  `@shared/character-stats/reading` (unit-tested in the engine tier).
+- **Separate reading skill track:** records into the offline layer's reading
+  stats (`character_stats_reading` / IndexedDB `profileStatsReading`), which never
+  touch the writing `character_stats`. Reading level/targets/mastery are computed
+  from that slice by the same pure engine. No shipped DB, no server routes.
 
 ---
 
@@ -159,7 +175,7 @@ the same portable helper your dev route uses, as copybook does (see
 The platform only lists modules in the allow-set in `platform/src/App.tsx`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
 ```
 
 Add your module's `name` here once it works fully on-device.

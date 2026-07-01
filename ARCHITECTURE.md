@@ -58,7 +58,8 @@ learning-chinese/
     ├── word-sets/              vocabulary categories
     ├── practice-english/       English cloze spelling game
     ├── copybook/               bring-your-own-text verbatim writing + Gemini gen
-    └── my-characters/          per-character progress dashboard (stats table + tile grid)
+    ├── my-characters/          per-character progress dashboard (stats table + tile grid)
+    └── reading-chinese/        reading comprehension: tap chars in order to rebuild a sentence
 ```
 
 Each module is its own workspace with `module.json`, `src/` (front-end), and
@@ -111,8 +112,9 @@ Each module ships a manifest, e.g. `modules/writing-challenge/module.json`:
 | `dbFile`        | (optional) the module's own SQLite file, baked for offline use |
 | `order`         | sort order on the home screen                                  |
 
-`practice-english`, `copybook`, and `my-characters` omit `dbFile` (they read the
-shared bank / on-device progress and have no shipped DB of their own).
+`practice-english`, `copybook`, `my-characters`, and `reading-chinese` omit
+`dbFile` (they read the shared bank / on-device progress and have no shipped DB of
+their own).
 
 ### Front-end auto-discovery (`platform/src/App.tsx`)
 
@@ -129,7 +131,7 @@ const manifestModules = import.meta.glob('../../modules/*/module.json', { eager:
 Manifests are filtered against an explicit allow-set and sorted by `order`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
 ```
 
 Only modules in this set appear on the home screen. It's an inclusion list of
@@ -224,6 +226,29 @@ the runtime. On `initialize()` it:
 
 `OfflineProvider` / `useOffline` (`offline-context.tsx`) wrap this and expose it
 to the whole app, rendering nothing until `isReady`.
+
+#### Per-character SKILL tracks — writing vs reading (issue #65)
+
+Character progress is tracked **per skill**, not globally. Reading comprehension
+is a distinct competency from writing — a learner can recognize a character
+without being able to write it — so the two record into **separate stat tracks**
+that never cross-contaminate:
+
+- **Writing** (the historical default) → SQLite `character_stats` + IndexedDB
+  store `profileStats`.
+- **Reading** (the `reading-chinese` module) → SQLite `character_stats_reading` +
+  IndexedDB store `profileStatsReading`.
+
+The data layer threads a `skill` through its stat plumbing: `getNextReadingSentence`
+/ `submitReadingResult` / `getReadingDebugInfo` mirror the writing methods but read
+and write only the reading table/store. On profile switch both tracks are replayed
+into their own in-memory tables. The **pure engine is unchanged** — `computeUserLevel`,
+`getTargetChars`, and `computeMastery` are `CharStat[]`-in, so each skill just feeds
+them its own slice; `char-ranker` is frequency-based and shared. The IndexedDB
+`profileStatsReading` store was added as a purely **additive** `USER_DB_VERSION`
+bump (2 → 3) — no risky re-keying of existing writing progress. The tap-to-
+reconstruct pool/shuffle/tap logic itself is pure and lives in
+`@shared/character-stats/reading`.
 
 ### Stroke rendering — `WritingCanvas` + hanzi-writer (do NOT remount per char)
 
@@ -351,8 +376,9 @@ automatically as the first half of `build`) produces the shipped content:
    `writing-challenge.db`, `word-sets.db`) it uses better-sqlite3's online
    `backup()` API (so WAL content is included and the snapshot is consistent even
    while the dev server is running) into `public/data/<name>.db`.
-2. **Scrub the platform snapshot** — deletes `character_stats`, `users`, and
-   `user_settings`, then `VACUUM`s, so the deployed app ships **content only**,
+2. **Scrub the platform snapshot** — deletes `character_stats`,
+   `character_stats_reading` (the reading skill track, §on skill tracks), `users`,
+   and `user_settings`, then `VACUUM`s, so the deployed app ships **content only**,
    never anyone's progress.
 3. **Strip content from the writing-challenge snapshot** — drops
    `bank_sentences`, `char_words`, and `tocfl_words` then `VACUUM`s, because that

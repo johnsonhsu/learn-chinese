@@ -7,6 +7,14 @@
  *  - profileStats: character_stats rows, keyed by [profileId, character]
  *  - prefs:        global key/value (theme, language, migration flags)
  *  - charStats:    LEGACY v1 single-profile store, kept read-only for migration
+ *
+ * Reading skill track (v3 — issue #65):
+ *  - profileStatsReading: the READING-skill parallel of profileStats, same
+ *    [profileId, character] key. Reading comprehension is a distinct competency
+ *    from writing; keeping it in its OWN store means a reading session can NEVER
+ *    mutate a writing (profileStats) row and vice-versa. The v2→v3 upgrade is
+ *    purely ADDITIVE (create the new empty store) — the existing profileStats
+ *    key is untouched, so no risky re-keying migration of existing progress.
  */
 
 // Demo mode uses a SEPARATE IndexedDB so preset demo data and any eviction/reseed
@@ -17,11 +25,25 @@
 // are NOT demo, so they keep the real `learning-chinese-user` jar.
 import { isDemoMode } from './demo-mode.js';
 const USER_DB_NAME = isDemoMode() ? 'learning-chinese-user-demo' : 'learning-chinese-user';
-const USER_DB_VERSION = 2;
+// v3 (issue #65): additive — adds the reading-skill profileStatsReading store.
+const USER_DB_VERSION = 3;
 const LEGACY_STATS_STORE = 'charStats';
 const PROFILE_STATS_STORE = 'profileStats';
+const PROFILE_STATS_READING_STORE = 'profileStatsReading';
 const PROFILES_STORE = 'profiles';
 const PREFS_STORE = 'prefs';
+
+/** Per-character skill track. Writing is the historical default; reading is the
+ *  new parallel track (issue #65). Each maps to its OWN IndexedDB store, so the
+ *  two never share a row. */
+export type Skill = 'writing' | 'reading';
+
+/** IndexedDB object store backing a given skill's per-profile character stats.
+ *  Exported so the isolation guarantee (writing ↔ reading use DISJOINT stores)
+ *  is unit-testable without a live IndexedDB (issue #65). */
+export function statsStoreFor(skill: Skill): string {
+  return skill === 'reading' ? PROFILE_STATS_READING_STORE : PROFILE_STATS_STORE;
+}
 
 /** A raw character_stats row (snake_case, mirrors the SQLite schema). */
 export type CharStatRecord = Record<string, unknown> & { character: string };
@@ -49,6 +71,13 @@ function openUserDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains(PROFILE_STATS_STORE)) {
         const s = db.createObjectStore(PROFILE_STATS_STORE, { keyPath: ['profileId', 'character'] });
+        s.createIndex('profileId', 'profileId', { unique: false });
+      }
+      // v3 (issue #65): ADDITIVE reading-skill store. Existing devices upgrading
+      // 2→3 gain an empty profileStatsReading (a fresh reading track starting empty
+      // is acceptable for v1); the writing profileStats store is left untouched.
+      if (!db.objectStoreNames.contains(PROFILE_STATS_READING_STORE)) {
+        const s = db.createObjectStore(PROFILE_STATS_READING_STORE, { keyPath: ['profileId', 'character'] });
         s.createIndex('profileId', 'profileId', { unique: false });
       }
       // Legacy 'charStats' (v1) is intentionally left intact for migration.
@@ -109,38 +138,43 @@ export async function createProfile(name: string): Promise<Profile> {
 export async function deleteProfile(id: number): Promise<void> {
   const db = await openUserDb();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction([PROFILES_STORE, PROFILE_STATS_STORE], 'readwrite');
+    // Deleting a profile must clear BOTH skill tracks (writing + reading).
+    const tx = db.transaction([PROFILES_STORE, PROFILE_STATS_STORE, PROFILE_STATS_READING_STORE], 'readwrite');
     tx.objectStore(PROFILES_STORE).delete(id);
-    // Delete that profile's stats via the profileId index.
-    const idx = tx.objectStore(PROFILE_STATS_STORE).index('profileId');
-    const cur = idx.openCursor(IDBKeyRange.only(id));
-    cur.onsuccess = () => {
-      const c = cur.result;
-      if (c) { c.delete(); c.continue(); }
-    };
+    // Delete that profile's stats via the profileId index, in each skill store.
+    for (const storeName of [PROFILE_STATS_STORE, PROFILE_STATS_READING_STORE]) {
+      const idx = tx.objectStore(storeName).index('profileId');
+      const cur = idx.openCursor(IDBKeyRange.only(id));
+      cur.onsuccess = () => {
+        const c = cur.result;
+        if (c) { c.delete(); c.continue(); }
+      };
+    }
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
   });
 }
 
-// --- Per-profile character stats ---
+// --- Per-profile character stats (skill-scoped; writing is the default) ---
 
-export async function getProfileCharStats(profileId: number): Promise<CharStatRecord[]> {
+export async function getProfileCharStats(profileId: number, skill: Skill = 'writing'): Promise<CharStatRecord[]> {
   const db = await openUserDb();
+  const storeName = statsStoreFor(skill);
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(PROFILE_STATS_STORE, 'readonly');
-    const idx = tx.objectStore(PROFILE_STATS_STORE).index('profileId');
+    const tx = db.transaction(storeName, 'readonly');
+    const idx = tx.objectStore(storeName).index('profileId');
     const req = idx.getAll(IDBKeyRange.only(profileId));
     req.onsuccess = () => resolve(req.result as CharStatRecord[]);
     req.onerror = () => reject(req.error);
   });
 }
 
-export async function countProfileCharStats(profileId: number): Promise<number> {
+export async function countProfileCharStats(profileId: number, skill: Skill = 'writing'): Promise<number> {
   const db = await openUserDb();
+  const storeName = statsStoreFor(skill);
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(PROFILE_STATS_STORE, 'readonly');
-    const idx = tx.objectStore(PROFILE_STATS_STORE).index('profileId');
+    const tx = db.transaction(storeName, 'readonly');
+    const idx = tx.objectStore(storeName).index('profileId');
     const req = idx.count(IDBKeyRange.only(profileId));
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -148,12 +182,13 @@ export async function countProfileCharStats(profileId: number): Promise<number> 
 }
 
 /** Upsert character records for a profile (profileId is stamped onto each). */
-export async function putProfileCharStats(profileId: number, records: CharStatRecord[]): Promise<void> {
+export async function putProfileCharStats(profileId: number, records: CharStatRecord[], skill: Skill = 'writing'): Promise<void> {
   if (records.length === 0) return;
   const db = await openUserDb();
+  const storeName = statsStoreFor(skill);
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(PROFILE_STATS_STORE, 'readwrite');
-    const store = tx.objectStore(PROFILE_STATS_STORE);
+    const tx = db.transaction(storeName, 'readwrite');
+    const store = tx.objectStore(storeName);
     for (const r of records) store.put({ ...r, profileId });
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);

@@ -5,7 +5,7 @@
 
 import { initSqlite, openDatabase, sqlJsProvider, type SqlJsDatabase } from './sql-db.js';
 import { loadDb, downloadAndStoreDb, getContentVersion, setContentVersion, type DownloadProgress } from './db-store.js';
-import { listProfiles, putProfile, createProfile, deleteProfile, getProfileCharStats, putProfileCharStats, countProfileCharStats, getLegacyCharStats, getPref, setPref, deletePref, listPrefKeys, type CharStatRecord } from './user-store.js';
+import { listProfiles, putProfile, createProfile, deleteProfile, getProfileCharStats, putProfileCharStats, countProfileCharStats, getLegacyCharStats, getPref, setPref, deletePref, listPrefKeys, type CharStatRecord, type Skill } from './user-store.js';
 import { loadStrokeData } from './stroke-data.js';
 import { getRankedChars } from '@shared/character-stats/char-ranker';
 import { getTargetChars, computeUserLevel } from '@shared/character-stats/char-knowledge';
@@ -123,8 +123,9 @@ export class OfflineDataLayer {
   private wordSetsProvider: DbQueryProvider | null = null;
   private rankedCharsCache: RankedChar[] | null = null;
   /** Recently-shown practice sentence texts (most-recent last), so a reload/next
-   *  won't serve the same sentence back-to-back. Per-session/in-memory only. */
-  private recentSentences: string[] = [];
+   *  won't serve the same sentence back-to-back. Per-session/in-memory only, and
+   *  kept PER SKILL so reading + writing don't perturb each other's recent list. */
+  private recentSentences: Record<Skill, string[]> = { writing: [], reading: [] };
   private static readonly RECENT_SENTENCE_LIMIT = 3;
   /** Per-device lever overrides, layered over the shipped (Mac-baked) defaults. */
   private settingsOverrides: Record<string, string> = {};
@@ -228,23 +229,32 @@ export class OfflineDataLayer {
     return this.strokeReady ?? Promise.resolve(false);
   }
 
-  /** Overwrite the in-memory character_stats with the active profile's records. */
-  private async applyUserStats(): Promise<void> {
+  /** SQLite table backing a skill's per-user stats. Writing is the historical
+   *  default table; reading (issue #65) is the independent parallel track. */
+  private statsTableFor(skill: Skill): string {
+    return skill === 'reading' ? 'character_stats_reading' : 'character_stats';
+  }
+
+  /** Overwrite the in-memory stats table for `skill` with the active profile's
+   *  records. Called once per skill on profile switch, so reading + writing are
+   *  both replayed but into their own tables (never cross-contaminating). */
+  private async applyUserStats(skill: Skill = 'writing'): Promise<void> {
     if (!this.platformProvider) return;
-    const records = await getProfileCharStats(this.userId);
-    this.platformProvider.run('DELETE FROM character_stats WHERE user_id = ?', [this.userId]);
+    const table = this.statsTableFor(skill);
+    const records = await getProfileCharStats(this.userId, skill);
+    this.platformProvider.run(`DELETE FROM ${table} WHERE user_id = ?`, [this.userId]);
     for (const rec of records) {
       const row: Record<string, unknown> = { ...rec, user_id: this.userId };
-      delete row.profileId; // storage-only key, not a character_stats column
+      delete row.profileId; // storage-only key, not a stats column
       const cols = Object.keys(row);
       const placeholders = cols.map(() => '?').join(',');
       const values = cols.map((c) => row[c] ?? null);
       this.platformProvider.run(
-        `INSERT OR REPLACE INTO character_stats (${cols.join(',')}) VALUES (${placeholders})`,
+        `INSERT OR REPLACE INTO ${table} (${cols.join(',')}) VALUES (${placeholders})`,
         values,
       );
     }
-    this.rankedCharsCache = null;
+    if (skill === 'writing') this.rankedCharsCache = null;
   }
 
   get contentVersionId(): string | null {
@@ -293,7 +303,8 @@ export class OfflineDataLayer {
     this.rankedCharsCache = null;
     // Remember the last-used profile so the next boot auto-selects it.
     await setPref('lastProfileId', profileId);
-    await this.applyUserStats();
+    await this.applyUserStats('writing');
+    await this.applyUserStats('reading');
   }
 
   /**
@@ -348,10 +359,11 @@ export class OfflineDataLayer {
     return { ...this.getShippedSettings(), ...this.settingsOverrides };
   }
 
-  private getCharacterStats(): CharStat[] {
+  private getCharacterStats(skill: Skill = 'writing'): CharStat[] {
     if (!this.platformProvider) throw new Error('Not initialized');
+    const table = this.statsTableFor(skill);
     const rows = this.platformProvider.queryAll<CharStatRow>(
-      'SELECT * FROM character_stats WHERE user_id = ? ORDER BY last_seen DESC',
+      `SELECT * FROM ${table} WHERE user_id = ? ORDER BY last_seen DESC`,
       [this.userId],
     );
     return rows.map(rowToCharStat);
@@ -367,11 +379,21 @@ export class OfflineDataLayer {
   // --- Public API ---
 
   async getNextSentence(): Promise<NextSentenceResponse> {
+    return this.getNextSentenceForSkill('writing');
+  }
+
+  /**
+   * Produce the next practice sentence, with targets/level/mastery computed from
+   * the given SKILL's stat slice. Both writing and reading go through the SAME
+   * BINDING generator (cardinal rule #3) and the same NextSentenceResponse shape;
+   * only which stats feed the target/level machinery differs.
+   */
+  private async getNextSentenceForSkill(skill: Skill): Promise<NextSentenceResponse> {
     if (!this.platformProvider || !this.contentProvider) throw new Error('Not initialized');
 
     const settings = this.getSettings();
     const ranked = this.getRanked();
-    const stats = this.getCharacterStats();
+    const stats = this.getCharacterStats(skill);
 
     const targetResult = getTargetChars(ranked, stats, settings);
 
@@ -381,6 +403,7 @@ export class OfflineDataLayer {
       'SELECT sentence, english FROM bank_sentences',
     );
 
+    const recent = this.recentSentences[skill];
     const result = generateNextSentence({
       platformDb: this.platformProvider,
       contentDb: this.contentProvider,
@@ -396,15 +419,15 @@ export class OfflineDataLayer {
       bankSentences,
       // Avoid repeating the last few sentences back-to-back on reload/next. The
       // generator falls back to a repeat if exclusion leaves no candidate.
-      excludeSentences: this.recentSentences,
+      excludeSentences: recent,
     });
 
     if (!result) throw new Error('No sentences available');
 
     // Remember this sentence so the next pick avoids it (bounded recent history).
-    this.recentSentences.push(result.text);
-    if (this.recentSentences.length > OfflineDataLayer.RECENT_SENTENCE_LIMIT) {
-      this.recentSentences.shift();
+    recent.push(result.text);
+    if (recent.length > OfflineDataLayer.RECENT_SENTENCE_LIMIT) {
+      recent.shift();
     }
 
     return {
@@ -434,8 +457,22 @@ export class OfflineDataLayer {
     _durationMs: number,
     charResults: CharAttemptResult[],
   ): Promise<SentenceResultResponse> {
+    return this.submitResultForSkill('writing', charResults);
+  }
+
+  /**
+   * Record a finished session's per-char attempts into the given skill's stats
+   * table + its IndexedDB store, then recompute the level FROM THAT SKILL'S SLICE.
+   * Writing and reading call this with their own table; because the table name is
+   * the only difference, a reading session provably never touches a writing row.
+   */
+  private async submitResultForSkill(
+    skill: Skill,
+    charResults: CharAttemptResult[],
+  ): Promise<SentenceResultResponse> {
     if (!this.platformProvider || !this.platformDb) throw new Error('Not initialized');
 
+    const table = this.statsTableFor(skill);
     const settings = this.getSettings();
     const now = new Date().toISOString();
 
@@ -450,7 +487,7 @@ export class OfflineDataLayer {
               : 'I';
 
       const existing = this.platformProvider.queryOne<CharStatRow>(
-        'SELECT * FROM character_stats WHERE user_id = ? AND character = ?',
+        `SELECT * FROM ${table} WHERE user_id = ? AND character = ?`,
         [this.userId, cr.char],
       );
 
@@ -491,7 +528,7 @@ export class OfflineDataLayer {
         const recentTrimmed = recent.split(',').slice(-10).join(',');
 
         this.platformProvider.run(
-          `UPDATE character_stats SET
+          `UPDATE ${table} SET
             times_seen = times_seen + 1,
             times_perfect = times_perfect + ?,
             times_correct = times_correct + ?,
@@ -530,7 +567,7 @@ export class OfflineDataLayer {
         );
       } else {
         this.platformProvider.run(
-          `INSERT INTO character_stats (
+          `INSERT INTO ${table} (
             user_id, character,
             times_seen, times_perfect, times_correct, times_incorrect, times_hint_used,
             streak_perfect, streak_correct, streak_incorrect,
@@ -566,25 +603,78 @@ export class OfflineDataLayer {
       }
     }
 
-    // Persist only the affected character_stats rows to the user store
+    // Persist only the affected rows to this skill's user store
     // (NOT the whole platform DB — that's shipped, read-only content).
     const chars = [...new Set(charResults.map((c) => c.char))];
     if (chars.length > 0) {
       const ph = chars.map(() => '?').join(',');
       const updated = this.platformProvider.queryAll<CharStatRow>(
-        `SELECT * FROM character_stats WHERE user_id = ? AND character IN (${ph})`,
+        `SELECT * FROM ${table} WHERE user_id = ? AND character IN (${ph})`,
         [this.userId, ...chars],
       );
-      await putProfileCharStats(this.userId, updated as unknown as CharStatRecord[]);
+      await putProfileCharStats(this.userId, updated as unknown as CharStatRecord[], skill);
     }
 
-    // Recompute user level
-    this.rankedCharsCache = null;
+    // Recompute the level FROM THIS SKILL'S SLICE (the frequency ranker is
+    // skill-agnostic, so it's shared; only the stats slice differs).
+    if (skill === 'writing') this.rankedCharsCache = null;
     const ranked = this.getRanked();
-    const stats = this.getCharacterStats();
+    const stats = this.getCharacterStats(skill);
     const { level, knownInLevel, totalInLevel } = computeUserLevel(ranked, stats, settings);
 
     return { level, knownInLevel, totalInLevel };
+  }
+
+  // --- Reading skill (issue #65) — its OWN provide/submit so the reading module
+  //     never routes through the writing submitResult. Both reuse the shared
+  //     BINDING generator + engine; they differ only in which stat slice feeds
+  //     targets/level (writing = character_stats, reading = character_stats_reading).
+
+  /** Next reading sentence — same shape + BINDING guarantee as getNextSentence. */
+  async getNextReadingSentence(): Promise<NextSentenceResponse> {
+    return this.getNextSentenceForSkill('reading');
+  }
+
+  /** Record a finished reading session — writes ONLY the reading track. */
+  async submitReadingResult(
+    _sentenceId: number,
+    _durationMs: number,
+    charResults: CharAttemptResult[],
+  ): Promise<SentenceResultResponse> {
+    return this.submitResultForSkill('reading', charResults);
+  }
+
+  /** The active profile's reading-skill char stats (for the reading landing). */
+  getReadingCharacterStatsList(): CharStat[] {
+    return this.getCharacterStats('reading');
+  }
+
+  /** Reading-track level/fluency/targets — mirrors getDebugInfo, reading slice. */
+  getReadingDebugInfo(): {
+    level: number;
+    knownInLevel: number;
+    totalInLevel: number;
+    fluency: number;
+    totalKnown: number;
+    totalRanked: number;
+    targetChars: string[];
+    charMastery: Record<string, number>;
+  } | null {
+    if (!this.platformProvider) return null;
+    const settings = this.getSettings();
+    const ranked = this.getRanked();
+    const stats = this.getCharacterStats('reading');
+    const { level, knownInLevel, totalInLevel, fluency, totalKnown, totalRanked } =
+      computeUserLevel(ranked, stats, settings);
+    const { chars: targetChars } = getTargetChars(ranked, stats, settings);
+
+    const cfg = masteryConfigFromSettings(settings);
+    const charMastery: Record<string, number> = {};
+    for (const c of targetChars) {
+      const stat = stats.find((s) => s.character === c);
+      charMastery[c] = stat ? computeMastery(stat, cfg) : 0;
+    }
+    return { level, knownInLevel, totalInLevel, fluency, totalKnown, totalRanked, targetChars, charMastery };
   }
 
   // --- Public data accessors (replace server reads on the client) ---
@@ -1012,8 +1102,9 @@ export class OfflineDataLayer {
     this.contentProvider = sqlJsProvider(this.contentDb);
     this.rankedCharsCache = null;
     this.tocflCache = null;
-    // Re-apply user progress over the refreshed content.
-    await this.applyUserStats();
+    // Re-apply user progress over the refreshed content (both skill tracks).
+    await this.applyUserStats('writing');
+    await this.applyUserStats('reading');
     // Refresh the stroke bundle too (force re-download to the latest version).
     await loadStrokeData({ version: this.contentVersion, forceDownload: true });
   }

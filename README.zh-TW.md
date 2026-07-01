@@ -15,7 +15,7 @@
 
 ---
 
-## 功能說明 — 五個模組
+## 功能說明 — 六個模組
 
 主畫面是一個由各自獨立的學習活動組成的網格。你先選擇一個 profile（多位學習者可共用一台裝置），
 然後再選擇模組：
@@ -31,6 +31,9 @@
   Gemini **Generate（產生）** 一個全新的台灣繁體句子。
 - **My Characters**（📊 `my-characters`）— 你的個人進度儀表板：把你練過的每個字以統計表格與字塊
   網格呈現（熟練度／記憶分數、已會 vs 學習中），並可點擊直接練習。
+- **Reading Chinese**（📖 `reading-chinese`）— 閱讀理解練習：聽句子＋看英文意思，然後從該句子
+  自身字元組成的**打散**字塊池中，**依序**點選字來重組整個句子（沒有書寫板）。閱讀被視為與書寫
+  **各自獨立的每字技能**——你可以認得一個字卻還不會寫它——因此閱讀熟練度是獨立於書寫熟練度計算的。
 
 **適合對象：** 為了台灣而學習繁體中文的學習者（以及家庭／孩童），他們想要由個人實際所需驅動的
 專注手寫練習，並可在完全離線狀態下使用。
@@ -265,6 +268,6 @@ admin／策劃以及產生烘焙後的資料。
 |------|------|
 | `shared/` | `@shared/character-stats` — 排名、熟練度、「已知」、選字（純函式） |
 | `platform/` | PWA 外殼、離線資料層、UI kit、admin、bake／deploy、Pages Functions |
-| `modules/*` | 五個學習活動（見 [modules/README.zh-TW.md](./modules/README.zh-TW.md)） |
+| `modules/*` | 六個學習活動（見 [modules/README.zh-TW.md](./modules/README.zh-TW.md)） |
 | `ARCHITECTURE.md` / `architecture.zh-TW.md` | 技術架構（monorepo、模組系統、資料、部署） |
 | `platform/src/ui/README.md` | 共用 UI kit 參考文件 |

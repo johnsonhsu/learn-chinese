@@ -151,6 +151,47 @@ export function initDatabase() {
 
   db.exec(`CREATE INDEX IF NOT EXISTS idx_char_stats_user ON character_stats(user_id)`);
 
+  // --- Reading Stats (separate SKILL track — issue #65) ---
+  // Reading comprehension is a distinct competency from writing: a learner can
+  // recognize a char (reading) without being able to write it. Reading attempts
+  // record into THIS parallel table, keyed identically to character_stats, so the
+  // existing writing progress in character_stats is never touched. The pure
+  // engine (mastery/char-ranker/char-knowledge) consumes whichever slice it's fed.
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS character_stats_reading (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      character TEXT NOT NULL,
+      times_seen INTEGER DEFAULT 0,
+      times_perfect INTEGER DEFAULT 0,
+      times_correct INTEGER DEFAULT 0,
+      times_incorrect INTEGER DEFAULT 0,
+      times_hint_used INTEGER DEFAULT 0,
+      streak_perfect INTEGER DEFAULT 0,
+      streak_correct INTEGER DEFAULT 0,
+      streak_incorrect INTEGER DEFAULT 0,
+      best_streak_perfect INTEGER DEFAULT 0,
+      best_streak_correct INTEGER DEFAULT 0,
+      first_seen TEXT DEFAULT '',
+      last_seen TEXT DEFAULT '',
+      last_perfect TEXT DEFAULT '',
+      last_correct TEXT DEFAULT '',
+      last_incorrect TEXT DEFAULT '',
+      fastest_ms INTEGER DEFAULT 0,
+      slowest_ms INTEGER DEFAULT 0,
+      total_ms INTEGER DEFAULT 0,
+      last_result TEXT DEFAULT '',
+      last_failed_strokes INTEGER DEFAULT 0,
+      last_hint_used INTEGER DEFAULT 0,
+      first_result TEXT DEFAULT '',
+      recent_results TEXT DEFAULT '',
+      UNIQUE(user_id, character),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_char_stats_reading_user ON character_stats_reading(user_id)`);
+
   // Indexes for dictionary lookups
   db.exec(`CREATE INDEX IF NOT EXISTS idx_dict_chars_dict ON dict_chars(dictionary_id)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_dict_words_dict ON dict_words(dictionary_id)`);

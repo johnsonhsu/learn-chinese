@@ -1,0 +1,8 @@
+{
+  "name": "reading-chinese",
+  "displayName": "Reading Chinese",
+  "displayNameZh": "閱讀中文",
+  "icon": "📖",
+  "apiPrefix": "/api/reading-chinese",
+  "order": 6
+}

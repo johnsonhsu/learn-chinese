@@ -32,7 +32,9 @@ const specs: Spec[] = [
     working: join(repoRoot, 'platform', 'platform.db'),
     out: join(seedDir, 'platform.db'),
     scrub: (db) => {
-      for (const t of ['character_stats', 'users', 'user_settings']) {
+      // character_stats_reading (issue #65) is the reading skill track — scrub it
+      // alongside character_stats so the seed ships zero personal reading rows.
+      for (const t of ['character_stats', 'character_stats_reading', 'users', 'user_settings']) {
         try { db.exec(`DELETE FROM ${t};`); } catch { /* table absent */ }
       }
     },

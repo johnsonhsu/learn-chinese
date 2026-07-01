@@ -111,7 +111,9 @@ async function bake(): Promise<void> {
     // blank (existing devices keep their own progress in the IndexedDB store).
     if (name === 'platform') {
       const sdb = new Database(dest);
-      for (const tbl of ['character_stats', 'users', 'user_settings']) {
+      // character_stats_reading is the reading-skill track (issue #65) — same
+      // personal-data risk as character_stats, so scrub it too.
+      for (const tbl of ['character_stats', 'character_stats_reading', 'users', 'user_settings']) {
         try { sdb.exec(`DELETE FROM ${tbl};`); } catch { /* table absent — skip */ }
       }
       sdb.exec('VACUUM;');

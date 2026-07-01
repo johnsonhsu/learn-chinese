@@ -11,6 +11,7 @@
     "./char-ranker": "./src/char-ranker.ts",
     "./char-knowledge": "./src/char-knowledge.ts",
     "./sentence-generator": "./src/sentence-generator.ts",
+    "./reading": "./src/reading.ts",
     "./content-db": "./src/content-db.ts"
   },
   "dependencies": {
