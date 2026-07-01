@@ -1,38 +1,23 @@
 import { useEffect } from 'react';
 
 const PORTRAIT_CLASS = 'lock-portrait';
-const OVERLAY_ID = 'rotate-overlay';
 
 export function useOrientationLock(orientationLock: '0' | '1' | undefined) {
   useEffect(() => {
-    const enabled = orientationLock === '1';
     const root = document.documentElement;
-    if (enabled) root.classList.add(PORTRAIT_CLASS); else root.classList.remove(PORTRAIT_CLASS);
+    if (orientationLock === '1') root.classList.add(PORTRAIT_CLASS);
+    else root.classList.remove(PORTRAIT_CLASS);
 
-    if (!enabled) return cleanup();
-    let node: HTMLDivElement | null = null;
-    if (!document.getElementById(OVERLAY_ID)) {
-      node = document.createElement('div');
-      node.id = OVERLAY_ID;
-      node.className = 'rotate-overlay';
-      node.innerHTML = '<div><p>🔁 Please rotate back to portrait to continue.</p><button id="rotate-overlay-dismiss" class="rotate-overlay__dismiss">Disable portrait lock</button></div>';
-      document.body.appendChild(node);
-
-      const btn = node.querySelector<HTMLButtonElement>('#rotate-overlay-dismiss');
-      if (btn) {
-        btn.addEventListener('click', () => {
-          try {
-            if (typeof (window as any).__setPortraitLock === 'function') (window as any).__setPortraitLock('0');
-          } catch {}
-        });
-      }
-    }
     const safeScreen = screen as unknown as { orientation?: { lock: (o: string) => Promise<void>; unlock: () => void } };
-    return cleanup;
-    function cleanup() {
-      if (node && node.parentNode) node.parentNode.removeChild(node);
-      node = null;
-      if (safeScreen?.orientation?.unlock) safeScreen.orientation.unlock();
+    if (orientationLock !== '1') {
+      try { safeScreen?.orientation?.unlock?.(); } catch {}
+      return;
     }
+    if (safeScreen?.orientation?.lock) {
+      safeScreen.orientation.lock('portrait').catch(() => {});
+    }
+    return () => {
+      try { safeScreen?.orientation?.unlock?.(); } catch {}
+    };
   }, [orientationLock]);
 }
