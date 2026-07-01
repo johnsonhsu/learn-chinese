@@ -105,6 +105,9 @@ body[data-theme="retro"] {
   /* Typography */
   --font-display: "VT323", "Share Tech Mono", monospace;
   --text-weight: 400;
+
+  /* On-ground text on retro teal pavement; scoped selectors below. */
+  --paper-text: #f5fbfa;
 }
 
 /* ── (B) Styled application: Win95-inspired retro chrome ────────────── */
@@ -329,4 +332,17 @@ body[data-theme="retro"] .sp-canvas-frame {
   border-bottom: 2px solid #141414;
   border-left: 2px solid #ffffff;
   box-shadow: inset 1px 1px 0 #5a5a5a;
+}
+
+/* Scoped on-ground text fixes for teal pavement */
+body[data-theme="retro"] .loading {
+  color: var(--paper-text);
+}
+
+body[data-theme="retro"] .welcome > p {
+  color: var(--paper-text);
+}
+
+body[data-theme="retro"] .icon-btn {
+  color: var(--paper-text);
 }
