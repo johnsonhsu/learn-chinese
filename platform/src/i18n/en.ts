@@ -230,5 +230,54 @@ export default {
   "feedback.cancel": "Cancel",
   "feedback.thanks": "Thanks! Your feedback was sent.",
   "feedback.failed": "Couldn’t send — check your connection and try again.",
-  "feedback.offline": "You’re offline — feedback needs a connection to send.",
+  "feedback.offline": "You're offline — feedback needs a connection to send.",
+
+  // Styleguide inspector (dev-only ?ui page).
+  "styleguide.switchToZh": "切換為中文",
+  "styleguide.switchToEn": "Switch to English",
+  "styleguide.themeLabel": "Theme",
+  "styleguide.themeNote": "Preview only — your saved theme is unchanged",
+  "styleguide.title": "UI Components",
+  "styleguide.subtitle":
+    "Living gallery of <code>platform/src/ui</code> + the canonical <code>:root</code> tokens — rendered, not documented. Flip the theme above to inspect every surface.",
+  "styleguide.section.button.title": "Button",
+  "styleguide.section.button.desc":
+    "The 3D candy button. Three variants share one base; the chunky bottom box-shadow is the pressable lip — :active sinks the face onto it. Hover-lift is pointer-only; reduced-motion neutralizes transforms.",
+  "styleguide.section.textInput.title": "Text input",
+  "styleguide.section.textInput.desc":
+    "Typed text and the input fill must always move together with the theme — both read theme tokens (background: var(--bg-input); color: var(--text)). The onboarding/welcome name + age fields use .welcome-popup-input; the profile-switcher 'new profile' field is .user-create input; the Settings display-name + Gemini-key fields are .settings-name-row input; the shared kit uses .fb-* (.fb-select/.fb-textarea). Type here and switch themes: text stays legible on every theme (Paper white, Indigo navy, gold/silver dark) — no light-on-light or dark-on-dark. This specimen exists so the #38 invisibility class of bug is catchable from the inspector — the first pass missed .user-create/.settings-name-row because a later hardcoded background:#fff rule overrode their token fill.",
+  "styleguide.section.charTile.title": "Character tile (CharTile)",
+  "styleguide.section.charTile.desc":
+    "The ONE shared per-character tile. On the My Characters screen it intensifies — gold/silver faces, filled level badge, brighter glyph — while off it (Next-up, word-set chips) it stays quieter. Use the Screen toggle to compare; both match the device. Recent-result dots, in order: P perfect · C correct · I incorrect · S skipped.",
+  "styleguide.section.charTile.screenMyCharacters": "My Characters",
+  "styleguide.section.charTile.screenOther": "Next-up / chips",
+  "styleguide.section.writingTrack.title": "Writing-challenge character track",
+  "styleguide.section.writingTrack.desc":
+    "The sentence shown as a scroll of SEMANTIC state pills — current, upcoming, done, above-level / auto-skip, user-skipped. Rendered with the writing-challenge module's REAL stylesheet (imported), so what you see here is exactly what the live module renders under each theme.",
+  "styleguide.section.card.title": "Card",
+  "styleguide.section.card.desc":
+    "The shared cream candy panel (the .module-tile look) for use OUTSIDE a full ModuleScreen.",
+  "styleguide.section.backButton.title": "BackButton",
+  "styleguide.section.backButton.desc":
+    "The shared back pill (.module-back) as a standalone primitive. ModuleScreen renders the same pill internally when given onBack.",
+  "styleguide.section.moduleScreen.title": "ModuleScreen",
+  "styleguide.section.moduleScreen.desc":
+    "The standard module MAIN-screen shell: optional back pill + shared card + title, then children. Shown here at reduced scale inside framed stages.",
+  "styleguide.section.colorTokens.title": "Color tokens",
+  "styleguide.section.colorTokens.desc":
+    "Canonical :root custom properties from index.css. Each swatch is painted with its live var(), so it always matches the SELECTED theme above.",
+  "styleguide.section.semanticColors.title": "Semantic & state colors",
+  "styleguide.section.semanticColors.desc":
+    "The tokens the writing-challenge char track + tiles actually read. The track is built from the ink / paper / seal palette — so a theme that remaps those (e.g. Midnight) re-skins every state automatically. Compare across themes to see each state's resolved color.",
+  "styleguide.section.screenBackgrounds.title": "Per-screen backgrounds",
+  "styleguide.section.screenBackgrounds.desc":
+    "Each app screen sets a --screen-bg / --screen-bg-dark pair (declared on the .screen-* classes). The chips below ARE those classes, so they render the real backdrop.",
+  "styleguide.section.surfaces.title": "Surface classes",
+  "styleguide.section.surfaces.desc":
+    "The shared chrome classes used across screens, rendered as their real selectors.",
+  "styleguide.section.typography.title": "Typography",
+  "styleguide.section.typography.desc":
+    "Display vs body share one canonical family: --font (with --font-display as its alias). Sizes below mirror the real kit/title scale.",
+  "styleguide.footer":
+    "Source: <code>platform/src/ui</code> · tokens: <code>platform/src/index.css :root</code> · char track: <code>modules/writing-challenge/src/App.css</code>",
 } as const;
