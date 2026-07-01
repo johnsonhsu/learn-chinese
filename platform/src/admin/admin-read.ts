@@ -30,7 +30,7 @@ import type { OfflineDataLayer } from '../offline/offline-data-layer.ts';
 export type AdminReadMode = 'dev' | 'device';
 
 /** A reader with the same call signature panels already used for `/api` reads. */
-export type AdminRead = <T>(path: string) => Promise<T>;
+export type AdminRead = <T>(_path: string) => Promise<T>;
 
 /**
  * The DEV `/api` fetch, preserved exactly as the panels had it inline — including

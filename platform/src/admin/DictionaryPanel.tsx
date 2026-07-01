@@ -15,17 +15,7 @@ interface CharEntry {
   id: number;
   character: string;
   strokeCount: number;
-  [key: string]: any; // metadata fields
-}
-
-interface WordEntry {
-  id: number;
-  word: string;
-  definition: string;
-  grammar: string;
-  level: string;
-  zhuyin: string;
-  pinyin: string;
+  [key: string]: unknown; // metadata fields
 }
 
 interface CharDetail {
@@ -51,7 +41,7 @@ function CharPreview({ character }: { character: string }) {
       const borderColor = styles.getPropertyValue('--border').trim() || '#333';
       const textColor = styles.getPropertyValue('--text').trim() || '#ddd';
 
-      const charDataLoader = (char: string, onLoad: (data: any) => void) => {
+      const charDataLoader = (char: string, onLoad: (data: any) => void) => {  
         fetch(`/stroke-data/${encodeURIComponent(char)}.json`)
           .then(r => r.ok ? r.json() : fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/${encodeURIComponent(char)}.json`).then(r2 => r2.json()))
           .then(onLoad)

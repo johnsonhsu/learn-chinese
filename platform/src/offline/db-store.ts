@@ -70,7 +70,7 @@ export interface DownloadProgress {
 export async function downloadAndStoreDb(
   name: string,
   url: string,
-  onProgress?: (p: DownloadProgress) => void,
+  onProgress?: (_p: DownloadProgress) => void,
 ): Promise<Uint8Array> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to download DB: ${response.status}`);

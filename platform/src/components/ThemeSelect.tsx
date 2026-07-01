@@ -24,7 +24,7 @@ import { PREMIUM_FEATURE } from '../theme/themes.ts';
  */
 export function ThemeSelect({ value, onChange, scope, profileId, inheritLabel, refreshKey }: {
   value: string;
-  onChange: (themeId: string) => void;
+  onChange: (_themeId: string) => void;
   /** Documents which selector this is; both gate on the same device unlock. */
   scope: 'device' | 'profile';
   profileId?: number;

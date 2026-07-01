@@ -18,8 +18,8 @@ import { isDemoMode } from './offline/demo-mode.ts';
 
 export interface AppUpdate {
   needRefresh: boolean;
-  setNeedRefresh: (v: boolean) => void;
-  updateServiceWorker: (reloadPage?: boolean) => Promise<void>;
+  setNeedRefresh: (_v: boolean) => void;
+  updateServiceWorker: (_reloadPage?: boolean) => Promise<void>;
   /** Force the browser to re-check for a new SW; flips needRefresh if found. */
   checkForUpdate: () => void;
 }

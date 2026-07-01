@@ -25,7 +25,7 @@ interface Lever {
   def: string;
   control: Control;
   /** Optional derived/read-only note (e.g. the complementary level weight). */
-  derived?: (v: number) => L;
+  derived?: (_v: number) => L;
 }
 interface Group { id: string; title: L; levers: Lever[]; }
 

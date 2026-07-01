@@ -187,10 +187,12 @@ function AppInner() {
 
   // App-level escape hatch for the iOS portrait-lock fallback overlay.
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).__setPortraitLock = (val: '0' | '1') => {
       updateSettings({ orientationLock: val }).catch(() => {});
     };
     return () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       try { delete (window as any).__setPortraitLock; } catch {}
     };
   }, [updateSettings]);
@@ -523,7 +525,7 @@ function WelcomePage({ modules, user, arrangement, onSelectModule, onOpenSetting
   // Module-selection layout variant from the active theme (grid is the default
   // look; a theme may request 'list'). Drives a class on .module-list.
   arrangement: 'grid' | 'list';
-  onSelectModule: (name: string) => void;
+  onSelectModule: (_name: string) => void;
   onOpenSettings: () => void;
   onOpenCharStats: () => void;
   onSwitchProfile: () => void;
@@ -655,7 +657,7 @@ function isCharKnownClient(s: CharStat, settings: Record<string, string>): boole
 
 function AppSettings({ user, onUpdateDisplayName, onRetakePlacement, onBack, onThemeChange }: {
   user: User;
-  onUpdateDisplayName: (name: string) => Promise<void>;
+  onUpdateDisplayName: (_name: string) => Promise<void>;
   onRetakePlacement: () => void;
   onBack: () => void;
   // Bump the app-level effective-theme resolution after a per-profile override
@@ -800,7 +802,7 @@ function AppSettings({ user, onUpdateDisplayName, onRetakePlacement, onBack, onT
 
 function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin, onOpenLevers, onOpenEnglishVoice, onBack, deviceTheme, onSetDeviceTheme }: {
   settings: UserSettings;
-  onUpdateSettings: (patch: Partial<UserSettings>) => Promise<void>;
+  onUpdateSettings: (_patch: Partial<UserSettings>) => Promise<void>;
   onForceUpdate: () => Promise<void>;
   onOpenAdmin: () => void;
   onOpenLevers: () => void;
@@ -810,7 +812,7 @@ function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin
   // override). Free Default + code-gated Gold/Silver; the selector handles the
   // redeem flow inline.
   deviceTheme: string;
-  onSetDeviceTheme: (id: string) => void;
+  onSetDeviceTheme: (_id: string) => void;
 }) {
   const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);

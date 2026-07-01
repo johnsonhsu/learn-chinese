@@ -65,7 +65,7 @@ export async function exportBackup(): Promise<void> {
   const file = new File([json], filename, { type: 'application/json' });
 
   // Prefer the OS share sheet (Save to Files / iCloud, AirDrop, Mail…).
-  const nav = navigator as Navigator & { canShare?: (d: unknown) => boolean };
+  const nav = navigator as Navigator & { canShare?: (_d: unknown) => boolean };
   if (nav.share && nav.canShare && nav.canShare({ files: [file] })) {
     try {
       await nav.share({ files: [file], title: 'Learning Chinese backup' });

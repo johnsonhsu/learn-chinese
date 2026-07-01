@@ -12,7 +12,7 @@ interface Props {
   // --- Placement-test reuse seam (defaults preserve normal practice behaviour) ---
   // Fires the scored outcome (perfect/correct/incorrect) for one completed,
   // big-char-hidden attempt. The placement test reads this to drive its staircase.
-  onResult?: (result: 'perfect' | 'correct' | 'incorrect') => void;
+  onResult?: (_result: 'perfect' | 'correct' | 'incorrect') => void;
   // When false, the attempt is NOT written to stats — the placement test must not
   // pollute char history or trip needsPlacement() before it has finished.
   recordResults?: boolean;

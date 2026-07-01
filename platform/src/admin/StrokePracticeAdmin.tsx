@@ -3,7 +3,7 @@ import { SettingsGroup, InfoTip } from '../components/SettingsGroup.tsx';
 
 function WeightTriple({ recent, overall, streak, onChange }: {
   recent: number; overall: number; streak: number;
-  onChange: (r: number, o: number, s: number) => void;
+  onChange: (_r: number, _o: number, _s: number) => void;
 }) {
   const total = recent + overall + streak;
 

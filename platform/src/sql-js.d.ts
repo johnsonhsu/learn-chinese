@@ -10,8 +10,8 @@ declare module 'sql.js' {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export type Statement = any;
   export interface SqlJsStatic {
-    Database: new (data?: ArrayLike<number> | null) => Database;
+    Database: new (_data?: ArrayLike<number> | null) => Database;
   }
-  const initSqlJs: (config?: { locateFile?: (file: string) => string }) => Promise<SqlJsStatic>;
+  const initSqlJs: (_config?: { locateFile?: (_file: string) => string }) => Promise<SqlJsStatic>;
   export default initSqlJs;
 }
