@@ -33,6 +33,11 @@ export default {
   "user.switchUser": "切換使用者",
 
   "settings.title": "設定",
+  "settings.orientation": "畫面方向",
+  "settings.orientationLock": "鎖定直式",
+  "settings.orientationLockHint": "即使翻轉裝置，仍維持直式鎖定。",
+  "settings.orientationLock.rotateMessage": "🔁 請將裝置轉回直式繼續。",
+  "settings.orientationLock.dismissButton": "使用直式",
   "settings.displayName": "顯示名稱",
   "settings.language": "語言",
   "settings.languageHint": "選擇 App 的介面語言。",

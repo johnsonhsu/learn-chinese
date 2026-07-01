@@ -683,15 +683,17 @@ export class OfflineDataLayer {
     return this.localUser;
   }
 
-  async getSettingsPrefs(): Promise<{ language: 'zh-TW' | 'en'; theme: 'dark' | 'light' }> {
+  async getSettingsPrefs(): Promise<{ language: 'zh-TW' | 'en'; theme: 'dark' | 'light'; orientationLock: '0' | '1' }> {
     const language = (await getPref<string>('language')) as 'zh-TW' | 'en' | null;
     const theme = (await getPref<string>('theme')) as 'dark' | 'light' | null;
-    return { language: language || 'zh-TW', theme: theme || 'dark' };
+    const orientationLock = (await getPref<string>('orientationLock')) as '0' | '1' | null;
+    return { language: language || 'zh-TW', theme: theme || 'dark', orientationLock: orientationLock || '0' };
   }
 
-  async updateSettingsPrefs(patch: Partial<{ language: string; theme: string; displayName: string }>): Promise<void> {
+  async updateSettingsPrefs(patch: Partial<{ language: string; theme: string; displayName: string; orientationLock: string }>): Promise<void> {
     if (patch.language !== undefined) await setPref('language', patch.language);
     if (patch.theme !== undefined) await setPref('theme', patch.theme);
+    if (patch.orientationLock !== undefined) await setPref('orientationLock', patch.orientationLock);
     if (patch.displayName !== undefined) {
       await this.renameProfile(this.userId, patch.displayName);
     }

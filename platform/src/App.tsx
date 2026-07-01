@@ -1,4 +1,5 @@
 import { useState, useEffect, useContext, useCallback, useMemo, useRef, lazy, Suspense, type ComponentType } from 'react';
+import { useOrientationLock } from './hooks/useOrientationLock.ts';
 import { LanguageContext, useT } from './i18n/index.ts';
 import type { Language } from './i18n/index.ts';
 import { DebugProvider, useDebug } from './DebugOverlay.tsx';
@@ -49,6 +50,7 @@ interface User {
 interface UserSettings {
   language: Language;
   theme: 'dark' | 'light';
+  orientationLock?: '0' | '1';
 }
 
 interface ModuleProps {
@@ -183,6 +185,16 @@ function AppInner() {
   // home screen so a theme can re-arrange tiles without touching layout code.
   const arrangement = useMemo(() => getTheme(effectiveTheme).arrangement, [effectiveTheme]);
 
+  // App-level escape hatch for the iOS portrait-lock fallback overlay.
+  useEffect(() => {
+    (window as any).__setPortraitLock = (val: '0' | '1') => {
+      updateSettings({ orientationLock: val }).catch(() => {});
+    };
+    return () => {
+      try { delete (window as any).__setPortraitLock; } catch {}
+    };
+  }, [updateSettings]);
+
   // Single app-level SW registration; drives the "new version" banner + lets us
   // force a re-check on demand (see the navigation-keyed effect below).
   const { needRefresh, setNeedRefresh, updateServiceWorker, checkForUpdate } = useAppUpdate();
@@ -251,6 +263,8 @@ function AppInner() {
   useEffect(() => {
     applyThemeToBody(effectiveTheme);
   }, [effectiveTheme]);
+
+  useOrientationLock(settings.orientationLock, settings.language);
 
   // Check for a new app version every time the user LANDS on the profile-picker
   // or module-selection (home) screen. Keying the effect on `screen` means it
@@ -956,6 +970,17 @@ function DeviceSettings({ settings, onUpdateSettings, onForceUpdate, onOpenAdmin
           refreshKey={unlockBump}
           onChange={(id) => { setThemeValue(id); onSetDeviceTheme(id); }}
         />
+      </div>
+
+      <div className="settings-section">
+        <h3>{t('settings.orientation')}</h3>
+        <p className="settings-hint" style={{ marginTop: 0, marginBottom: 14 }}>{t('settings.orientationLockHint')}</p>
+        <button
+          className={`settings-option${settings.orientationLock === '1' ? ' active' : ''}`}
+          onClick={() => onUpdateSettings({ orientationLock: settings.orientationLock === '1' ? '0' : '1' })}
+        >
+          {t('settings.orientationLock')}
+        </button>
       </div>
 
       <div className="settings-section">

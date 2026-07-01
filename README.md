@@ -8,7 +8,9 @@ A **local-first, offline-capable PWA** for learning Traditional Chinese the way
 it's actually used in Taiwan (繁體中文 + zhuyin / bopomofo). Install it to your
 home screen and practice with no account, no server, and no network — all your
 progress lives on your device. Built as an npm-workspace monorepo and deployed as
-static assets to Cloudflare Pages.
+static assets to Cloudflare Pages. The installed app defaults to **portrait**, and
+Device Settings includes **Lock to portrait** for devices that keep rotating
+during practice.
 
 For the technical deep-dive see **[ARCHITECTURE.md](./ARCHITECTURE.md)**; for
 building modules see **[modules/README.md](./modules/README.md)**.
