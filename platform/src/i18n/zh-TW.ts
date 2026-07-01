@@ -42,6 +42,8 @@ export default {
   'settings.themeProfileHint': '只為這個使用者覆寫裝置主題。黃金與白銀為尊榮主題。',
   'settings.themeUseDevice': '使用裝置主題',
   'theme.default': '宣紙',
+  'theme.80s-motiv': '八零動力',
+  'theme.cyberblitz': '電腦突撃',
   'theme.indigo': '靛藍',
   'theme.gold': '黃金',
   'theme.silver': '白銀',

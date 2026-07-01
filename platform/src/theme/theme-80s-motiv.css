@@ -1,0 +1,251 @@
+/* ======================================================================
+   🏁 THEME — "80s Motiv" / 「八零動力」 (registry id: 80s-motiv)
+   ----------------------------------------------------------------------
+   A punchy 80s motivational-posters aesthetic. Deep noir ground with bold
+   ELECTRIC-SKY, SUNSET ORANGE and RUBY-RED accents. Think analog VHS,
+   Miami Vice sunsets,机房 oxide, and gymnasium banners — structured,
+   high-energy, and readable.
+   ====================================================================== */
+
+body[data-theme="80s-motiv"] {
+  /* ── (A) Contract tokens re-pointed → themes EVERYTHING ─────────────────── */
+
+  /* Midnight chroma ground */
+  --paper: #101018;
+  --paper-raised: #1A1A24;
+  --paper-sunken: #0A0A10;
+  --bg: var(--paper);
+  --bg-raised: #1A1A24;
+  --bg-raised-2: #13131C;
+  --bg-card: #1A1A24;
+  --bg-card2: #13131C;
+  --bg-input: #0A0A10;
+  --panel-bg: #1A1A24;
+
+  /* Electric ink — never pure white */
+  --ink: #ECF0FF;
+  --ink-soft: rgba(236, 240, 255, 0.72);
+  --ink-faint: rgba(236, 240, 255, 0.45);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules on dark chrome */
+  --rule: #2A2A38;
+  --rule-strong: #383850;
+  --border: #2A2A38;
+  --border-hover: #FF5E7A;
+  --panel-border: #2A2A38;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #383850;
+
+  /* Accent — ELECTRIC-SKY / SUNSET-ORANGE / RUBY-RED triad */
+  --seal: #64D2FF;
+  --seal-deep: #33AADD;
+  --seal-wash: rgba(100, 210, 255, 0.14);
+  --accent: #64D2FF;
+  --accent-bg: rgba(100, 210, 255, 0.14);
+  --accent-hover: #8ADDFF;
+  --screen-accent: #64D2FF;
+
+  /* Primary CTA face (the --gold token) → sunset orange punch */
+  --gold: #FF7A3D;
+  --gold-dark: #C75520;
+  --grad-primary: linear-gradient(135deg, #FF7A3D 0%, #FF5E7A 50%, #D9305A 100%);
+
+  /* Status — high-contrast neon signals */
+  --error: #FF5277;
+  --danger: #FF5277;
+  --red: #FF5277;
+  --red-dark: #C7365A;
+  --success: #7AE280;
+  --warning: #FFD166;
+
+  /* Module hues — neon but coherent family */
+  --teal: #40E8D0;
+  --teal-dark: #20B89A;
+  --pink: #FF7AFF;
+  --pink-dark: #C755C7;
+  --blue: #5EADFF;
+  --blue-dark: #3366CC;
+  --orange: #FFAA3D;
+  --orange-dark: #C78520;
+  --purple: #B48CFF;
+  --purple-dark: #7A52CC;
+  --green: #7AE280;
+  --green-dark: #4A9950;
+  --green-bright: #7AE280;
+  --green-bright-dark: #4A9950;
+
+  /* Depth — chrome shadows + neon focus */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-md: 0 18px 40px -24px rgba(0, 0, 0, 0.75);
+  --shadow-glow: 0 1px 0 #0A0A10, 0 14px 30px -20px rgba(0, 0, 0, 0.8), 0 0 24px rgba(100, 210, 255, 0.18);
+  --shadow-glow-success: 0 0 0 1px rgba(122, 226, 128, 0.35);
+
+  /* Typography — confident and tight */
+  --font-display: var(--font);
+  --text-weight: 600;
+}
+
+/* ── (B) Styled application: 80s Motiv ──────────────────────────────────────── */
+
+/* Full-field noir with an electric sunset halo */
+body[data-theme="80s-motiv"] {
+  font-weight: var(--text-weight, 500);
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(255, 122, 61, 0.10) 0%, transparent 55%),
+    radial-gradient(110% 60% at 50% 0%, rgba(100, 210, 255, 0.08) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Headings — electric ink with a hard sunset shadow */
+body[data-theme="80s-motiv"] .welcome-header h1,
+body[data-theme="80s-motiv"] .user-picker h1 {
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  text-shadow: 0 2px 0 #0A0A10, 0 0 18px rgba(255, 126, 61, 0.22);
+}
+
+/* ── MODULE TILES ──────────────────────────────────────────────────────────── */
+/* Chrome tiles with neon gradients + hard 80s lift. */
+body[data-theme="80s-motiv"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0)),
+    var(--bg-raised);
+  box-shadow: 0 6px 0 #0A0A10, 0 16px 30px -22px rgba(0, 0, 0, 0.9);
+}
+body[data-theme="80s-motiv"] .module-card--writing-challenge { box-shadow: inset 0 2px 0 var(--teal), 0 6px 0 #0A0A10, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+body[data-theme="80s-motiv"] .module-card--word-sets         { box-shadow: inset 0 2px 0 var(--pink), 0 6px 0 #0A0A10, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+body[data-theme="80s-motiv"] .module-card--practice-english  { box-shadow: inset 0 2px 0 var(--blue),  0 6px 0 #0A0A10, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+body[data-theme="80s-motiv"] .module-card--copybook          { box-shadow: inset 0 2px 0 var(--orange),0 6px 0 #0A0A10, 0 16px 30px -22px rgba(0, 0, 0, 0.9); }
+
+/* Icon disc — chrome with neon rule */
+body[data-theme="80s-motiv"] .module-card .module-icon {
+  background: #13131C;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+@media (hover: hover) {
+  body[data-theme="80s-motiv"] .module-card:hover {
+    border-color: var(--accent);
+    transform: translate(-3px, -3px);
+    box-shadow: 0 10px 0 #0A0A10, 0 22px 40px -22px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(100, 210, 255, 0.35);
+  }
+}
+
+/* Fluency banner — sunset chrome */
+body[data-theme="80s-motiv"] .welcome-level {
+  background: linear-gradient(135deg, #FF7A3D 0%, #D9305A 100%);
+  color: #101018;
+  border: 1px solid #FF9A6A;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 30px -18px rgba(0, 0, 0, 0.85);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Profile-picker add button */
+body[data-theme="80s-motiv"] .user-create button {
+  background: var(--grad-primary);
+  color: #101018;
+  box-shadow: 0 2px 0 var(--gold-dark);
+}
+
+/* ── BUTTONS (token contract) ──────────────────────────────────────────────── */
+/* Primary CTA = sunset orange → ruby; secondary = chrome glass electric rule. */
+body[data-theme="80s-motiv"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #101018;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  box-shadow: 0 2px 0 var(--gold-dark), 0 8px 20px -10px rgba(255, 122, 61, 0.45);
+}
+body[data-theme="80s-motiv"] .app-shell .app-shell .ui-btn--primary:active {
+  box-shadow: 0 1px 0 var(--gold-dark), 0 4px 14px -10px rgba(255, 122, 61, 0.5);
+}
+
+body[data-theme="80s-motiv"] .app-shell .ui-btn--secondary {
+  background: #1A1A24;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+@media (hover: hover) {
+  body[data-theme="80s-motiv"] .app-shell .ui-btn--secondary:hover:not(:disabled) {
+    border-color: var(--seal);
+    color: var(--ink);
+  }
+}
+
+/* ── SETTINGS ──────────────────────────────────────────────────────────────── */
+body[data-theme="80s-motiv"] .settings-section,
+body[data-theme="80s-motiv"] .placement-card,
+body[data-theme="80s-motiv"] .restore-modal {
+  background: #1A1A24;
+  border: 1px solid var(--rule);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 14px 30px -22px rgba(0, 0, 0, 0.85);
+}
+body[data-theme="80s-motiv"] .settings-option,
+body[data-theme="80s-motiv"] .lever-pill,
+body[data-theme="80s-motiv"] .lever-reset-all {
+  background: #13131C;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+}
+body[data-theme="80s-motiv"] .settings-option.active,
+body[data-theme="80s-motiv"] .lever-pill.active {
+  background: color-mix(in srgb, var(--accent) 18%, #101018);
+  border-color: var(--accent);
+  color: var(--ink);
+  text-shadow: none;
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="80s-motiv"] .app-shell .char-tile {
+  --ct-face: #1A1A24;
+  --ct-line: var(--rule);
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+}
+body[data-theme="80s-motiv"][data-screen="mychars"] .char-tile {
+  --ct-face: #13131C;
+  --ct-line: var(--rule-strong);
+  border: 1px solid var(--rule-strong);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.65);
+}
+body[data-theme="80s-motiv"][data-screen="mychars"] .char-tile--known {
+  border-color: color-mix(in srgb, var(--success) 55%, var(--rule-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.65),
+    0 0 16px color-mix(in srgb, var(--success) 28%, transparent);
+}
+body[data-theme="80s-motiv"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+body[data-theme="80s-motiv"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+body[data-theme="80s-motiv"][data-screen="mychars"] .char-tile-level {
+  color: #101018;
+  background: linear-gradient(135deg, #FF7A3D 0%, #FF5E7A 52%, #D9305A 100%);
+  border-color: #C7365A;
+  font-weight: 800;
+}
+@media (hover: hover) {
+  body[data-theme="80s-motiv"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: var(--accent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 8px 22px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(100, 210, 255, 0.35);
+  }
+}
