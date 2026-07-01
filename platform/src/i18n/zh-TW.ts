@@ -223,9 +223,7 @@ export default {
   "feedback.offline": "你目前離線 — 傳送意見需要網路連線。",
 
   // Styleguide inspector（僅開發線上的 ?ui 頁面）。
-  "styleguide.switchToZh": "切換為中文",
-  "styleguide.switchToEn": "English",
-  "styleguide.themeLabel": "佈景主題",
+  "styleguide.themeLabel": "主題",
   "styleguide.themeNote": "僅預覽 — 不會更改已儲存的佈景主題",
   "styleguide.title": "UI 元件",
   "styleguide.subtitle":

@@ -233,8 +233,6 @@ export default {
   "feedback.offline": "You're offline — feedback needs a connection to send.",
 
   // Styleguide inspector (dev-only ?ui page).
-  "styleguide.switchToZh": "切換為中文",
-  "styleguide.switchToEn": "Switch to English",
   "styleguide.themeLabel": "Theme",
   "styleguide.themeNote": "Preview only — your saved theme is unchanged",
   "styleguide.title": "UI Components",

@@ -3,8 +3,6 @@ import { t } from "../index";
 
 describe("platform i18n styleguide keys", () => {
   const keys = [
-    "styleguide.switchToZh",
-    "styleguide.switchToEn",
     "styleguide.themeLabel",
     "styleguide.themeNote",
     "styleguide.title",

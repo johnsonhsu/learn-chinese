@@ -179,6 +179,13 @@ export default function Styleguide() {
   const [lang, setLang] = useState<Language>(appLang);
   const tc = (key: StyleguideKey) => t(key, lang);
 
+  const switchLang = (next: Language) => {
+    setLang(next);
+    setDemoName(next === "en" ? "Ming" : "小明");
+    setDemoProfile(next === "en" ? "New user" : "新使用者");
+    setDemoSettingsName(next === "en" ? "Display name" : "顯示名稱");
+  };
+
   // Local toggle so the candy press/active states are observable on touch too.
   const [armed, setArmed] = useState(false);
 
@@ -208,15 +215,11 @@ export default function Styleguide() {
   }, []);
   const applyTheme = (id: string) => {
     setTheme(id);
-    // ROOT theme (Paper) is the no-attribute :root look; everything else sets it.
     if (id === ROOT_THEME_ID) document.body.removeAttribute("data-theme");
     else document.body.setAttribute("data-theme", id);
   };
 
   // CHAR-TILE SCREEN CONTEXT — char-tiles intensify (gold/silver faces, filled
-  // level badge, brighter glyph) ONLY on the My-Characters screen, because every
-  // theme gates that look behind `body[data-screen="mychars"]`. Off that screen
-  // (writing's Next-up, word-set chips) they use the quieter base look. Mirror
   // the real body attribute here so the specimens match the device exactly;
   // restore whatever it was on unmount.
   const [tileCtx, setTileCtx] = useState<"mychars" | "other">("mychars");
@@ -236,9 +239,9 @@ export default function Styleguide() {
     <LanguageContext.Provider value={lang}>
       <div className="app-shell screen-settings sg-page">
         <style>{styleguideCss}</style>
-
         {/* THEME / LANGUAGE SWITCHER — fixed dark chrome (does NOT itself re-theme, so it
             stays legible on every theme's backdrop). The specimens below DO. */}
+
         <div className="sg-themebar" role="group" aria-label={tc("styleguide.themeLabel")}>
           <span className="sg-themebar-title">{tc("styleguide.themeLabel")}</span>
           <div className="sg-themebar-btns">
@@ -258,24 +261,29 @@ export default function Styleguide() {
                 )}
               </button>
             ))}
-            <button
-              type="button"
-              className={`sg-lang-btn${lang === "en" ? " is-active" : ""}`}
-              aria-pressed={lang === "en"}
-              onClick={() => {
-                setLang((l) => {
-                  const next = l === "en" ? "zh-TW" : "en";
-                  setDemoName(next === "en" ? "Ming" : "小明");
-                  setDemoProfile(next === "en" ? "New user" : "新使用者");
-                  setDemoSettingsName(next === "en" ? "Display name" : "顯示名稱");
-                  return next;
-                });
-              }}
-            >
-              {lang === "en" ? tc("styleguide.switchToZh") : tc("styleguide.switchToEn")}
-            </button>
           </div>
           <span className="sg-themebar-note">{tc("styleguide.themeNote")}</span>
+        </div>
+
+        <div className="sgbar-right">
+          <div className="lp-langtoggle" role="group" aria-label="Language">
+            <button
+              type="button"
+              className={`lp-lang-btn${lang === "en" ? " active" : ""}`}
+              aria-pressed={lang === "en"}
+              onClick={() => switchLang("en")}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              className={`lp-lang-btn${lang === "zh-TW" ? " active" : ""}`}
+              aria-pressed={lang === "zh-TW"}
+              onClick={() => switchLang("zh-TW")}
+            >
+              中
+            </button>
+          </div>
         </div>
 
         <header className="sg-header">
@@ -832,6 +840,7 @@ const styleguideCss = `
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 10px 14px;
   margin: 0 -16px 22px;
   padding: 11px 16px;
@@ -870,6 +879,18 @@ const styleguideCss = `
   margin-left: auto;
 }
 @media (max-width: 600px) { .sg-themebar-note { display: none; } }
+
+.sgbar-right { display: flex; align-items: center; }
+.lp-langtoggle { display: flex; gap: 7px; }
+.lp-lang-btn {
+  font-family: var(--font); font-size: 13px; font-weight: 800; color: #fff;
+  cursor: pointer; padding: 6px 12px; border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.26);
+  background: rgba(255,255,255,0.08);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.lp-lang-btn:active { transform: translateY(1px); }
+.lp-lang-btn.active { background: #fff; color: #1a1d24; border-color: #fff; }
 
 .sg-header { margin: 8px 0 28px; }
 .sg-title {
