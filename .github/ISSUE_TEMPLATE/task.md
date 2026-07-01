@@ -6,9 +6,10 @@ labels: "status:triage"
 ---
 
 <!--
-This is the SPEC a future Claude session reads to do the work — and the basis for its PR.
-It is "Ready" (label status:ready) only when every section below is filled; until then it
-stays status:triage / status:needs-info. Also add a type label (bug / enhancement / content
+This is the SPEC a future session reads to do the work — and the basis for its PR.
+It is "Ready" (label status:ready) only when every section below is filled concretely
+enough for a cold, separate agent to execute near-mechanically; until then it stays
+status:triage / status:needs-info. Also add a type label (bug / enhancement / content
 / performance) and a priority (priority:p0–p2). gh issue create does NOT auto-apply this
 template — reproduce these sections in the body when filing from the CLI.
 -->
@@ -17,12 +18,12 @@ template — reproduce these sections in the body when filing from the CLI.
 <!-- The problem or desired outcome — NOT the solution. -->
 
 ## Acceptance criteria
-<!-- Testable checklist. The PR is done when all of these are true. -->
-- [ ]
-- [ ]
+<!-- Concrete checklist of outcomes to verify when the PR is done. Each item should be checkable without judgment calls; near-mechanical verification, not a restated goal. -->
+- [ ] Make it concrete
+- [ ] Make it actionable
 
 ## Affected area / files
-<!-- Concrete pointers: module, file, function. e.g. platform/src/theme/themes.ts -->
+<!-- Concrete pointers: file + line or symbol/function, plus the recommended approach or fix. Example: platform/src/offline/demo-mode.ts:42 isDemoDeviceGated() — bypass should evaluate DeviceEnv before mode so real/installed remain unsupported outside ?demo. -->
 
 ## Constraints / cardinal rules in play
 <!-- Tick any that apply — these are the traps a cold session must respect. -->

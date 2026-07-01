@@ -31,6 +31,7 @@ pytest test/test_glyph_canon.py
 ## Working agreement
 
 - Substantive work flows through GitHub issues, not ad-hoc edits.
+- **Spec bar / Definition of Ready:** the canonical wording lives in `CLAUDE.md` under *Working agreement — issues as specs*; use that as the source of truth, do not duplicate it locally.
 - PR title convention: `[PR-###][type][issue#] title`; backfill PR number after creation.
 - Docs-merge-on-green for docs-only PRs; code/content PRs require Johnson's review.
 - Living docs: when changing architecture/deploy/UI/smarts, update `README.md` + `ARCHITECTURE.md` and their `zh-TW` siblings.
