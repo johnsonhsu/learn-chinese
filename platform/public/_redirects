@@ -1,3 +1,19 @@
+# STANDALONE feedback-triage surface (issue #59): the second build entry ships as
+# the static file `dist/feedback-admin.html`. Cloudflare Pages' built-in clean-URL
+# handling ALREADY serves it at the extensionless path `/feedback-admin` (and
+# 308-redirects the explicit `/feedback-admin.html` → `/feedback-admin`), exactly
+# like it serves `index.html` at `/`. So NO custom rule is needed here.
+#
+# ⚠️ Do NOT add `/feedback-admin  /feedback-admin.html  200`. It caused an infinite
+# 308 loop (issue #59, PR #67 fix): the rewrite sends `/feedback-admin` →
+# `/feedback-admin.html`, which Pages' clean-URL layer 308s straight back to
+# `/feedback-admin`, re-matching the rewrite forever (observed `Location:
+# /feedback-admin`, ERR_TOO_MANY_REDIRECTS). Real static files (including
+# `feedback-admin.html` at its clean path, /assets/*, /data/*, /sw.js) are served
+# by Pages BEFORE any `_redirects` rule, so the surface is reachable by direct URL
+# with no rule at all.
+
 # SPA fallback: serve index.html for any path that isn't a real static file.
-# (Cloudflare Pages serves existing files — /assets/*, /data/*, /sw.js — first.)
+# (Cloudflare Pages serves existing files — /assets/*, /data/*, /sw.js, and
+# /feedback-admin — first, so this catch-all never swallows them.)
 /*    /index.html    200

@@ -129,8 +129,11 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
 export async function onRequestGet(context: { request: Request; env: Env }) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const provided =
-    request.headers.get(FEEDBACK_ADMIN_HEADER) || url.searchParams.get('secret') || undefined;
+  // Header ONLY — never accept the secret via `?secret=` (it leaks into CF/access
+  // logs, browser history, and any Referer on subsequent navigations/asset loads).
+  // Audit M2 / issue #55; the sole triage surface is the standalone
+  // /feedback-admin entry, which sends the header. (#59)
+  const provided = request.headers.get(FEEDBACK_ADMIN_HEADER) || undefined;
   if (!secretMatches(provided, env.FEEDBACK_ADMIN_SECRET)) {
     return Response.json({ error: 'forbidden' }, { status: 403 });
   }

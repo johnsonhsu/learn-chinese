@@ -6,9 +6,13 @@ import { DictionaryPanel } from './DictionaryPanel.tsx';
 import { StrokePracticeAdmin } from './StrokePracticeAdmin.tsx';
 import { WordSetsAdmin } from './WordSetsAdmin.tsx';
 import { SentenceBankPanel } from './SentenceBankPanel.tsx';
-import { FeedbackPanel } from './FeedbackPanel.tsx';
 
-type Tab = 'users' | 'modules' | 'dictionary' | 'sql' | 'bank' | 'feedback';
+// NOTE: feedback triage is NOT here. It moved to the standalone, unlinked
+// `/feedback-admin` surface (issue #59) — the sole feedback-admin surface — which
+// reads PRODUCTION feedback and is decoupled from the app (no nav in/out). The
+// former in-app `feedback` tab was removed with that change.
+
+type Tab = 'users' | 'modules' | 'dictionary' | 'sql' | 'bank';
 
 const moduleAdminComponents: Record<string, React.ComponentType> = {
   'writing-challenge': StrokePracticeAdmin,
@@ -74,9 +78,6 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
         <button className={`admin-tab${tab === 'bank' ? ' active' : ''}`} onClick={() => setTab('bank')}>
           Sentence Bank
         </button>
-        <button className={`admin-tab${tab === 'feedback' ? ' active' : ''}`} onClick={() => setTab('feedback')}>
-          Feedback
-        </button>
       </div>
       <div className="admin-content">
         {tab === 'users' && <UsersPanel />}
@@ -84,7 +85,6 @@ export default function AdminPage({ onBack }: { onBack: () => void }) {
         {tab === 'dictionary' && <DictionaryPanel />}
         {tab === 'sql' && <SqlBrowser />}
         {tab === 'bank' && <SentenceBankPanel />}
-        {tab === 'feedback' && <FeedbackPanel />}
       </div>
     </div>
   );

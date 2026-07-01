@@ -56,9 +56,10 @@ function rateLimited(ip: string): boolean {
 function requireAdmin(req: Request, res: Response, next: NextFunction): void {
   loadEnv();
   const expected = process.env.FEEDBACK_ADMIN_SECRET;
-  const provided =
-    (req.headers[FEEDBACK_ADMIN_HEADER] as string | undefined) ??
-    (typeof req.query.secret === 'string' ? req.query.secret : undefined);
+  // Header ONLY — never accept the secret via `?secret=` (it leaks into logs,
+  // browser history, and Referer). Mirrors the prod Pages Functions contract.
+  // Audit M2 / issue #55. (#59)
+  const provided = req.headers[FEEDBACK_ADMIN_HEADER] as string | undefined;
   if (!secretMatches(provided, expected)) {
     res.status(403).json({ error: 'forbidden' });
     return;

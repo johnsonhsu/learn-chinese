@@ -125,12 +125,14 @@ jobs:
               `- 🎮 Try the demo: ${prBase}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${prBase}/?app`,
               `- UI components (styleguide): ${prBase}/?ui`,
+              `- 🔒 Feedback admin (secret-gated): ${prBase}/feedback-admin`,
               `- Marketing: ${prBase}`,
               '',
               '**Commit** — this exact build:',
               `- 🎮 Try the demo: ${url}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${url}/?app`,
               `- UI components (styleguide): ${url}/?ui`,
+              `- 🔒 Feedback admin (secret-gated): ${url}/feedback-admin`,
               `- Marketing: ${url}`,
             ].join('\n');
             const { data: comments } = await github.rest.issues.listComments({

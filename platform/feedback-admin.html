@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feedback triage</title>
+    <!-- STANDALONE, UNLINKED feedback-triage surface (issue #59). This is a SECOND
+         Vite entry emitted into the same `dist` and shipped by the same
+         `pages deploy dist`. It is reachable ONLY by direct URL
+         (the clean path /feedback-admin, served by Pages' built-in clean-URL layer)
+         and has NO UI navigation to or from the main learning app in either
+         direction. Cloudflare Pages' built-in clean-URL handling serves this file
+         at the extensionless path /feedback-admin (no _redirects rule needed — see
+         public/_redirects). It reuses the existing admin-gated, feedback-SILOED Pages
+         Functions (GET /api/feedback, PATCH /api/feedback/:id,
+         GET /api/feedback/:id/screenshot) via the reused FeedbackPanel component.
+
+         Deliberately NOT a PWA page: no manifest link, no service-worker
+         registration, no offline shell. It is excluded from the app's SW precache
+         (vite.config workbox globIgnores) and served no-store (public/_headers). -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="feedback-admin-root"></div>
+    <script type="module" src="/src/feedback-admin.tsx"></script>
+  </body>
+</html>

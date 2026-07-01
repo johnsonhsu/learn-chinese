@@ -32,3 +32,15 @@
 # (The DB files themselves are cache-busted with ?v=<version> on download.)
 /data/version.json
   Cache-Control: no-cache
+
+# STANDALONE feedback-triage surface (issue #59). It is NOT part of the learner PWA:
+# never precache it, never serve a stale copy. `no-store` keeps it out of any HTTP
+# cache (it is also excluded from the SW precache via vite.config globIgnores). The
+# baseline `/*` CSP above already covers it (connect-src 'self' for /api/feedback;
+# img-src blob: for the header-fetched screenshot object-URLs). Reinforce noindex.
+/feedback-admin
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
+/feedback-admin.html
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow
