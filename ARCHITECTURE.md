@@ -791,9 +791,12 @@ Like the Gemini proxy, these live outside `platform/tsconfig`'s include (so
   transient error never blocks a legitimate submission.
 - **Admin gating.** The `GET` / `PATCH` / screenshot routes are gated by a shared
   secret (`FEEDBACK_ADMIN_SECRET`), supplied as the `x-feedback-admin-secret`
-  header (or `?secret=` for the screenshot `<img>`), compared constant-time-ish. If
-  the secret is unset the read/update routes are **closed (403), never open** —
-  fail-safe.
+  **header only** — never a `?secret=` URL param (that would leak the secret into
+  CF/access logs, browser history, and any `Referer`; audit **M2 / #55**). The
+  triage surface fetches screenshot bytes with that header and renders an object-URL
+  (revoked on unmount), so the secret never appears in an `<img src>`. Compared
+  constant-time-ish. If the secret is unset the read/update routes are **closed
+  (403), never open** — fail-safe.
 - **Validation contract** is the portable helper `platform/server/feedback-shared.ts`
   (no Node/Worker imports, used by both runtimes — same pattern as the copybook
   Gemini helper). It enforces a known category + non-empty message, hard size caps
@@ -809,14 +812,41 @@ The D1 migration creates a single `feedback` table (`id`, `created_at`, `categor
 created-at indexes, and the `rate_hits` ledger table. The dev mirror builds the
 same shape (with an inline `screenshot` column instead of an R2 key).
 
-### Admin triage panel (`platform/src/admin/FeedbackPanel.tsx`)
+### Standalone triage surface (`/feedback-admin`, issue #59)
 
-A **dev-only** panel under the Admin console (§8). The owner enters the admin
-secret once (kept in `localStorage`); the panel then reads the admin-gated
-endpoints to show feedback newest-first, with **filter chips by status** (and
-counts), inline **status changes** (`PATCH`), a per-row **no-PII context** line,
-and lazy-loaded **screenshot thumbnails** (click to enlarge) fetched via the
-screenshot route. Nothing app/user/content-related is reachable from it.
+Feedback triage is a **standalone, unlinked surface**, deliberately **decoupled**
+from the main learning app — it is the owner's private triage console, not part of
+the learner PWA. It is the **sole** feedback-admin surface (it **superseded** the
+former in-app admin-console `feedback` tab, which was removed).
+
+- **Its own build entry / URL.** A second Vite HTML entry
+  (`platform/feedback-admin.html` + `platform/src/feedback-admin.tsx`, wired via
+  `rollupOptions.input` in `platform/vite.config.ts`) is emitted into the **same
+  `dist`** and ships with the **same `pages deploy dist`**. It is reachable **only by
+  direct URL** — `/feedback-admin.html`, or the clean `/feedback-admin` rewrite in
+  `platform/public/_redirects` (ordered before the SPA catch-all). It is
+  `noindex`/`no-store` (`platform/public/_headers`).
+- **No UI navigation, either direction.** The entry imports **nothing** from `App`,
+  mounts only the triage component (`platform/src/feedback-admin/FeedbackTriage.tsx`),
+  and links nowhere back into the app; the app never links to it. Verified: the
+  built `index.html` contains zero references to the feedback-admin entry.
+- **Not a PWA page.** No manifest, no service-worker registration, no offline shell,
+  no app-shell/theme CSS (it uses a tiny self-contained
+  `platform/src/feedback-admin.css`). Its own HTML + entry JS/CSS are **excluded from
+  the app's SW precache** (`workbox.globIgnores` in `vite.config.ts`; the entry gets
+  a stable `feedback-admin-entry.js` name so the glob can target it). It is not
+  pulled into the app bundle.
+- **Prod read path, reused endpoints.** The owner enters the admin secret once (kept
+  in `localStorage`, entered at runtime — **never baked into the bundle**); the
+  surface then reads the **existing** admin-gated, feedback-siloed endpoints —
+  `GET /api/feedback` (list + `?status=` filter + counts), `PATCH /api/feedback/:id`
+  (set status), and `GET /api/feedback/:id/screenshot` (image bytes) — sending the
+  secret as the **`x-feedback-admin-secret` header only**. It shows feedback
+  newest-first with **filter chips by status** (and counts), inline **status
+  changes**, a per-row **no-PII context** line, and lazy-loaded **screenshot
+  thumbnails** (header-fetched, rendered as object-URLs; click to enlarge). Nothing
+  app/user/content-related is reachable from it — siloing is preserved because the
+  Functions bind only the feedback D1/R2 + the secret.
 
 ### Dev Express mirror (`platform/server/feedback-*.ts`)
 
@@ -824,8 +854,10 @@ So the whole submit → triage flow works locally with **zero Cloudflare
 provisioning**, the dev Express server (§7) mirrors the prod contract exactly:
 
 - `feedback-routes.ts` — the same four routes (`POST` public; `GET` / `PATCH` /
-  `:id/screenshot` admin-gated by `FEEDBACK_ADMIN_SECRET` from the dev `.env`), the
-  same validation, and an in-memory per-IP rate limiter.
+  `:id/screenshot` admin-gated by `FEEDBACK_ADMIN_SECRET` from the dev `.env`,
+  **header-only** — no `?secret=`, matching prod), the same validation, and an
+  in-memory per-IP rate limiter. In dev the same standalone `/feedback-admin` entry
+  is served by Vite (the app's `:3000` server) and hits these routes.
 - `feedback-db.ts` — a **separate** `better-sqlite3` connection to
   `platform/feedback.db`, physically distinct from `platform.db` / `content.db`.
   No app code imports this module; it is the dev twin of the prod D1 database.

@@ -1,0 +1,50 @@
+/*
+ * Self-contained styles for the STANDALONE feedback-triage surface (issue #59).
+ *
+ * Intentionally NOT `index.css` (the ~5000-line app stylesheet + theme roots): this
+ * page is decoupled from the main app and must not pull the app's CSS/theme bundle
+ * in. FeedbackPanel styles almost everything inline; the only shared class it uses
+ * is `.admin-empty` (+ the `--text-dim` token it reads), reproduced minimally here.
+ */
+:root {
+  --text-dim: #666;
+}
+
+html,
+body {
+  margin: 0;
+  background: #f3f4f6;
+  color: #111;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fa-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 16px 64px;
+}
+
+.fa-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.fa-header h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.fa-header .fa-sub {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.admin-empty {
+  color: var(--text-dim);
+  padding: 40px;
+  text-align: center;
+}

@@ -17,31 +17,6 @@ try {
   if (existsSync(vp)) contentVersion = JSON.parse(readFileSync(vp, 'utf-8')).version || 'dev';
 } catch { /* no baked data yet — fine in dev */ }
 
-// DEV-ONLY: surface the feedback admin secret to the in-app triage panel
-// (src/admin/FeedbackPanel.tsx) so it can authenticate its read/update calls to
-// the dev Express routes without the developer hand-typing the secret. Read from
-// the same .env files the server loader uses (repo-root + platform/). This is
-// injected ONLY for `vite dev` below (the build branch leaves it undefined), so
-// the secret never lands in a production bundle.
-function readFeedbackAdminSecret(): string {
-  for (const p of [resolve(__dirname, '../.env'), resolve(__dirname, '.env')]) {
-    try {
-      if (!existsSync(p)) continue;
-      for (const line of readFileSync(p, 'utf-8').split('\n')) {
-        const m = /^\s*FEEDBACK_ADMIN_SECRET\s*=\s*(.*)\s*$/.exec(line);
-        if (m) {
-          let v = m[1].trim();
-          if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
-            v = v.slice(1, -1);
-          }
-          if (v) return v;
-        }
-      }
-    } catch { /* best-effort */ }
-  }
-  return '';
-}
-
 if (existsSync(modulesDir)) {
   for (const dir of readdirSync(modulesDir, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
@@ -52,12 +27,9 @@ if (existsSync(modulesDir)) {
   }
 }
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   define: {
     __CONTENT_VERSION__: JSON.stringify(contentVersion),
-    // Dev triage panel auth: real secret on `vite dev`, empty string on build so
-    // a production bundle never carries it. The panel treats '' as "no secret".
-    __FEEDBACK_ADMIN_SECRET__: JSON.stringify(command === 'serve' ? readFeedbackAdminSecret() : ''),
   },
   plugins: [
     react(),
@@ -78,6 +50,16 @@ export default defineConfig(({ command }) => ({
       workbox: {
         // Precache the app shell + the bundled sql.js wasm so it works offline.
         globPatterns: ['**/*.{js,css,html,woff2,png,svg,wasm}'],
+        // Keep the STANDALONE feedback-triage surface (issue #59) OUT of the app's
+        // offline precache: it is a decoupled admin entry, not part of the learner
+        // PWA shell. Its entry chunk gets a stable `feedback-admin-*` name (see
+        // rollupOptions.output.entryFileNames below) so this glob catches it, and
+        // its HTML is `feedback-admin.html`.
+        globIgnores: [
+          '**/feedback-admin.html',
+          '**/feedback-admin-*.js',
+          '**/feedback-admin-*.css',
+        ],
         // The ~18MB shipped DBs are cached in IndexedDB by the data layer, not here.
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         runtimeCaching: [
@@ -101,6 +83,27 @@ export default defineConfig(({ command }) => ({
     alias: {
       '@platform': resolve(__dirname, 'src'),
       ...moduleAliases,
+    },
+  },
+  build: {
+    rollupOptions: {
+      // TWO HTML entries in one `dist` (issue #59): the main SPA (`index.html`) and
+      // the STANDALONE, UNLINKED feedback-triage surface (`feedback-admin.html`).
+      // Both ship via the same `pages deploy dist`; the second is reachable only by
+      // direct URL and shares no code path or navigation with the app.
+      input: {
+        index: resolve(__dirname, 'index.html'),
+        'feedback-admin': resolve(__dirname, 'feedback-admin.html'),
+      },
+      output: {
+        // Give ONLY the feedback-admin entry a stable (unhashed) chunk name so the
+        // SW-precache `globIgnores` above can reliably exclude it; every other
+        // entry/chunk keeps Vite's default content-hashed name for cache-busting.
+        entryFileNames: (chunk) =>
+          chunk.name === 'feedback-admin'
+            ? 'assets/feedback-admin-entry.js'
+            : 'assets/[name]-[hash].js',
+      },
     },
   },
   server: {

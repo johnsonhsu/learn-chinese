@@ -1,3 +1,10 @@
+# STANDALONE feedback-triage surface (issue #59): a clean, extensionless alias for
+# the second build entry. Real static files (/feedback-admin.html itself, /assets/*,
+# /data/*, /sw.js) are served by Pages BEFORE these rules; this rewrite only handles
+# the extensionless path. It is deliberately NOT linked from the app — reachable by
+# direct URL only. Must precede the SPA catch-all so it isn't swallowed by it.
+/feedback-admin    /feedback-admin.html    200
+
 # SPA fallback: serve index.html for any path that isn't a real static file.
 # (Cloudflare Pages serves existing files — /assets/*, /data/*, /sw.js — first.)
 /*    /index.html    200
