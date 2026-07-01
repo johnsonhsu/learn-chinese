@@ -15,7 +15,7 @@ building modules see **[modules/README.md](./modules/README.md)**.
 
 ---
 
-## What it does — the six modules
+## What it does — the seven modules
 
 The home screen is a grid of self-contained learning activities. You pick a
 profile (multiple learners can share a device), then a module:
@@ -41,6 +41,12 @@ profile (multiple learners can share a device), then a module:
   Reading is tracked as a **separate per-character skill** from writing — you can
   recognize a character without yet being able to write it — so reading mastery is
   computed independently of writing mastery.
+- **Reading English** (📗 `reading-english`) — the English analogue of Reading
+  Chinese: hear a bank sentence's English + see its Chinese prompt, then reconstruct
+  the English translation by tapping its **words in order** from a shuffled pool of
+  the sentence's own words (no keyboard). Reading is tracked as a **separate
+  per-word skill** from the Practice-English spelling stats — you can read a word
+  you can't yet spell — in its own on-device store, so the two never cross-contaminate.
 
 **Who it's for:** learners (and families/kids) studying Traditional Chinese for
 Taiwan, who want focused handwriting practice driven by what they personally still

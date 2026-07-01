@@ -59,7 +59,8 @@ learning-chinese/
     ├── practice-english/       English cloze spelling game
     ├── copybook/               bring-your-own-text verbatim writing + Gemini gen
     ├── my-characters/          per-character progress dashboard (stats table + tile grid)
-    └── reading-chinese/        reading comprehension: tap chars in order to rebuild a sentence
+    ├── reading-chinese/        reading comprehension: tap chars in order to rebuild a sentence
+    └── reading-english/        English reading: tap words in order to rebuild a sentence's translation
 ```
 
 Each module is its own workspace with `module.json`, `src/` (front-end), and
@@ -112,9 +113,9 @@ Each module ships a manifest, e.g. `modules/writing-challenge/module.json`:
 | `dbFile`        | (optional) the module's own SQLite file, baked for offline use |
 | `order`         | sort order on the home screen                                  |
 
-`practice-english`, `copybook`, `my-characters`, and `reading-chinese` omit
-`dbFile` (they read the shared bank / on-device progress and have no shipped DB of
-their own).
+`practice-english`, `copybook`, `my-characters`, `reading-chinese`, and
+`reading-english` omit `dbFile` (they read the shared bank / on-device progress and
+have no shipped DB of their own).
 
 ### Front-end auto-discovery (`platform/src/App.tsx`)
 
@@ -131,7 +132,7 @@ const manifestModules = import.meta.glob('../../modules/*/module.json', { eager:
 Manifests are filtered against an explicit allow-set and sorted by `order`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese', 'reading-english']);
 ```
 
 Only modules in this set appear on the home screen. It's an inclusion list of
@@ -238,6 +239,17 @@ that never cross-contaminate:
   store `profileStats`.
 - **Reading** (the `reading-chinese` module) → SQLite `character_stats_reading` +
   IndexedDB store `profileStatsReading`.
+
+**English competencies** are tracked by the two self-contained English modules, each
+in its OWN IndexedDB database (never the platform char-stats tables):
+
+- **Spelling** (the `practice-english` module) → per-word store in IndexedDB
+  `learning-english-user`.
+- **Reading English** (the `reading-english` module) → per-word store in a DISJOINT
+  IndexedDB `learning-english-reading-user`. Same per-word record shape + mastery
+  rule (≥3 of last 4 correct) as spelling, but a separate database so a reading
+  session never mutates spelling stats and vice-versa (guarded by
+  `reading-english-stat-isolation.test.ts`).
 
 The data layer threads a `skill` through its stat plumbing: `getNextReadingSentence`
 / `submitReadingResult` / `getReadingDebugInfo` mirror the writing methods but read

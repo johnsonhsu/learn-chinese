@@ -1,0 +1,321 @@
+/* ── Reading-English (issue #69) ─────────────────────────────────────────────
+   The English tap-to-reconstruct reading module — the analogue of reading-chinese
+   for WORD tiles. Everything here is scoped under the platform's per-module
+   wrapper `.app-shell--reading-english`, so nothing leaks.
+
+   Reuse over fork: composes the shared UI kit (<ModuleScreen>, <Button>,
+   <BackButton>) and the canonical :root design tokens (--ink, --paper,
+   --paper-raised, --rule, --seal, --teal, --green-dark, --red, --radius…). The
+   correct/incorrect feedback deliberately reuses practice-english's SIGNATURE
+   (green pop / red shake on the same --green-dark / --red tokens). Tiles are
+   word-shaped (auto-width, Latin type) rather than the fixed-square char tiles.
+   ============================================================================= */
+
+.app-shell--reading-english {
+  min-height: 100svh;
+  color: var(--text);
+  font-family: var(--font);
+}
+
+/* ── Landing (mirrors reading-chinese's landing metric tiles) ── */
+.app-shell--reading-english .sp-landing-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.app-shell--reading-english .sp-landing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 12px 8px 11px;
+  border: none;
+  border-top: 2px solid var(--sp-stat-accent, var(--seal));
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  text-align: center;
+  min-width: 0;
+}
+.app-shell--reading-english .sp-landing-stat-icon { font-size: 15px; line-height: 1; margin-bottom: 2px; opacity: 0.7; }
+.app-shell--reading-english .sp-landing-stat-value {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.app-shell--reading-english .sp-landing-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.app-shell--reading-english .sp-landing-stat-teal   { --sp-stat-accent: var(--teal, #4E7C76); }
+.app-shell--reading-english .sp-landing-stat-purple { --sp-stat-accent: var(--purple, #5E5670); }
+
+.app-shell--reading-english .sp-landing-card.ui-screen-card { gap: 16px; }
+.app-shell--reading-english .ui-screen-card .sp-landing-start { width: 100%; font-size: 20px; padding: 18px 30px; }
+
+.app-shell--reading-english .sp-autoskip-toggle {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border: none;
+  background: var(--paper-raised, #2a2a2a);
+  color: var(--text-muted, #888);
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition, 0.18s);
+}
+.app-shell--reading-english .sp-autoskip-toggle:active { transform: scale(0.95); }
+.app-shell--reading-english .sp-autoskip-toggle.active {
+  color: #fff;
+  background: var(--green-dark, #4a90d9);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Practice page ─────────────────────────── */
+.app-shell--reading-english .re-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding: 0 16px 8px;
+}
+.app-shell--reading-english .re-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.app-shell--reading-english .re-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+.app-shell--reading-english .re-settings {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-shell--reading-english .re-new-btn {
+  font-size: 18px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.14));
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Prompt card — one cream/paper panel (mirrors reading-chinese's .rc-prompt-card). */
+.app-shell--reading-english .re-prompt-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg, 18px);
+  padding: 22px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.app-shell--reading-english .re-prompt-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.app-shell--reading-english .re-audio-btn {
+  flex: 0 0 auto;
+  min-width: 56px;
+  height: 56px;
+  font-size: 24px;
+  border-radius: var(--radius, 14px);
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.14));
+  background: var(--paper-raised);
+  color: var(--ink);
+  cursor: pointer;
+}
+/* The Chinese prompt (learner rebuilds the English translation). */
+.app-shell--reading-english .re-prompt-chinese {
+  font-family: var(--font-han);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: center;
+}
+
+/* In-order sentence strip: one box per WORD slot; filled/active/skip states. */
+.app-shell--reading-english .re-sentence-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.app-shell--reading-english .re-slot {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--ink);
+  border-bottom: 4px solid var(--text-muted, #999);
+  border-radius: 6px 6px 0 0;
+  transition: border-color 120ms, background 120ms;
+}
+.app-shell--reading-english .re-slot--filled {
+  border-bottom-color: var(--green-dark, #4F7A3A);
+  background: rgba(92,184,0,0.14);
+}
+.app-shell--reading-english .re-slot--active {
+  border-bottom-color: var(--seal, #C0392B);
+  background: color-mix(in srgb, var(--seal, #C0392B) 12%, transparent);
+  min-width: 60px;
+}
+.app-shell--reading-english .re-slot--skip {
+  color: var(--ink-faint);
+  border-bottom-style: dashed;
+  opacity: 0.7;
+}
+.app-shell--reading-english .re-slot--pop { animation: re-pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.app-shell--reading-english .re-instruction {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Tappable word-tile pool (auto-width, unlike the fixed square char tiles). */
+.app-shell--reading-english .re-tile-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.app-shell--reading-english .re-tile {
+  min-width: 44px;
+  height: 52px;
+  padding: 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.16));
+  border-radius: var(--radius, 14px);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, background 0.1s ease, border-color 0.1s ease;
+}
+.app-shell--reading-english .re-tile:active { transform: translateY(1px); }
+@media (hover: hover) {
+  .app-shell--reading-english .re-tile:hover { border-color: var(--ink-faint); }
+}
+/* Wrong tap → red shake (practice-english signature). */
+.app-shell--reading-english .re-tile--wrong {
+  border-color: var(--red, #E53935);
+  background: rgba(229,57,53,0.20);
+  animation: re-shake 320ms;
+}
+
+/* ── Done screen ───────────────────────────── */
+.app-shell--reading-english .re-page--done {
+  align-items: center;
+  justify-content: center;
+}
+.app-shell--reading-english .re-done-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg, 18px);
+  padding: 32px 28px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 420px;
+  width: 100%;
+  animation: re-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.app-shell--reading-english .re-done-chinese {
+  font-family: var(--font-han);
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-align: center;
+}
+.app-shell--reading-english .re-done-sentence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.app-shell--reading-english .re-done-word {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.app-shell--reading-english .re-done-word--skip { color: var(--ink-faint); opacity: 0.6; }
+.app-shell--reading-english .re-celebrate { font-weight: 800; color: var(--seal); }
+.app-shell--reading-english .re-done-stats { color: var(--green-dark); font-weight: 700; }
+.app-shell--reading-english .re-done-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.app-shell--reading-english .re-btn-primary,
+.app-shell--reading-english .re-btn-secondary {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: var(--radius, 14px);
+  cursor: pointer;
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.16));
+}
+.app-shell--reading-english .re-btn-primary { background: var(--seal); color: var(--paper); border-color: var(--seal); }
+.app-shell--reading-english .re-btn-secondary { background: var(--paper); color: var(--ink); }
+
+@keyframes re-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+@keyframes re-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell--reading-english .re-tile,
+  .app-shell--reading-english .re-slot { transition: none; }
+  .app-shell--reading-english .re-tile:active { transform: none; }
+  .app-shell--reading-english .re-slot--pop,
+  .app-shell--reading-english .re-tile--wrong,
+  .app-shell--reading-english .re-done-card { animation: none; }
+}

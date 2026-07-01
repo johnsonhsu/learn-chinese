@@ -58,7 +58,8 @@ learning-chinese/
     ├── practice-english/       英文克漏字拼字遊戲
     ├── copybook/               自帶文字逐字書寫 + Gemini 產生
     ├── my-characters/          逐字進度儀表板（統計表格 + 字塊網格）
-    └── reading-chinese/        閱讀理解：依序點選字以重組句子
+    ├── reading-chinese/        閱讀理解：依序點選字以重組句子
+    └── reading-english/        英文閱讀：依序點選單字以重組句子的翻譯
 ```
 
 每個模組都是自己的 workspace，含有 `module.json`、`src/`（前端），以及選用的 `server/`
@@ -109,7 +110,7 @@ learning-chinese/
 | `dbFile`        | （選用）模組自己的 SQLite 檔，烘焙以供離線使用                 |
 | `order`         | 主畫面上的排序順序                                             |
 
-`practice-english`、`copybook`、`my-characters` 與 `reading-chinese` 省略 `dbFile`（它們讀取共用的銀行／裝置上進度，本身沒有出貨的 DB）。
+`practice-english`、`copybook`、`my-characters`、`reading-chinese` 與 `reading-english` 省略 `dbFile`（它們讀取共用的銀行／裝置上進度，本身沒有出貨的 DB）。
 
 ### 前端自動探索（`platform/src/App.tsx`）
 
@@ -126,7 +127,7 @@ const manifestModules = import.meta.glob('../../modules/*/module.json', { eager:
 Manifests 會依一個明確的允許集合（allow-set）過濾，並依 `order` 排序：
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese', 'reading-english']);
 ```
 
 只有在此集合中的模組才會出現在主畫面上。它是一個「完全在裝置上運作」模組的納入清單（inclusion list）
@@ -221,6 +222,13 @@ for (const mod of modules) {
 
 - **書寫**（歷史預設）→ SQLite `character_stats` + IndexedDB `profileStats`。
 - **閱讀**（`reading-chinese` 模組）→ SQLite `character_stats_reading` + IndexedDB `profileStatsReading`。
+
+**英文能力**由兩個自足的英文模組各自追蹤，每個都在自己的 IndexedDB 資料庫中（絕不使用平台的字統計表）：
+
+- **拼字**（`practice-english` 模組）→ IndexedDB `learning-english-user` 中的每字儲存。
+- **英文閱讀**（`reading-english` 模組）→ 互不相交的 IndexedDB `learning-english-reading-user` 中的每字儲存。
+  與拼字採用相同的每字記錄形狀＋熟練度規則（最近 4 次中 ≥3 次正確），但用獨立的資料庫，因此閱讀 session
+  永不改動拼字統計，反之亦然（由 `reading-english-stat-isolation.test.ts` 守護）。
 
 資料層在統計管線中串接一個 `skill`：`getNextReadingSentence` / `submitReadingResult` /
 `getReadingDebugInfo` 對應書寫版方法，但只讀寫閱讀的表／store。切換 profile 時兩軌都各自重播到自己的
