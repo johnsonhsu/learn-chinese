@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars -- callback arity matches shared types */
+
 // Bridges the user's entered text into the shape the SHARED writing-challenge
 // PracticePage consumes (NextSentenceResponse), and routes finished sessions
 // back into the on-device progress store. This is what lets copybook reuse
@@ -10,7 +12,7 @@ import type {
   NextSentenceResponse,
   SentenceResultResponse,
   CharAttemptResult,
-} from '@modules/writing-challenge';
+} from "@modules/writing-challenge";
 
 // We only need the subset of the offline data layer that produces per-char
 // metadata + records attempts. Declared structurally so copybook doesn't take a
@@ -42,7 +44,7 @@ export interface SessionDataLayer {
 export function makeProvideSession(
   dataLayer: SessionDataLayer | null,
   text: string,
-): (userId: number) => Promise<NextSentenceResponse> {
+): (_userId: number) => Promise<NextSentenceResponse> {
   return async () => {
     const charRanks: Record<string, number> = {};
     const charZhuyin: Record<string, string> = {};
@@ -67,11 +69,11 @@ export function makeProvideSession(
       sessionId: id,
       sentenceId: id,
       text,
-      definition: '', // no English gloss for raw text → pill hides itself
-      templatePattern: '',
+      definition: "", // no English gloss for raw text → pill hides itself
+      templatePattern: "",
       slotFills: [],
-      zhuyin: '',
-      targetChar: distinctChars[0] ?? '',
+      zhuyin: "",
+      targetChar: distinctChars[0] ?? "",
       targetChars: distinctChars,
       level: info?.level ?? 0,
       knownInLevel: info?.knownInLevel ?? 0,
@@ -81,7 +83,7 @@ export function makeProvideSession(
       charMastery,
       fluency: info?.fluency ?? 0,
       totalKnown: info?.totalKnown ?? 0,
-      aboveLevelThreshold: parseInt(settings['above_level_threshold'] || '30', 10),
+      aboveLevelThreshold: parseInt(settings["above_level_threshold"] || "30", 10),
     };
   };
 }
@@ -90,7 +92,12 @@ export function makeProvideSession(
 // refreshed fluency/known counts for the completion screen.
 export function makeSubmitSession(
   dataLayer: SessionDataLayer | null,
-): (userId: number, sentenceId: number, durationMs: number, charResults: CharAttemptResult[]) => Promise<SentenceResultResponse> {
+): (
+  _userId: number,
+  _sentenceId: number,
+  _durationMs: number,
+  _charResults: CharAttemptResult[],
+) => Promise<SentenceResultResponse> {
   return async (_userId, sentenceId, durationMs, charResults) => {
     if (!dataLayer) {
       return { level: 0, knownInLevel: 0, totalInLevel: 0, fluency: 0, totalKnown: 0 };
