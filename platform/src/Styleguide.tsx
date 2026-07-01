@@ -138,8 +138,6 @@ function Swatches({ tokens }: { tokens: { name: string; note: string; dark?: boo
 }
 
 type StyleguideKey =
-  | "styleguide.switchToZh"
-  | "styleguide.switchToEn"
   | "styleguide.themeLabel"
   | "styleguide.themeNote"
   | "styleguide.title"
