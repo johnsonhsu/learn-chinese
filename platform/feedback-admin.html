@@ -7,9 +7,11 @@
     <!-- STANDALONE, UNLINKED feedback-triage surface (issue #59). This is a SECOND
          Vite entry emitted into the same `dist` and shipped by the same
          `pages deploy dist`. It is reachable ONLY by direct URL
-         (/feedback-admin.html, or the /feedback-admin rewrite in public/_redirects)
+         (the clean path /feedback-admin, served by Pages' built-in clean-URL layer)
          and has NO UI navigation to or from the main learning app in either
-         direction. It reuses the existing admin-gated, feedback-SILOED Pages
+         direction. Cloudflare Pages' built-in clean-URL handling serves this file
+         at the extensionless path /feedback-admin (no _redirects rule needed — see
+         public/_redirects). It reuses the existing admin-gated, feedback-SILOED Pages
          Functions (GET /api/feedback, PATCH /api/feedback/:id,
          GET /api/feedback/:id/screenshot) via the reused FeedbackPanel component.
 

@@ -823,9 +823,15 @@ former in-app admin-console `feedback` tab, which was removed).
   (`platform/feedback-admin.html` + `platform/src/feedback-admin.tsx`, wired via
   `rollupOptions.input` in `platform/vite.config.ts`) is emitted into the **same
   `dist`** and ships with the **same `pages deploy dist`**. It is reachable **only by
-  direct URL** — `/feedback-admin.html`, or the clean `/feedback-admin` rewrite in
-  `platform/public/_redirects` (ordered before the SPA catch-all). It is
-  `noindex`/`no-store` (`platform/public/_headers`).
+  direct URL** at the clean path **`/feedback-admin`** — Cloudflare Pages' built-in
+  clean-URL handling serves the static `feedback-admin.html` at that extensionless
+  path (and 308-redirects the explicit `/feedback-admin.html` → `/feedback-admin`),
+  exactly like it serves `index.html` at `/`, so **no `_redirects` rule is needed**.
+  ⚠️ A custom `/feedback-admin → /feedback-admin.html 200` rewrite must **not** be
+  added: it collides with the clean-URL layer to form an infinite 308 loop
+  (`ERR_TOO_MANY_REDIRECTS`) — the bug fixed in PR #67; `platform/public/_redirects`
+  carries a comment warning against re-adding it. It is `noindex`/`no-store`
+  (`platform/public/_headers`).
 - **No UI navigation, either direction.** The entry imports **nothing** from `App`,
   mounts only the triage component (`platform/src/feedback-admin/FeedbackTriage.tsx`),
   and links nowhere back into the app; the app never links to it. Verified: the
