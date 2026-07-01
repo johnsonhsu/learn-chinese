@@ -89,7 +89,11 @@ describe.skipIf(!baked)('shipped bank content (content.db)', () => {
 describe.skipIf(!baked)('privacy — no personal data ships', () => {
   it('platform.db is scrubbed of users + stats', () => {
     const db = ro('platform');
+    // character_stats_reading (issue #65) is the reading-skill track — it must
+    // ship with ZERO personal rows, exactly like the writing character_stats.
+    // (-1 = table absent, also acceptable; a present table MUST be empty.)
     for (const t of ['character_stats', 'users', 'user_settings']) expect(rows(db, t), t).toBe(0);
+    expect(rows(db, 'character_stats_reading'), 'character_stats_reading').toBeLessThanOrEqual(0);
     db.close();
   });
 

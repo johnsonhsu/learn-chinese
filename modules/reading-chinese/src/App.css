@@ -1,0 +1,353 @@
+/* ── Reading-Chinese (issue #65) ─────────────────────────────────────────────
+   The tap-to-reconstruct reading module. Everything here is scoped under the
+   platform's per-module wrapper `.app-shell--reading-chinese`, so nothing leaks.
+
+   Reuse over fork: this composes the shared UI kit (<ModuleScreen>, <Button>,
+   <CharTile>, <BackButton>) and the canonical :root design tokens (--ink, --paper,
+   --paper-raised, --rule, --seal, --teal, --green-dark, --red, --radius…). The
+   correct/incorrect feedback deliberately reuses practice-english's SIGNATURE
+   (green pop / red shake on the same --green-dark / --red tokens). The platform
+   paints the page background (data-screen="writing" dotted teal), so we set none.
+   ============================================================================= */
+
+.app-shell--reading-chinese {
+  min-height: 100svh;
+  color: var(--text);
+  font-family: var(--font);
+}
+
+/* ── Landing (mirrors writing-challenge's landing metric tiles + auto-skip) ── */
+.app-shell--reading-chinese .sp-landing-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.app-shell--reading-chinese .sp-landing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 12px 8px 11px;
+  border: none;
+  border-top: 2px solid var(--sp-stat-accent, var(--seal));
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  text-align: center;
+  min-width: 0;
+}
+.app-shell--reading-chinese .sp-landing-stat-icon { font-size: 15px; line-height: 1; margin-bottom: 2px; opacity: 0.7; }
+.app-shell--reading-chinese .sp-landing-stat-value {
+  font-family: var(--font-serif);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.app-shell--reading-chinese .sp-landing-stat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.app-shell--reading-chinese .sp-landing-stat-teal   { --sp-stat-accent: var(--teal, #4E7C76); }
+.app-shell--reading-chinese .sp-landing-stat-purple { --sp-stat-accent: var(--purple, #5E5670); }
+.app-shell--reading-chinese .sp-landing-stat-gold   { --sp-stat-accent: var(--seal, #C0392B); }
+
+.app-shell--reading-chinese .sp-landing-card.ui-screen-card { gap: 16px; }
+.app-shell--reading-chinese .ui-screen-card .sp-landing-start { width: 100%; font-size: 20px; padding: 18px 30px; }
+.app-shell--reading-chinese .sp-landing-card .sp-landing-autoskip { margin-top: -4px; width: 100%; }
+
+.app-shell--reading-chinese .sp-autoskip-toggle {
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border: none;
+  background: var(--paper-raised, #2a2a2a);
+  color: var(--text-muted, #888);
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition, 0.18s);
+}
+.app-shell--reading-chinese .sp-landing-card .sp-landing-autoskip .sp-autoskip-toggle {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+}
+.app-shell--reading-chinese .sp-autoskip-toggle:active { transform: scale(0.95); }
+.app-shell--reading-chinese .sp-autoskip-toggle.active {
+  color: #fff;
+  background: var(--green-dark, #4a90d9);
+  box-shadow: var(--shadow-md);
+}
+
+.app-shell--reading-chinese .ui-screen-card .sp-landing-targets {
+  width: 100%;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 2px dashed color-mix(in srgb, var(--rule, #5A1A96) 28%, transparent);
+}
+.app-shell--reading-chinese .sp-landing-targets-label {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--ink-faint);
+}
+.app-shell--reading-chinese .sp-landing-targets-chars {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ── Practice page ─────────────────────────── */
+.app-shell--reading-chinese .rc-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  width: 100%;
+  max-width: var(--content-width);
+  margin-inline: auto;
+  padding: 0 16px 8px;
+}
+.app-shell--reading-chinese .rc-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.app-shell--reading-chinese .rc-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+.app-shell--reading-chinese .rc-level {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--paper);
+  background: var(--ink);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+.app-shell--reading-chinese .rc-settings {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-shell--reading-chinese .rc-new-btn {
+  font-size: 18px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.14));
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* Prompt card — one cream/paper panel (mirrors practice-english's .practice-card). */
+.app-shell--reading-chinese .rc-prompt-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg, 18px);
+  padding: 22px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.app-shell--reading-chinese .rc-prompt-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.app-shell--reading-chinese .rc-audio-btn {
+  flex: 0 0 auto;
+  min-width: 56px;
+  height: 56px;
+  font-size: 24px;
+  border-radius: var(--radius, 14px);
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.14));
+  background: var(--paper-raised);
+  color: var(--ink);
+  cursor: pointer;
+}
+.app-shell--reading-chinese .rc-prompt-meaning {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: center;
+}
+
+/* In-order sentence strip: one box per slot; filled/active/skip states. */
+.app-shell--reading-chinese .rc-sentence-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.app-shell--reading-chinese .rc-slot {
+  min-width: 44px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-han);
+  font-size: 30px;
+  color: var(--ink);
+  border-bottom: 4px solid var(--text-muted, #999);
+  border-radius: 6px 6px 0 0;
+  transition: border-color 120ms, background 120ms;
+}
+.app-shell--reading-chinese .rc-slot--filled {
+  border-bottom-color: var(--green-dark, #4F7A3A);
+  background: rgba(92,184,0,0.14);
+}
+.app-shell--reading-chinese .rc-slot--active {
+  border-bottom-color: var(--seal, #C0392B);
+  background: color-mix(in srgb, var(--seal, #C0392B) 12%, transparent);
+}
+.app-shell--reading-chinese .rc-slot--skip {
+  color: var(--ink-faint);
+  border-bottom-style: dashed;
+  opacity: 0.7;
+}
+.app-shell--reading-chinese .rc-slot--pop { animation: rc-pop 260ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.app-shell--reading-chinese .rc-instruction {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Tappable tile pool. */
+.app-shell--reading-chinese .rc-tile-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.app-shell--reading-chinese .rc-tile {
+  min-width: 56px;
+  height: 56px;
+  padding: 0 8px;
+  font-family: var(--font-han);
+  font-size: 28px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.16));
+  border-radius: var(--radius, 14px);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.08s ease, background 0.1s ease, border-color 0.1s ease;
+}
+.app-shell--reading-chinese .rc-tile:active { transform: translateY(1px); }
+@media (hover: hover) {
+  .app-shell--reading-chinese .rc-tile:hover { border-color: var(--ink-faint); }
+}
+/* Wrong tap → red shake (practice-english signature). */
+.app-shell--reading-chinese .rc-tile--wrong {
+  border-color: var(--red, #E53935);
+  background: rgba(229,57,53,0.20);
+  animation: rc-shake 320ms;
+}
+
+/* ── Done screen ───────────────────────────── */
+.app-shell--reading-chinese .rc-page--done {
+  align-items: center;
+  justify-content: center;
+}
+.app-shell--reading-chinese .rc-done-card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg, 18px);
+  padding: 32px 28px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 420px;
+  width: 100%;
+  animation: rc-pop 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.app-shell--reading-chinese .rc-done-fluency {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--ink);
+}
+.app-shell--reading-chinese .rc-done-meaning { color: var(--ink-faint); text-align: center; }
+.app-shell--reading-chinese .rc-done-sentence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.app-shell--reading-chinese .rc-done-char {
+  font-family: var(--font-han);
+  font-size: 30px;
+  color: var(--ink);
+}
+.app-shell--reading-chinese .rc-done-char--skip { color: var(--ink-faint); opacity: 0.6; }
+.app-shell--reading-chinese .rc-celebrate { font-weight: 800; color: var(--seal); }
+.app-shell--reading-chinese .rc-done-stats { color: var(--green-dark); font-weight: 700; }
+.app-shell--reading-chinese .rc-done-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.app-shell--reading-chinese .rc-btn-primary,
+.app-shell--reading-chinese .rc-btn-secondary {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: var(--radius, 14px);
+  cursor: pointer;
+  border: 1px solid var(--rule-strong, rgba(0,0,0,0.16));
+}
+.app-shell--reading-chinese .rc-btn-primary { background: var(--seal); color: var(--paper); border-color: var(--seal); }
+.app-shell--reading-chinese .rc-btn-secondary { background: var(--paper); color: var(--ink); }
+
+@keyframes rc-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+@keyframes rc-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell--reading-chinese .rc-tile,
+  .app-shell--reading-chinese .rc-slot { transition: none; }
+  .app-shell--reading-chinese .rc-tile:active { transform: none; }
+  .app-shell--reading-chinese .rc-slot--pop,
+  .app-shell--reading-chinese .rc-tile--wrong,
+  .app-shell--reading-chinese .rc-done-card { animation: none; }
+}

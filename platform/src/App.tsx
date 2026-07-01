@@ -78,7 +78,7 @@ for (const [path, importFn] of Object.entries(moduleImports)) {
 
 // Module manifests read at build time from each module's module.json — no
 // server needed. Filter to modules that work fully on-device (v1: writing-challenge).
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
 const manifestModules = import.meta.glob<{ default: ModuleManifest } | ModuleManifest>(
   '../../modules/*/module.json',
   { eager: true },

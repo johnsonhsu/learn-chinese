@@ -57,7 +57,8 @@ learning-chinese/
     ├── word-sets/              詞彙分類
     ├── practice-english/       英文克漏字拼字遊戲
     ├── copybook/               自帶文字逐字書寫 + Gemini 產生
-    └── my-characters/          逐字進度儀表板（統計表格 + 字塊網格）
+    ├── my-characters/          逐字進度儀表板（統計表格 + 字塊網格）
+    └── reading-chinese/        閱讀理解：依序點選字以重組句子
 ```
 
 每個模組都是自己的 workspace，含有 `module.json`、`src/`（前端），以及選用的 `server/`
@@ -108,7 +109,7 @@ learning-chinese/
 | `dbFile`        | （選用）模組自己的 SQLite 檔，烘焙以供離線使用                 |
 | `order`         | 主畫面上的排序順序                                             |
 
-`practice-english`、`copybook` 與 `my-characters` 省略 `dbFile`（它們讀取共用的銀行／裝置上進度，本身沒有出貨的 DB）。
+`practice-english`、`copybook`、`my-characters` 與 `reading-chinese` 省略 `dbFile`（它們讀取共用的銀行／裝置上進度，本身沒有出貨的 DB）。
 
 ### 前端自動探索（`platform/src/App.tsx`）
 
@@ -125,7 +126,7 @@ const manifestModules = import.meta.glob('../../modules/*/module.json', { eager:
 Manifests 會依一個明確的允許集合（allow-set）過濾，並依 `order` 排序：
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters']);
+const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese']);
 ```
 
 只有在此集合中的模組才會出現在主畫面上。它是一個「完全在裝置上運作」模組的納入清單（inclusion list）
@@ -212,6 +213,21 @@ for (const mod of modules) {
 
 `OfflineProvider` / `useOffline`（`offline-context.tsx`）包住這一切並對整個 app 提供，且在 `isReady`
 之前不渲染任何內容。
+
+#### 逐字「技能」軌 — 書寫 vs 閱讀（issue #65）
+
+字元進度是**逐技能**追蹤的，而非全域共用。閱讀理解與書寫是各自不同的能力——學習者可以認得一個字
+卻還不會寫它——因此兩者記錄到**各自獨立、互不污染**的統計軌：
+
+- **書寫**（歷史預設）→ SQLite `character_stats` + IndexedDB `profileStats`。
+- **閱讀**（`reading-chinese` 模組）→ SQLite `character_stats_reading` + IndexedDB `profileStatsReading`。
+
+資料層在統計管線中串接一個 `skill`：`getNextReadingSentence` / `submitReadingResult` /
+`getReadingDebugInfo` 對應書寫版方法，但只讀寫閱讀的表／store。切換 profile 時兩軌都各自重播到自己的
+記憶體內表。**純引擎不變**——`computeUserLevel`、`getTargetChars`、`computeMastery` 都是吃
+`CharStat[]`，各技能只餵它自己的切片；`char-ranker` 依頻率、共用。IndexedDB `profileStatsReading`
+store 以純**新增式**的 `USER_DB_VERSION`（2 → 3）加入——不對既有書寫進度做有風險的重新鍵入。
+點選重組的字池／洗牌／點擊邏輯本身是純函式，位於 `@shared/character-stats/reading`。
 
 ### 筆順渲染 — `WritingCanvas` + hanzi-writer（切勿逐字重新掛載）
 
@@ -308,7 +324,7 @@ IndexedDB 連線與記憶體中的 sql.js heap 都是長壽且容易洩漏的—
 1. **快照各 DB** — 對每個來源（`platform.db`、**`content.db`**、`writing-challenge.db`、`word-sets.db`），
    它使用 better-sqlite3 的線上 `backup()` API（因此即使開發伺服器正在執行，WAL 內容也會被納入、快照仍
    一致），產出到 `public/data/<name>.db`。
-2. **清除平台快照** — 刪除 `character_stats`、`users` 與 `user_settings`，然後做 `VACUUM`，因此部署後
+2. **清除平台快照** — 刪除 `character_stats`、`character_stats_reading`（閱讀技能軌）、`users` 與 `user_settings`，然後做 `VACUUM`，因此部署後
    的 app **只出貨內容**，永不出貨任何人的進度。
 3. **從 writing-challenge 快照剝除內容** — 丟棄 `bank_sentences`、`char_words`、`tocfl_words` 後做
    `VACUUM`，因為那份課程是平台所擁有的、改由 `content.db` 出貨（§3.5）。模組 DB 隨後只帶有自己的

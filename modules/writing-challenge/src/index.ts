@@ -6,4 +6,4 @@ export { PracticePage } from './pages/PracticePage.tsx';
 // Re-exported so consumers can drive the shared PracticePage's i18n (it reads
 // writing-challenge's own LanguageContext, distinct from the consumer's).
 export { LanguageContext as WCLanguageContext } from './i18n/index.ts';
-export type { NextSentenceResponse, SentenceResultResponse, CharAttemptResult } from './utils/api.ts';
+export type { NextSentenceResponse, SentenceResultResponse, CharAttemptResult, CharResult } from './utils/api.ts';
