@@ -167,6 +167,30 @@ export const THEMES: Theme[] = [
     arrangement: "grid",
     cssDefined: true,
   },
+  {
+    id: "jungle",
+    name: "Jungle",
+    nameKey: "theme.jungle",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "outer-space",
+    name: "Outer Space",
+    nameKey: "theme.outer-space",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "christmas",
+    name: "Christmas",
+    nameKey: "theme.christmas",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
   // Premium foils — always listed LAST (the picker also sorts premium to the end).
   // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
   // behind the 9000 premium prerequisite.
