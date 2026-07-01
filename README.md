@@ -22,7 +22,7 @@ profile (multiple learners can share a device), then a module:
 
 - **Writing Challenge** (✍️ `writing-challenge`) — the core. Handwriting / stroke
   practice on real Taiwan-Traditional sentences, with stroke-by-stroke validation
-  (HanziWriter), zhuyin hints, and audio. The app picks *which* character you
+  (HanziWriter), zhuyin hints, and audio. The app picks _which_ character you
   most need to drill and finds a natural sentence to drill it in (see "the smarts"
   below).
 - **Word Sets** (📚 `word-sets`) — browse curated vocabulary categories with
@@ -88,13 +88,13 @@ kit's stylesheet is imported once by `main.tsx`. Full details in
 On top of the kit there's a registry-driven **theming system**
 (`platform/src/theme/`): **Default**, two premium skins — **Gold** (warm foil)
 and **Silver** (cool platinum) — and three FREE skins, **Midnight** (墨夜, ink-dark
-mode), **Sakura** (櫻花, blush light) and **Matcha** (抹茶, sage-green light). A theme
+and three FREE skins, **Midnight** (墨夜, ink-dark mode), **Sakura** (櫻花, blush light), **Matcha** (抹茶, sage-green light), and **80s Motiv** (八零動力, neon chrome). A theme
 is one entry in the `themes.ts` registry; its look is a `body[data-theme="<id>"]`
 block — inline in `index.css` (Gold/Silver) or a standalone `theme/theme-<id>.css`
-file imported in `main.tsx` (Midnight/Sakura/Matcha). Default sets nothing — it
-*is* the `:root` look. You can set a theme **for the whole device** in Device
+file imported in `main.tsx` (Midnight/Sakura/Matcha/80s Motiv/retro). Default sets nothing — it
+_is_ the `:root` look. You can set a theme **for the whole device** in Device
 Settings, or **per profile** in that profile's settings; the effective theme
-resolves as `profileOverride ?? device ?? default`. The three new skins are free;
+resolves as `profileOverride ?? device ?? default`. The four new skins are free;
 only Gold/Silver are premium and unlock **device-wide only**, each by its **own
 code** behind a premium **prerequisite** — redeem **`9000`** first (grants the
 prerequisite, reveals nothing), then **`9900`** → Silver and/or **`9901`** → Gold,
@@ -102,10 +102,10 @@ prerequisite, reveals nothing), then **`9900`** → Silver and/or **`9901`** →
 Device Settings (`lc-unlocks`). A `99xx` code entered before `9000` is **rejected
 as an ordinary invalid code** — the same generic "Invalid code" an unknown code
 gets, with **no hint** that the code is real or that a prerequisite exists. There is no per-profile
-unlock (a profile can only *override* among themes already unlocked on the device).
+unlock (a profile can only _override_ among themes already unlocked on the device).
 Once unlocked, the theme selectors list **only the available themes** (locked
 premium skins aren't shown), and the Profile Picker shows a per-profile crown only
-when that profile's *own* override is Gold/Silver. The chosen theme and the unlocks
+when that profile's _own_ override is Gold/Silver. The chosen theme and the unlocks
 ride along in the JSON backup. (The dev Admin console unlocks analogously: **`8000`**
 prerequisite then **`8001`** to reveal it. The old blanket `9999`/`8888` codes are
 **removed**, but devices that already redeemed them keep their unlocks.) Details:
@@ -139,9 +139,9 @@ A weighted random pick chooses the char. The emphasis is **parity and coverage**
 
 ### 2. Pick the best bank sentence containing that char
 
-The app then scores every sentence in the bank that *contains* the chosen char
+The app then scores every sentence in the bank that _contains_ the chosen char
 and picks the best fit (random tiebreak). Scoring is **positive-only** — it
-rewards a sentence's *other* characters for:
+rewards a sentence's _other_ characters for:
 
 - being in the target pool (`bank_pool_weight`),
 - being already comfortable/known, i.e. at/below level (`bank_known_weight`),
@@ -164,10 +164,10 @@ The bank — along with the TOCFL word list — is **platform-owned curriculum**
 living in its own `platform/content.db` (accessed via
 `@shared/character-stats/content-db`), shipped to devices as `content.db`. It used
 to live inside `writing-challenge.db`; it was extracted so every module is a pure
-*consumer* of one shared curriculum. Per-profile progress stays separate. On
+_consumer_ of one shared curriculum. Per-profile progress stays separate. On
 import (and via an offline scrub, `scripts/bank-fix.py`) every sentence is
 **canonicalized to one Taiwan-Traditional form**: Simplified → Traditional, but
-台 *and* 臺 are both preserved (never converted), and undrawable variant glyphs are
+台 _and_ 臺 are both preserved (never converted), and undrawable variant glyphs are
 unified to their ranked, drawable form (汙→污, 秘→祕). See
 [ARCHITECTURE.md §3.5](./ARCHITECTURE.md).
 
@@ -220,21 +220,21 @@ npm run test:data  # data-integrity gate — run after a bake; checks the shippe
 pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip install opencc pytest)
 ```
 
-- **Engine** — sentence selection (target char is *binding*, parity/coverage), mastery/retention, "known"/level, char ranking, zhuyin.
+- **Engine** — sentence selection (target char is _binding_, parity/coverage), mastery/retention, "known"/level, char ranking, zhuyin.
 - **Glyph-canonicalization parity** — the TS importer (`canonicalizeTW`) and the Python scrub (`bank-fix.py canon()`) are checked against one shared golden fixture (`test/fixtures/glyph-canon.json`) so they can't drift: 台/臺 preserved, variant unification (汙→污…), Simplified→Traditional.
 - **Data-integrity gate** — the shipped DBs carry no Simplified/undrawable glyphs, are referentially sound, contain **no personal data**, and every curriculum char used in the bank is drawable offline.
-- *(A theme-resolution suite — selection, premium gating, per-profile override, `body[data-theme]` apply — is written and lands with the theme refactor it depends on.)*
+- _(A theme-resolution suite — selection, premium gating, per-profile override, `body[data-theme]` apply — is written and lands with the theme refactor it depends on.)_
 
 **Test discipline.** Treat the suite as a well-oiled machine: on **any** change, decide whether tests need to be added or updated and state that test impact in the issue/PR. The data-integrity gate blocks deploys on bad content automatically, but **unit + parity coverage is the contributor's job** — new engine logic or a fixed bug ships with its guarding test in the same PR.
 
-**Verification on every PR.** The PR template's **Verification** section is required on **every** PR (including docs-only ones, which merge on green with no human review). Record both *how I verified* — the checks actually run for this change (`npm run test:unit` always; `test:data`/`seed:dbs` for content; the glyph-parity pytest for glyphs; `npx vite build`, never `npm run build`; a named visual check on the preview's `?ui` Styleguide / `?app&demo` for UI/theme work) — and *how to verify (reviewer)*: a concrete preview reproduction (route + themes/elements + expected result), the "Review: …" one-liner our PRs already carry.
+**Verification on every PR.** The PR template's **Verification** section is required on **every** PR (including docs-only ones, which merge on green with no human review). Record both _how I verified_ — the checks actually run for this change (`npm run test:unit` always; `test:data`/`seed:dbs` for content; the glyph-parity pytest for glyphs; `npx vite build`, never `npm run build`; a named visual check on the preview's `?ui` Styleguide / `?app&demo` for UI/theme work) — and _how to verify (reviewer)_: a concrete preview reproduction (route + themes/elements + expected result), the "Review: …" one-liner our PRs already carry.
 
 ## Deployment
 
 Deployed to **Cloudflare Pages** as static assets — no production server. **Deploys are CI-driven** (`.github/workflows/ci.yml`) and gated on the tests + data-integrity check:
 
 - **Pull request → preview.** CI builds from the committed seeds, runs the gate, deploys a Cloudflare Pages **preview**, and comments its URLs on the PR — including the demo link `…/?app&demo`.
-- **Merge to `master` → production.** Identical build + gate. The Pages project is *direct-upload* with production branch **`learning-chinese`** (not `master`), so the workflow deploys `--branch=learning-chinese` on a master push (→ `learnchinese.hsu.mobi`) and `--branch=<PR head>` on a PR (→ preview).
+- **Merge to `master` → production.** Identical build + gate. The Pages project is _direct-upload_ with production branch **`learning-chinese`** (not `master`), so the workflow deploys `--branch=learning-chinese` on a master push (→ `learnchinese.hsu.mobi`) and `--branch=<PR head>` on a PR (→ preview).
 - **One-time setup:** repo secrets `CLOUDFLARE_API_TOKEN` (Pages:Edit) + `CLOUDFLARE_ACCOUNT_ID`, and the CF project's production branch set to `learning-chinese`.
 - **Docs-merge-on-green.** A **documentation-only** PR (README / ARCHITECTURE / CLAUDE.md / `.github/` templates — no source, DB, or workflow changes) may be **merged automatically once CI is green**, with no human-review step. **Code and content (curriculum) PRs still need a review** before merge.
 
@@ -242,14 +242,14 @@ Deployed to **Cloudflare Pages** as static assets — no production server. **De
 
 **PR-title convention** — title PRs `[PR-###][<type>][<issue#>] <title>` (e.g. `[PR-016][bug][14] Stroke-result fail + above-level read red`) so the PR list stays scannable and each PR ties to its type and issue at a glance. `[PR-###]` is the PR number zero-padded to 3 digits; `[<type>]` is the issue type label (`bug` / `enhancement` / `content` / `performance`); `[<issue#>]` is the linked issue (omit the bracket if there's none); `<title>` is concise. Because the PR number only exists after creation, **backfill `[PR-###]` right after `gh pr create`** with `gh pr edit <n> --title …`.
 
-| Change | Steps |
-|--------|-------|
-| Code | PR → preview → merge to `master`. Automatic. |
+| Change                             | Steps                                                                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Code                               | PR → preview → merge to `master`. Automatic.                                                                 |
 | Content (`content.db` / module DB) | also `npm run seed:dbs`, commit `seed/*.db` + `content.db` → PR. The gate re-checks glyphs/coverage/privacy. |
-| Stroke override | add `platform/public/stroke-data/<char>.json`; drop that char from the gate's `STROKE_ALLOWLIST`. |
-| Demo data | bump `DEMO_VERSION` in `platform/src/offline/demo.ts`. |
+| Stroke override                    | add `platform/public/stroke-data/<char>.json`; drop that char from the gate's `STROKE_ALLOWLIST`.            |
+| Demo data                          | bump `DEMO_VERSION` in `platform/src/offline/demo.ts`.                                                       |
 
-Reproducible builds: the working `platform.db` / `writing-challenge.db` hold local progress and stay out of git; CI builds from scrubbed, content-only **`seed/`** DBs. Local builds **no longer auto-deploy**. Manual escape hatch (deploys a *preview*):
+Reproducible builds: the working `platform.db` / `writing-challenge.db` hold local progress and stay out of git; CI builds from scrubbed, content-only **`seed/`** DBs. Local builds **no longer auto-deploy**. Manual escape hatch (deploys a _preview_):
 
 ```bash
 npm run build --workspace=platform
@@ -262,7 +262,7 @@ npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch
   runs `vite build`. Every build stamps a **fresh per-deploy `version`** (and a
   separate data-only `contentHash`), so the in-app "new version available" banner
   fires on every deploy while devices only re-download the ~18 MB databases when
-  the *data* actually changes. (See [ARCHITECTURE.md §4](./ARCHITECTURE.md).)
+  the _data_ actually changes. (See [ARCHITECTURE.md §4](./ARCHITECTURE.md).)
 - **Gemini secret** (one-time, for copybook Generate in prod):
 
   ```bash
@@ -270,10 +270,11 @@ npx wrangler pages deploy platform/dist --project-name=learning-chinese --branch
   ```
 
   (BYO per-profile keys work without this; the secret is the shared fallback.)
+
 - **Feedback feature** (the in-app 💬 widget) is **siloed** — a dedicated D1 + R2 +
   admin secret with no app/user/content binding. Its one-time provisioning runbook
   (`wrangler d1 create` / migration / `r2 bucket create` / `pages secret put
-  FEEDBACK_ADMIN_SECRET` / add Pages bindings → redeploy) lives in
+FEEDBACK_ADMIN_SECRET` / add Pages bindings → redeploy) lives in
   [ARCHITECTURE.md §6.5](./ARCHITECTURE.md).
 
 ---
@@ -317,10 +318,10 @@ servers before committing `content.db` (don't commit it while a server holds it 
 
 ## Repo map
 
-| Path | What |
-|------|------|
-| `shared/` | `@shared/character-stats` — ranking, mastery, "known", selection (pure) |
-| `platform/` | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions |
-| `modules/*` | the five learning activities (see [modules/README.md](./modules/README.md)) |
-| `ARCHITECTURE.md` | technical architecture (monorepo, module system, data, deploy) |
-| `platform/src/ui/README.md` | the shared UI kit reference |
+| Path                        | What                                                                        |
+| --------------------------- | --------------------------------------------------------------------------- |
+| `shared/`                   | `@shared/character-stats` — ranking, mastery, "known", selection (pure)     |
+| `platform/`                 | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions  |
+| `modules/*`                 | the five learning activities (see [modules/README.md](./modules/README.md)) |
+| `ARCHITECTURE.md`           | technical architecture (monorepo, module system, data, deploy)              |
+| `platform/src/ui/README.md` | the shared UI kit reference                                                 |
