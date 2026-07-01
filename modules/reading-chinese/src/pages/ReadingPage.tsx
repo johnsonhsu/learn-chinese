@@ -1,15 +1,17 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { BackButton } from '@platform/ui/index.ts';
-import { speak } from '@platform/utils/speech.ts';
-import { useOffline } from '@platform/offline/offline-context.tsx';
-import { demoKey } from '@platform/offline/demo-key.ts';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { BackButton } from "@platform/ui/index.ts";
+import { speak } from "@platform/utils/speech.ts";
+import { useOffline } from "@platform/offline/offline-context.tsx";
+import { demoKey } from "@platform/offline/demo-key.ts";
 import {
-  buildReadingPool, tapTile, firstUnresolvedIndex,
+  buildReadingPool,
+  tapTile,
+  firstUnresolvedIndex,
   type ReadingSlot,
-} from '@shared/character-stats/reading';
-import { getNextReadingSentence, submitReadingResult } from '../utils/api.ts';
-import type { NextSentenceResponse, CharAttemptResult, CharResult } from '../utils/api.ts';
-import { useT } from '../i18n/index.ts';
+} from "@shared/character-stats/reading";
+import { getNextReadingSentence, submitReadingResult } from "../utils/api.ts";
+import type { NextSentenceResponse, CharAttemptResult, CharResult } from "../utils/api.ts";
+import { useT } from "../i18n/index.ts";
 
 interface Props {
   userId: number;
@@ -24,7 +26,7 @@ interface Props {
  * signature). Auto-skip ON omits the hard chars from the pool (recorded as skip);
  * OFF shows all. NO HanziWriter is used.
  */
-export function ReadingPage({ userId: _userId, onStop }: Props) {
+export function ReadingPage({ onStop }: Props) {
   const t = useT();
   const { dataLayer } = useOffline();
   const [sentence, setSentence] = useState<NextSentenceResponse | null>(null);
@@ -34,17 +36,17 @@ export function ReadingPage({ userId: _userId, onStop }: Props) {
   const [wrongTile, setWrongTile] = useState<{ char: string; nonce: number } | null>(null);
   const [poppedIndex, setPoppedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [done, setDone] = useState(false);
   const [fluency, setFluency] = useState(0);
   const [totalKnown, setTotalKnown] = useState(0);
 
-  const autoSkipKey = demoKey('reading_auto_skip');
-  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(autoSkipKey) === 'true');
+  const autoSkipKey = demoKey("reading_auto_skip");
+  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(autoSkipKey) === "true");
   const toggleAutoSkip = () => {
     const next = !autoSkip;
     setAutoSkip(next);
-    localStorage.setItem(autoSkipKey, next ? 'true' : 'false');
+    localStorage.setItem(autoSkipKey, next ? "true" : "false");
   };
 
   const sentenceStart = useRef(Date.now());
@@ -79,11 +81,17 @@ export function ReadingPage({ userId: _userId, onStop }: Props) {
         sentenceStart.current = Date.now();
         speak(s.text);
       })
-      .catch((e) => { if (loadId.current === thisLoad) setError(e.message); })
-      .finally(() => { if (loadId.current === thisLoad) setLoading(false); });
+      .catch((e) => {
+        if (loadId.current === thisLoad) setError(e.message);
+      })
+      .finally(() => {
+        if (loadId.current === thisLoad) setLoading(false);
+      });
   }, [dataLayer, autoSkip]);
 
-  useEffect(() => { loadSentence(); }, [loadSentence]);
+  useEffect(() => {
+    loadSentence();
+  }, [loadSentence]);
 
   // Assemble the per-char results (by slot index, so duplicate chars are scored
   // independently) + submit to the READING track only. A slot tapped with no
@@ -92,10 +100,22 @@ export function ReadingPage({ userId: _userId, onStop }: Props) {
     if (!dataLayer || !sentence) return;
     const results: CharAttemptResult[] = slots.map((s, i) => {
       if (s.autoSkipped) {
-        return { char: s.char, result: 'skip' as CharResult, failedStrokes: 0, hintUsed: true, durationMs: 0 };
+        return {
+          char: s.char,
+          result: "skip" as CharResult,
+          failedStrokes: 0,
+          hintUsed: true,
+          durationMs: 0,
+        };
       }
       const m = mistakes.current[i] || 0;
-      return { char: s.char, result: (m === 0 ? 'perfect' : 'correct') as CharResult, failedStrokes: 0, hintUsed: false, durationMs: 0 };
+      return {
+        char: s.char,
+        result: (m === 0 ? "perfect" : "correct") as CharResult,
+        failedStrokes: 0,
+        hintUsed: false,
+        durationMs: 0,
+      };
     });
     const durationMs = Date.now() - sentenceStart.current;
     const resp = await submitReadingResult(dataLayer, sentence.sentenceId, durationMs, results);
@@ -104,73 +124,105 @@ export function ReadingPage({ userId: _userId, onStop }: Props) {
     setDone(true);
   }, [dataLayer, sentence, slots]);
 
-  const onTapTile = useCallback((tapped: string, tileIdx: number) => {
-    const res = tapTile(slots, index, tiles, tapped);
-    if (res.outcome === 'wrong') {
-      mistakes.current[index] = (mistakes.current[index] || 0) + 1;
-      setWrongTile({ char: tapped, nonce: Date.now() + tileIdx });
-      return;
-    }
-    setWrongTile(null);
-    setPoppedIndex(index);
-    setTiles(res.tiles);
-    setIndex(res.nextIndex);
-    if (res.done) { void finish(); }
-  }, [slots, index, tiles, finish]);
+  const onTapTile = useCallback(
+    (tapped: string, tileIdx: number) => {
+      const res = tapTile(slots, index, tiles, tapped);
+      if (res.outcome === "wrong") {
+        mistakes.current[index] = (mistakes.current[index] || 0) + 1;
+        setWrongTile({ char: tapped, nonce: Date.now() + tileIdx });
+        return;
+      }
+      setWrongTile(null);
+      setPoppedIndex(index);
+      setTiles(res.tiles);
+      setIndex(res.nextIndex);
+      if (res.done) {
+        void finish();
+      }
+    },
+    [slots, index, tiles, finish],
+  );
 
   // --- Done screen ---
   if (done) {
     const scoredIdx = slots.map((s, i) => ({ s, i })).filter(({ s }) => !s.autoSkipped);
     const perfect = scoredIdx.filter(({ i }) => (mistakes.current[i] ?? 0) === 0).length;
-    const perfectAll = scoredIdx.length > 0 && scoredIdx.every(({ i }) => (mistakes.current[i] ?? 0) === 0);
+    const perfectAll =
+      scoredIdx.length > 0 && scoredIdx.every(({ i }) => (mistakes.current[i] ?? 0) === 0);
     return (
       <div className="rc-page rc-page--done">
         <div className="rc-done-card">
-          <div className="rc-done-fluency">{t('reading.fluency')} {fluency} — {totalKnown} {t('reading.chars')}</div>
+          <div className="rc-done-fluency">
+            {t("reading.fluency")} {fluency} — {totalKnown} {t("reading.chars")}
+          </div>
           {sentence?.definition && <div className="rc-done-meaning">{sentence.definition}</div>}
           <div className="rc-done-sentence" onClick={() => sentence && speak(sentence.text)}>
             {slots.map((s, i) => (
-              <span key={i} className={`rc-done-char${s.autoSkipped ? ' rc-done-char--skip' : ''}`}>{s.char}</span>
+              <span key={i} className={`rc-done-char${s.autoSkipped ? " rc-done-char--skip" : ""}`}>
+                {s.char}
+              </span>
             ))}
           </div>
           {perfectAll ? (
-            <div className="rc-celebrate"><span aria-hidden>✨</span> {t('reading.perfectAll')} <span aria-hidden>✨</span></div>
+            <div className="rc-celebrate">
+              <span aria-hidden>✨</span> {t("reading.perfectAll")} <span aria-hidden>✨</span>
+            </div>
           ) : (
-            <div className="rc-done-stats">{perfect} {t('reading.correct')}</div>
+            <div className="rc-done-stats">
+              {perfect} {t("reading.correct")}
+            </div>
           )}
           <div className="rc-done-actions">
-            <button className="rc-btn-primary" onClick={loadSentence}>{t('reading.nextSession')}</button>
-            <button className="rc-btn-secondary" onClick={onStop}>{t('reading.stop')}</button>
+            <button className="rc-btn-primary" onClick={loadSentence}>
+              {t("reading.nextSession")}
+            </button>
+            <button className="rc-btn-secondary" onClick={onStop}>
+              {t("reading.stop")}
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  if (loading) return <div className="rc-empty">{t('reading.loading')}</div>;
-  if (error) return <div className="rc-empty" style={{ color: 'var(--error)' }}>{error}</div>;
-  if (!sentence) return <div className="rc-empty">{t('reading.noSentences')}</div>;
+  if (loading) return <div className="rc-empty">{t("reading.loading")}</div>;
+  if (error)
+    return (
+      <div className="rc-empty" style={{ color: "var(--error)" }}>
+        {error}
+      </div>
+    );
+  if (!sentence) return <div className="rc-empty">{t("reading.noSentences")}</div>;
 
   return (
     <div className="rc-page">
       <div className="rc-top">
-        <BackButton size="sm" onClick={onStop} label={t('reading.back')} />
+        <BackButton size="sm" onClick={onStop} label={t("reading.back")} />
         <div className="rc-level">R{fluency}</div>
         <div className="rc-settings">
           <button
-            className={`sp-autoskip-toggle${autoSkip ? ' active' : ''}`}
+            className={`sp-autoskip-toggle${autoSkip ? " active" : ""}`}
             onClick={toggleAutoSkip}
             title="Auto-skip chars above your level"
           >
-            {t('reading.autoSkip')} {autoSkip ? t('reading.on') : t('reading.off')}
+            {t("reading.autoSkip")} {autoSkip ? t("reading.on") : t("reading.off")}
           </button>
-          <button className="rc-new-btn" onClick={loadSentence} title={t('reading.newSentence')}>↻</button>
+          <button className="rc-new-btn" onClick={loadSentence} title={t("reading.newSentence")}>
+            ↻
+          </button>
         </div>
       </div>
 
       <div className="rc-prompt-card">
         <div className="rc-prompt-row">
-          <button type="button" className="rc-audio-btn" onClick={() => speak(sentence.text)} aria-label={t('reading.hearSentence')}>🔊</button>
+          <button
+            type="button"
+            className="rc-audio-btn"
+            onClick={() => speak(sentence.text)}
+            aria-label={t("reading.hearSentence")}
+          >
+            🔊
+          </button>
           {sentence.definition && <div className="rc-prompt-meaning">{sentence.definition}</div>}
         </div>
 
@@ -181,21 +233,24 @@ export function ReadingPage({ userId: _userId, onStop }: Props) {
             const filled = i < index;
             const isActive = i === index;
             const isAuto = s.autoSkipped;
-            const cls = ['rc-slot',
-              filled && 'rc-slot--filled',
-              isActive && 'rc-slot--active',
-              isAuto && 'rc-slot--skip',
-              poppedIndex === i && 'rc-slot--pop',
-            ].filter(Boolean).join(' ');
+            const cls = [
+              "rc-slot",
+              filled && "rc-slot--filled",
+              isActive && "rc-slot--active",
+              isAuto && "rc-slot--skip",
+              poppedIndex === i && "rc-slot--pop",
+            ]
+              .filter(Boolean)
+              .join(" ");
             return (
               <span key={i} className={cls}>
-                {(filled || isAuto) ? s.char : ''}
+                {filled || isAuto ? s.char : ""}
               </span>
             );
           })}
         </div>
 
-        <div className="rc-instruction">{t('reading.instruction')}</div>
+        <div className="rc-instruction">{t("reading.instruction")}</div>
 
         {/* Tile pool: the shuffled sentence chars still to place. Each tap tests
             against the current slot; a correct tap consumes the tile. */}
@@ -205,7 +260,7 @@ export function ReadingPage({ userId: _userId, onStop }: Props) {
             return (
               <button
                 key={`${c}-${i}`}
-                className={`rc-tile${isWrong ? ' rc-tile--wrong' : ''}`}
+                className={`rc-tile${isWrong ? " rc-tile--wrong" : ""}`}
                 onClick={() => onTapTile(c, i)}
               >
                 {c}
