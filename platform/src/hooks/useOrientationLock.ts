@@ -47,7 +47,7 @@ export function useOrientationLock(orientationLock: '0' | '1' | undefined, lang:
     apply();
     mql.addEventListener?.('change', apply);
 
-    const safeScreen = screen as unknown as { orientation?: { lock: (o: string) => Promise<void>; unlock: () => void } };
+    const safeScreen = screen as unknown as { orientation?: { lock: (_o: string) => Promise<void>; unlock: () => void } };
     if (enabled && safeScreen?.orientation?.lock) {
       safeScreen.orientation.lock('portrait').catch(() => {});
     }

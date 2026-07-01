@@ -8,7 +8,7 @@ import { getEnglishVoices, previewVoice, voiceLabel } from '../utils/voices.ts';
  *  the settings cards (which clip with `overflow: hidden`). */
 export function VoiceSelect({ value, onChange, inheritLabel }: {
   value: string;
-  onChange: (name: string) => void;
+  onChange: (_name: string) => void;
   inheritLabel?: string;
 }) {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);

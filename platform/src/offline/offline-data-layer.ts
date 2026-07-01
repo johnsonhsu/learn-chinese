@@ -140,7 +140,7 @@ export class OfflineDataLayer {
     this.userId = userId ?? 0;
   }
 
-  async initialize(onProgress?: (p: InitProgress) => void): Promise<void> {
+  async initialize(onProgress?: (_p: InitProgress) => void): Promise<void> {
     await initSqlite();
 
     // What shipped-content snapshot does the server/bundle currently offer?

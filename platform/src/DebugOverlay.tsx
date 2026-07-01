@@ -11,7 +11,7 @@ interface DebugLine {
 }
 
 interface DebugContextType {
-  setLines: (lines: DebugLine[]) => void;
+  setLines: (_lines: DebugLine[]) => void;
 }
 
 const DebugContext = createContext<DebugContextType>({ setLines: () => {} });

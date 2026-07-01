@@ -40,7 +40,7 @@ function manifestList(): ModuleManifest[] {
   return out.sort((a, b) => a.order - b.order);
 }
 
-export function ModulesPanel({ onSelectModule }: { onSelectModule: (name: string) => void }) {
+export function ModulesPanel({ onSelectModule }: { onSelectModule: (_name: string) => void }) {
   const { getModulesConfig } = useOffline();
   const [modules, setModules] = useState<ModuleInfo[]>([]);
   const [loading, setLoading] = useState(true);

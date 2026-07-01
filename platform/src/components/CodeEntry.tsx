@@ -71,9 +71,9 @@ function KeypadKey({ label, ariaLabel, onPress }: {
  */
 export function CodeEntry({ onSubmit, onUnlocked, onClose }: {
   /** Redeem the completed code in the caller's scope; return the outcome. */
-  onSubmit: (code: string) => CodeResult;
+  onSubmit: (_code: string) => CodeResult;
   /** Called once on a successful unlock, with the granted feature key. */
-  onUnlocked?: (feature: string) => void;
+  onUnlocked?: (_feature: string) => void;
   /** Dismiss the whole flow (cancel from the keypad, or after results close). */
   onClose: () => void;
 }) {

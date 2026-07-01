@@ -20,9 +20,9 @@ export function openDatabase(data: ArrayLike<number>): SqlJsDatabase {
 
 export function sqlJsProvider(db: SqlJsDatabase): DbQueryProvider {
   return {
-    queryAll<T>(sql: string, params?: any[]): T[] {
+    queryAll<T>(sql: string, params?: unknown[]): T[] {
       const stmt = db.prepare(sql);
-      if (params) stmt.bind(params);
+      if (params) stmt.bind(params as any[]);  
       const results: T[] = [];
       while (stmt.step()) {
         results.push(stmt.getAsObject() as T);
@@ -30,15 +30,15 @@ export function sqlJsProvider(db: SqlJsDatabase): DbQueryProvider {
       stmt.free();
       return results;
     },
-    queryOne<T>(sql: string, params?: any[]): T | undefined {
+    queryOne<T>(sql: string, params?: unknown[]): T | undefined {
       const stmt = db.prepare(sql);
-      if (params) stmt.bind(params);
+      if (params) stmt.bind(params as any[]);  
       const result = stmt.step() ? (stmt.getAsObject() as T) : undefined;
       stmt.free();
       return result;
     },
-    run(sql: string, params?: any[]): { changes: number; lastId: number } {
-      db.run(sql, params);
+    run(sql: string, params?: unknown[]): { changes: number; lastId: number } {
+      db.run(sql, params);  
       const changes = db.getRowsModified();
       const lastIdResult = db.exec('SELECT last_insert_rowid() as id');
       const lastId =

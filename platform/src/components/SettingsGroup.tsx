@@ -85,7 +85,7 @@ export function SettingSlider({ label, info, value, min, max, step, onChange, su
   min: number;
   max: number;
   step: number;
-  onChange: (value: string) => void;
+  onChange: (_value: string) => void;
   suffix?: string;
 }) {
   return (
@@ -111,7 +111,7 @@ export function SettingToggle({ label, info, options, value, onChange }: {
   info?: string;
   options: { value: string; label: string }[];
   value: string;
-  onChange: (value: string) => void;
+  onChange: (_value: string) => void;
 }) {
   return (
     <SettingRow label={label} info={info}>
