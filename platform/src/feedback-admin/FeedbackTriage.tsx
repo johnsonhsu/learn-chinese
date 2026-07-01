@@ -17,6 +17,16 @@
  * endpoints bind ONLY the feedback D1/R2 + the admin secret, so nothing
  * app/user/content-related is reachable. If the secret is unset/wrong the endpoints
  * are 403 (fail-safe closed).
+ *
+ * LOGIN PROBES THE SERVER (issue #59). Unlock does a real `GET /api/feedback?limit=1`
+ * with the entered secret and only commits it to localStorage on a 200. A 403 shows a
+ * clear inline error on the unlock screen instead of silently storing the secret and
+ * then bouncing back to "locked" on the first list/patch/screenshot call — the old
+ * "I can log in but any action kicks me out" symptom. Because the endpoint returns an
+ * indistinguishable 403 whether the secret is WRONG or simply NOT CONFIGURED on this
+ * deployment, the error names both causes (the latter is the expected state on PR
+ * PREVIEW deploys, where `FEEDBACK_ADMIN_SECRET` is only bound in the Pages project's
+ * PRODUCTION environment — see ARCHITECTURE.md §6.5 provisioning runbook).
  */
 import { useState, useEffect, useCallback } from 'react';
 
@@ -133,6 +143,18 @@ export function FeedbackTriage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enlarged, setEnlarged] = useState<number | null>(null);
+  // Inline error shown on the UNLOCK screen when a login probe fails (wrong/absent
+  // secret, or network). Distinct from `error`, which annotates the loaded console.
+  const [unlockError, setUnlockError] = useState<string | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
+
+  // A 403 while already unlocked means the secret stopped working (rotated, or this
+  // deploy never had it). Clear it so the unlock screen reappears with the cause.
+  const relock = useCallback(() => {
+    localStorage.removeItem(SECRET_KEY);
+    setSecret('');
+    setUnlockError('forbidden');
+  }, []);
 
   const load = useCallback(async () => {
     if (!secret) return;
@@ -141,7 +163,7 @@ export function FeedbackTriage() {
     try {
       const qs = filter ? `?status=${encodeURIComponent(filter)}` : '';
       const res = await fetch(`/api/feedback${qs}`, { headers: { [HEADER]: secret } });
-      if (res.status === 403) { setError('forbidden'); setItems([]); setCounts({}); return; }
+      if (res.status === 403) { setItems([]); setCounts({}); relock(); return; }
       if (!res.ok) { setError(`error ${res.status}`); return; }
       const data = (await res.json()) as { counts: Record<string, number>; items: FeedbackRow[] };
       setItems(data.items || []);
@@ -151,53 +173,91 @@ export function FeedbackTriage() {
     } finally {
       setLoading(false);
     }
-  }, [secret, filter]);
+  }, [secret, filter, relock]);
 
   useEffect(() => { void load(); }, [load]);
 
-  const saveSecret = () => {
+  // Unlock = PROBE the server before committing the secret. On 200 store + enter the
+  // console; on 403 show a clear cause (wrong OR not-configured-on-this-deploy) and
+  // do NOT store — so a bad/absent secret can't slip in and then kick the user out on
+  // the first real action. A transient network error is reported without storing.
+  const saveSecret = async () => {
     const s = secretInput.trim();
-    if (!s) return;
-    localStorage.setItem(SECRET_KEY, s);
-    setSecret(s);
-    setSecretInput('');
-    setError(null);
+    if (!s || unlocking) return;
+    setUnlocking(true);
+    setUnlockError(null);
+    try {
+      const res = await fetch('/api/feedback?limit=1', { headers: { [HEADER]: s } });
+      if (res.status === 403) {
+        setUnlockError('forbidden');
+        return;
+      }
+      if (!res.ok) {
+        setUnlockError(`error ${res.status}`);
+        return;
+      }
+      // Accepted — persist and drop into the console. Prime the list from this probe.
+      localStorage.setItem(SECRET_KEY, s);
+      setSecret(s);
+      setSecretInput('');
+      setError(null);
+      setUnlockError(null);
+    } catch {
+      setUnlockError('network');
+    } finally {
+      setUnlocking(false);
+    }
   };
 
   const changeStatus = async (id: number, status: Status) => {
     setItems((prev) => prev.map((it) => (it.id === id ? { ...it, status } : it)));
     try {
-      await fetch(`/api/feedback/${id}`, {
+      const res = await fetch(`/api/feedback/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', [HEADER]: secret },
         body: JSON.stringify({ status }),
       });
+      if (res.status === 403) { relock(); return; } // secret rotated / absent on this deploy
     } catch { /* keep optimistic update */ }
     void load(); // refresh counts
   };
 
-  // --- Secret entry (no secret, or rejected) ---
-  if (!secret || error === 'forbidden') {
+  // --- Secret entry (no secret yet, or a probe/action was rejected) ---
+  if (!secret) {
+    const unlockMsg =
+      unlockError === 'forbidden'
+        ? 'That secret was rejected — either it is wrong, or FEEDBACK_ADMIN_SECRET is not configured on this deployment (expected on PR preview deploys; only production binds it).'
+        : unlockError === 'network'
+          ? "Couldn't reach the server. Check your connection and try again."
+          : unlockError
+            ? `Couldn't verify (${unlockError}). Try again.`
+            : null;
     return (
-      <div className="admin-empty" style={{ maxWidth: 440 }}>
-        <p style={{ marginTop: 0 }}>
-          {error === 'forbidden' ? 'That secret was rejected.' : 'Enter the feedback admin secret'}
-        </p>
+      <div className="admin-empty" style={{ maxWidth: 460 }}>
+        <p style={{ marginTop: 0 }}>Enter the feedback admin secret</p>
         <p style={{ fontSize: 13, color: '#666' }}>
           This is <code>FEEDBACK_ADMIN_SECRET</code> (reads are closed without it). It is sent as a request
-          header only — never in a URL.
+          header only — never in a URL. Unlock verifies it against the server before it is stored.
         </p>
         <div style={{ display: 'flex', gap: 8 }}>
           <input
             type="password"
             value={secretInput}
             onChange={(e) => setSecretInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && saveSecret()}
+            onKeyDown={(e) => e.key === 'Enter' && void saveSecret()}
             placeholder="admin secret"
+            disabled={unlocking}
             style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid #ccc' }}
           />
-          <button onClick={saveSecret} style={{ padding: '8px 16px', borderRadius: 8, cursor: 'pointer' }}>Unlock</button>
+          <button
+            onClick={() => void saveSecret()}
+            disabled={unlocking || !secretInput.trim()}
+            style={{ padding: '8px 16px', borderRadius: 8, cursor: unlocking ? 'default' : 'pointer' }}
+          >
+            {unlocking ? 'Checking…' : 'Unlock'}
+          </button>
         </div>
+        {unlockMsg && <p style={{ fontSize: 13, color: '#c00', marginBottom: 0 }}>{unlockMsg}</p>}
       </div>
     );
   }
@@ -223,7 +283,7 @@ export function FeedbackTriage() {
       </div>
 
       {loading && <p style={{ color: '#888' }}>Loading…</p>}
-      {error && error !== 'forbidden' && <p style={{ color: '#c00' }}>Failed to load ({error}).</p>}
+      {error && <p style={{ color: '#c00' }}>Failed to load ({error}).</p>}
       {!loading && !error && items.length === 0 && <div className="admin-empty">No feedback{filter ? ` with status “${STATUS_LABEL[filter]}”` : ''} yet.</div>}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

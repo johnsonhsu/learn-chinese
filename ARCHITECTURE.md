@@ -842,9 +842,17 @@ former in-app admin-console `feedback` tab, which was removed).
   the app's SW precache** (`workbox.globIgnores` in `vite.config.ts`; the entry gets
   a stable `feedback-admin-entry.js` name so the glob can target it). It is not
   pulled into the app bundle.
-- **Prod read path, reused endpoints.** The owner enters the admin secret once (kept
-  in `localStorage`, entered at runtime — **never baked into the bundle**); the
-  surface then reads the **existing** admin-gated, feedback-siloed endpoints —
+- **Prod read path, reused endpoints.** The owner enters the admin secret once; **Unlock
+  PROBES the server** (`GET /api/feedback?limit=1` with the header) and only stores the
+  secret in `localStorage` on a `200` — a `403` shows a clear inline cause instead of
+  silently storing it and then bouncing back to "locked" on the first list/patch/screenshot
+  call. Because the endpoint returns an **indistinguishable `403`** whether the secret is
+  *wrong* or simply *not configured on this deployment*, the unlock error names both — the
+  latter is the **expected state on PR PREVIEW deploys**, where `FEEDBACK_ADMIN_SECRET` is
+  bound only in the Pages project's **production** environment (see the provisioning runbook
+  below). A `403` that arrives *after* unlock (rotated/absent secret) re-locks the surface
+  with the same message. The secret is entered at runtime and **never baked into the
+  bundle**. The surface then reads the **existing** admin-gated, feedback-siloed endpoints —
   `GET /api/feedback` (list + `?status=` filter + counts), `PATCH /api/feedback/:id`
   (set status), and `GET /api/feedback/:id/screenshot` (image bytes) — sending the
   secret as the **`x-feedback-admin-secret` header only**. It shows feedback
@@ -888,6 +896,7 @@ npx wrangler d1 execute feedback --remote \
 npx wrangler r2 bucket create learning-chinese-feedback
 
 # 4. Set the admin secret (any random string; gates the read/triage routes).
+#    NOTE: `pages secret put` targets the PRODUCTION environment only.
 npx wrangler pages secret put FEEDBACK_ADMIN_SECRET --project-name=learning-chinese
 ```
 
@@ -896,6 +905,16 @@ binding `FEEDBACK_DB`** (→ the `feedback` database) and the **R2 binding
 `FEEDBACK_R2`** (→ the `learning-chinese-feedback` bucket), and **redeploy**. The
 bindings are deliberately limited to those two plus the secret — that absence is
 what makes the feature siloed.
+
+> ⚠️ **Preview vs Production.** Cloudflare Pages keeps **separate** secrets/bindings for
+> the **Production** and **Preview** environments. `wrangler pages secret put` (step 4)
+> writes the **Production** secret only, so on **PR preview** deploys
+> `FEEDBACK_ADMIN_SECRET` is **unset** and every `/api/feedback*` call returns `403`
+> regardless of what secret you type (fail-closed) — the `/feedback-admin` console will
+> report exactly that on Unlock. This is expected and harmless (the console works on
+> **prod**, where the secret is bound). To *also* exercise triage on previews, add
+> `FEEDBACK_ADMIN_SECRET` (and the `FEEDBACK_DB`/`FEEDBACK_R2` bindings) to the Pages
+> project's **Preview** environment in the dashboard.
 
 ---
 
