@@ -103,8 +103,8 @@ Each module ships a manifest, e.g. `modules/writing-challenge/module.json`:
 }
 ```
 
-| Field           | Purpose                                                         |
-|-----------------|----------------------------------------------------------------|
+| Field           | Purpose                                                        |
+| --------------- | -------------------------------------------------------------- |
 | `name`          | stable id; matches the folder, used for glob/registry keys     |
 | `displayName`   | English label on the home grid                                 |
 | `displayNameZh` | Traditional-Chinese label                                      |
@@ -123,16 +123,24 @@ The platform finds modules with two `import.meta.glob` calls:
 
 ```ts
 // Lazy React components — the module's runtime entry.
-const moduleImports = import.meta.glob<ModuleExport>('../../modules/*/src/index.ts');
+const moduleImports = import.meta.glob<ModuleExport>("../../modules/*/src/index.ts");
 
 // Manifests — read eagerly at build time, no server needed.
-const manifestModules = import.meta.glob('../../modules/*/module.json', { eager: true });
+const manifestModules = import.meta.glob("../../modules/*/module.json", { eager: true });
 ```
 
 Manifests are filtered against an explicit allow-set and sorted by `order`:
 
 ```ts
-const OFFLINE_READY_MODULES = new Set(['writing-challenge', 'word-sets', 'practice-english', 'copybook', 'my-characters', 'reading-chinese', 'reading-english']);
+const OFFLINE_READY_MODULES = new Set([
+  "writing-challenge",
+  "word-sets",
+  "practice-english",
+  "copybook",
+  "my-characters",
+  "reading-chinese",
+  "reading-english",
+]);
 ```
 
 Only modules in this set appear on the home screen. It's an inclusion list of
@@ -145,9 +153,9 @@ Each module's `src/index.ts` default-exports a React component receiving
 
 ```ts
 interface ModuleProps {
-  userId: number;       // the active profile id
-  language: Language;   // 'zh-TW' | 'en' — UI language, owned by the platform
-  onExit?: () => void;  // return to the home / module picker
+  userId: number; // the active profile id
+  language: Language; // 'zh-TW' | 'en' — UI language, owned by the platform
+  onExit?: () => void; // return to the home / module picker
 }
 ```
 
@@ -277,7 +285,7 @@ reconstruct pool/shuffle/tap logic itself is pure and lives in
   character advance. The create effect now keys only off structural config
   (size / mode / leniency), and cleanup calls `cancelQuiz()` so abandoned quizzes'
   leaked global listeners no-op instead of hijacking the live canvas.
-- A new **`quizSession`** prop lets the parent request a fresh quiz of the *same*
+- A new **`quizSession`** prop lets the parent request a fresh quiz of the _same_
   glyph (a must-repeat after a fail, or a duplicate consecutive character) — cases
   a plain `character` diff would miss — without recreating the writer.
 - **Exception:** `PlacementTest.tsx` intentionally keeps its `key={seq}` remount.
@@ -332,7 +340,7 @@ The **curriculum content** — the practice sentence bank (`bank_sentences`), th
 TOCFL word list (`tocfl_words`), and its per-character index (`char_words`) — is
 **platform-owned**, living in its own canonical DB **`platform/content.db`**.
 It used to live inside `modules/writing-challenge/writing-challenge.db`; it was
-extracted so every module is a pure *consumer* of one shared curriculum
+extracted so every module is a pure _consumer_ of one shared curriculum
 (writing-challenge drills it, practice-english reads it for cloze, the dev admin
 curates it).
 
@@ -359,7 +367,7 @@ curates it).
 
 Both the **on-import** path (`content-db.ts` `canonicalizeTW()`, run by
 `addBankSentences`) and the **offline scrub** (`scripts/bank-fix.py` `canon()`)
-share the *same* normalization so the bank only ever stores one canonical glyph
+share the _same_ normalization so the bank only ever stores one canonical glyph
 per character:
 
 1. **Simplified → Traditional (Taiwan standard)** via OpenCC (`cn`→`tw` in JS,
@@ -371,7 +379,7 @@ per character:
 3. **Undrawable variant glyphs are unified to their ranked + drawable canonical
    form** via a shared `VARIANT_MAP` (`汙→污`, `祕←秘`): the variant is in neither
    the char ranking nor the hanzi-writer stroke data, so the app literally cannot
-   draw it — it is folded into the canonical form that *is* ranked and drawable.
+   draw it — it is folded into the canonical form that _is_ ranked and drawable.
 
 `bank-fix.py` additionally collapses rows that collide after canonicalization
 (deleting the duplicate), is idempotent, backs up the DB first, and reports counts
@@ -473,7 +481,7 @@ Python glyph scrub. Scripts: `npm test` (all), `npm run test:unit`
   bank has bundled stroke data (offline-drawable), with a small, documented allowlist for
   chars no open dataset covers. See §3.5 / the glyph-normalization notes.
 
-**Test discipline — a contributor responsibility.** The gate above protects *shipped data*,
+**Test discipline — a contributor responsibility.** The gate above protects _shipped data_,
 but it can't catch an engine regression. So on **any** change, evaluate whether tests need to
 be added or updated and record that test impact in the issue spec / PR; new engine logic or a
 fixed bug lands with its guarding unit/parity test in the same PR. Keeping the suite a
@@ -486,7 +494,7 @@ sticky comment with the preview + `/?app&demo` URLs. A failing step aborts befor
 deploy, so bad content/code can never ship.
 
 Cloudflare decides preview-vs-production by comparing the deploy `--branch` to the
-project's **production branch**, which on this *direct-upload* (no Git-connection) Pages
+project's **production branch**, which on this _direct-upload_ (no Git-connection) Pages
 project is **`learning-chinese`** — NOT `master`. So the workflow passes
 `--branch=learning-chinese` on a `master` push (→ **production**, `learnchinese.hsu.mobi`)
 and `--branch=<PR head>` on a PR (→ a **preview** with its own
@@ -506,6 +514,7 @@ does. `content.db` and `word-sets.db` are pure content, committed at their worki
 too, so CI bakes them in. There is **no** local auto-deploy — deploys happen only through CI.
 
 **Redeploying on a change** (no manual deploy — open a PR, eyeball its preview, merge):
+
 - **Code change** → PR → preview → merge to `master` → production. Automatic.
 - **Curriculum/content change** (edit `content.db` via the dev admin, or rebuild a module
   DB): ALSO run **`npm run seed:dbs`** and commit the refreshed `seed/*.db` + `content.db`,
@@ -643,11 +652,11 @@ registry entry.
   and/or **`9901` → Gold** (each theme entry carries an `unlockFeature` key — Silver
   ← `theme-silver`, Gold ← `theme-gold`). `9000` alone reveals **nothing**; a `99xx`
   code entered before `9000` is **rejected as an ordinary invalid code** (generic
-  "Invalid code", no hint it's real — see §5.6). *Back-compat:*
+  "Invalid code", no hint it's real — see §5.6). _Back-compat:_
   a device that stored the legacy blanket `premium` feature (retired code `9999`)
   keeps **both** foils. Midnight/Sakura/Matcha are `premium: false`, so they are
   always available — no code required. There is **no per-profile unlock**: a profile
-  can only *override* the theme among themes already available device-wide
+  can only _override_ the theme among themes already available device-wide
   (`isThemeAvailable()` is per-theme; `isDevicePremiumUnlocked()` is the coarse
   "any foil" signal, in `theme-store.ts`). The theme selectors
   (`components/ThemeSelect.tsx`) therefore list **only the AVAILABLE themes** —
@@ -655,8 +664,8 @@ registry entry.
   Gold once `9901` is, **independently**; locked premium skins are **not shown at
   all** (no lock badge, no redeem-on-select). The **Profile
   Picker** shows a per-profile crown (`👑` gold / `♔` silver) only when that
-  profile's *own* override is Gold/Silver — a profile that merely inherits a premium
-  *device* theme (no override) gets none.
+  profile's _own_ override is Gold/Silver — a profile that merely inherits a premium
+  _device_ theme (no override) gets none.
 - **Backup.** Theme state — the device theme and per-profile overrides — is
   serialized into the JSON backup (`exportThemeState` / `importThemeState`) so the
   chosen look travels with the account. The device premium unlock travels in the
@@ -687,7 +696,7 @@ is real or that a prerequisite exists. Both grant nothing.
 
 Codes live in one place, `utils/unlocks.ts` `CODE_FEATURES`, as a **two-tier,
 prerequisite-chained** scheme. Each series opens with a **prerequisite** code that
-grants a flag revealing *nothing on its own*; the feature codes are **rejected
+grants a flag revealing _nothing on its own_; the feature codes are **rejected
 until that prerequisite is present** (granting nothing — and, in the keypad,
 shown as a plain "Invalid code", see below):
 
@@ -698,7 +707,7 @@ shown as a plain "Invalid code", see below):
 - **Admin series** — **`8000`** grants `admin-prereq` (prerequisite, reveals
   nothing); **`8001`** → `admin`, requiring `8000` first. `8001` is the admin-menu
   reveal that the **retired `8888`** used to do (§8).
-- **Removed:** `9999` (old blanket premium) and `8888` no longer redeem. *Back-compat:*
+- **Removed:** `9999` (old blanket premium) and `8888` no longer redeem. _Back-compat:_
   devices that already stored `premium` keep both foils; devices that stored `admin`
   keep the Admin menu — the gates honor those keys directly.
 
@@ -757,7 +766,7 @@ The in-app feedback feature lets a user file a categorized report from anywhere 
 the app and gives the owner a triage view. Its single most important property is
 that it is **siloed**: the production endpoints are bound to a **dedicated D1
 database and R2 bucket that hold only feedback**, and **no app / user / content
-binding is present on the Function**, so app data is *physically* unreachable from
+binding is present on the Function**, so app data is _physically_ unreachable from
 the feedback code path. The dev mirror is siloed the same way (its own SQLite
 file). Nothing about the feature shares a connection, a file, or a code path with
 `platform.db` / `content.db` / the on-device user store.
@@ -789,12 +798,12 @@ an **include-screenshot** checkbox.
 
 ### Production API — Cloudflare Pages Functions (`platform/functions/api/feedback/`)
 
-| Route | Method | Audience | What |
-|-------|--------|----------|------|
-| `/api/feedback` (`index.ts`) | `POST` | **public** | Submit. Validated + size-capped (shared helper) + per-IP rate-limited; row stored in D1, screenshot bytes in R2 (key `feedback/<id>.<ext>`), the row keeps only the R2 key. |
-| `/api/feedback` (`index.ts`) | `GET` | **admin** | List for triage (`?status=` filter, `?limit=`), plus per-status counts. Screenshots are omitted from the list payload. |
-| `/api/feedback/:id` (`[id].ts`) | `PATCH` | **admin** | Set one row's lifecycle status (`new` / `triaged` / `in-progress` / `resolved` / `wontfix`). |
-| `/api/feedback/:id/screenshot` (`[id]/screenshot.ts`) | `GET` | **admin** | Stream the row's screenshot image bytes from R2. |
+| Route                                                 | Method  | Audience   | What                                                                                                                                                                        |
+| ----------------------------------------------------- | ------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/api/feedback` (`index.ts`)                          | `POST`  | **public** | Submit. Validated + size-capped (shared helper) + per-IP rate-limited; row stored in D1, screenshot bytes in R2 (key `feedback/<id>.<ext>`), the row keeps only the R2 key. |
+| `/api/feedback` (`index.ts`)                          | `GET`   | **admin**  | List for triage (`?status=` filter, `?limit=`), plus per-status counts. Screenshots are omitted from the list payload.                                                      |
+| `/api/feedback/:id` (`[id].ts`)                       | `PATCH` | **admin**  | Set one row's lifecycle status (`new` / `triaged` / `in-progress` / `resolved` / `wontfix`).                                                                                |
+| `/api/feedback/:id/screenshot` (`[id]/screenshot.ts`) | `GET`   | **admin**  | Stream the row's screenshot image bytes from R2.                                                                                                                            |
 
 Like the Gemini proxy, these live outside `platform/tsconfig`'s include (so
 `tsc`/vite ignore them) and wrangler compiles them at deploy time.
@@ -867,10 +876,10 @@ former in-app admin-console `feedback` tab, which was removed).
   secret in `localStorage` on a `200` — a `403` shows a clear inline cause instead of
   silently storing it and then bouncing back to "locked" on the first list/patch/screenshot
   call. Because the endpoint returns an **indistinguishable `403`** whether the secret is
-  *wrong* or simply *not configured on this deployment*, the unlock error names both — the
+  _wrong_ or simply _not configured on this deployment_, the unlock error names both — the
   latter is the **expected state on PR PREVIEW deploys**, where `FEEDBACK_ADMIN_SECRET` is
   bound only in the Pages project's **production** environment (see the provisioning runbook
-  below). A `403` that arrives *after* unlock (rotated/absent secret) re-locks the surface
+  below). A `403` that arrives _after_ unlock (rotated/absent secret) re-locks the surface
   with the same message. The secret is entered at runtime and **never baked into the
   bundle**. The surface then reads the **existing** admin-gated, feedback-siloed endpoints —
   `GET /api/feedback` (list + `?status=` filter + counts), `PATCH /api/feedback/:id`
@@ -932,9 +941,52 @@ what makes the feature siloed.
 > `FEEDBACK_ADMIN_SECRET` is **unset** and every `/api/feedback*` call returns `403`
 > regardless of what secret you type (fail-closed) — the `/feedback-admin` console will
 > report exactly that on Unlock. This is expected and harmless (the console works on
-> **prod**, where the secret is bound). To *also* exercise triage on previews, add
+> **prod**, where the secret is bound). To _also_ exercise triage on previews, add
 > `FEEDBACK_ADMIN_SECRET` (and the `FEEDBACK_DB`/`FEEDBACK_R2` bindings) to the Pages
 > project's **Preview** environment in the dashboard.
+
+### Preview provisioning (issue #78)
+
+One-time owner action: provision a **dedicated preview feedback stack** and bind
+it only to the **Preview** environment. Cloudflare Pages shares one Preview
+config across all non-production branches, so every PR preview automatically
+uses these resources — while staying **isolated from production**:
+
+```bash
+# 1. Dedicated preview D1 database.
+npx wrangler d1 create feedback-preview
+
+# 2. Apply the same prod schema to the preview database.
+npx wrangler d1 execute feedback-preview --remote \
+  --file=platform/functions/migrations/0001_init.sql
+
+# 3. Dedicated preview R2 bucket for screenshots.
+npx wrangler r2 bucket create learning-chinese-feedback-preview
+
+# 4. Distinct preview admin secret (not the production value).
+# NOTE: `pages secret put` targets Production by default.
+# Create the preview secret via the Pages dashboard Preview environment
+# settings, or the preview-aware wrangler equivalent; verify it lands on
+# Preview, not Production.
+```
+
+Then, in the Pages project (**Settings → Functions → Bindings → Preview
+environment**), bind only:
+
+- `FEEDBACK_DB` → `feedback-preview`
+- `FEEDBACK_R2` → `learning-chinese-feedback-preview`
+
+**Prod must stay untouched.** Preview and production must **not** share D1,
+R2, or `FEEDBACK_ADMIN_SECRET`. Binding preview resources to Preview only
+keeps preview test data out of production and prevents a leaked preview
+secret from reaching production.
+
+**Redeploy after binding attaches.** Bindings take effect on the next preview
+deploy, so push a commit or reopen a PR. Verify with:
+
+- submit feedback on a preview URL → row exists in `feedback-preview`
+- `/feedback-admin` on a preview URL with the preview secret → `200`
+- production `feedback` row count unchanged after preview testing
 
 ---
 
@@ -956,6 +1008,7 @@ its own port (`BANK_ADMIN_PORT`, default **3100**) that serves **only** the Sent
 Bank admin, so curation survives `:3000` bounces. Start it with `npm run dev:bank-admin`.
 
 It reuses the exact same pieces as `:3000` — no fork:
+
 - mounts `contentAdminRoutes` (`server/content-admin.ts`, §8.4) at `/api/content` —
   the full bank CRUD + coverage/ranking/TOCFL-levels + AI generation;
 - mounts the copybook module's `routes` at `/api/copybook` for the Gemini
@@ -1000,7 +1053,7 @@ different audiences:
 ### 8.1 Device Settings (`DeviceSettings` in `platform/src/App.tsx`)
 
 Reached by the gear button on the **Profile Picker** (and on the first-run
-`WelcomePopup` when there are no profiles yet) — i.e. *before* a profile is
+`WelcomePopup` when there are no profiles yet) — i.e. _before_ a profile is
 chosen, because everything here is device- or account-level rather than
 per-profile. Back returns to the picker. Sections, top to bottom:
 
@@ -1054,13 +1107,13 @@ toggle (gear) reads/writes the platform setting `debug_overlay` via
 per-profile/module routes stay under `/api/writing-challenge/*`. Five top-level
 tabs:
 
-| Tab | Shows / does | Data & dev API |
-|-----|--------------|----------------|
-| **Users** (`UsersPanel`) | Lists device profiles (id, name, language, theme, created); delete a user (confirm). Click a row → detail with an **Overview** tab and a **Stroke Practice** tab: per-character mastery table (rank, TOCFL level, today/retention score bars, seen, P/C/I, streaks, avg ms, recent-result dots), sortable; plus level/totals summary. | `/api/admin/users`, `DELETE /api/admin/users/:id`; detail pulls `/api/writing-challenge/admin/user-stats`, `/settings`, `/debug-info` (per-profile/module) plus `/api/content/admin/char-tocfl-levels` and `/api/content/admin/char-ranking` (platform content). Scores computed client-side via `@shared/character-stats/mastery`. |
-| **Modules** (`ModulesPanel`) | Enable/disable each installed module (toggle); click a module → its own admin (Stroke Practice or Word Sets; others show "No settings"). | `/api/admin/modules`, `PATCH /api/admin/modules/:name`. |
-| **Dictionary** (`DictionaryPanel`) | Browse imported dictionaries (char/word/link/stroke counts). Drill into a dict: **Chars** (grid w/ stroke count + TOCFL, animated + static hanzi-writer preview on click, sorted by **Frequency** or **Blended** rank), **Words** (table), **TOCFL only** filter, search, pagination. | `/api/dictionaries`, `…/chars`, `…/words`, `…/char/:id`; blended sort uses `/api/content/admin/char-ranking`. |
-| **SQL** (`SqlBrowser`) | Raw SQL browser over the platform DB + each module DB. Sidebar lists DBs and tables (click a table → `SELECT * … LIMIT 50`); textarea runs arbitrary SQL (Cmd/Ctrl+Enter); results or error shown. | `/api/admin/databases`, `POST /api/admin/sql/tables`, `POST /api/admin/sql/query`. **Arbitrary SQL against local dev DBs** — another reason this is dev-only. |
-| **Sentence Bank** (`SentenceBankPanel`) | Coverage dashboard for the platform-owned sentence bank (`content.db`, §3.5) against the ranked char list. Sub-tabs: **Summary** (good/neutral/needs-attention health cards w/ clickable gap chars), **Bands** (P1–P6 coverage bars), **Grid** (per-char coverage heat grid), **Gaps** (under-target table), **Prompt** (builds a gap-filling generation prompt — adjustable count / chars-to-target / char-pool — to copy out, **plus a "Generate with Gemini" button**), **Import** (paste `中文 \| English` pairs; client pre-filters ≤6-CJK sentences; reports added/filled/skipped — and the server canonicalizes each on import, §3.5). | `/api/content/admin/char-coverage`, `…/bank-sentences` (GET/POST). **"Generate with Gemini" → `POST /api/content/admin/ai-generate`, which exists only on the dev server** and needs `GEMINI_API_KEY` in the dev `.env` (or a per-profile key saved in `localStorage`, picked up as a BYO fallback). |
+| Tab                                     | Shows / does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Data & dev API                                                                                                                                                                                                                                                                                                                      |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Users** (`UsersPanel`)                | Lists device profiles (id, name, language, theme, created); delete a user (confirm). Click a row → detail with an **Overview** tab and a **Stroke Practice** tab: per-character mastery table (rank, TOCFL level, today/retention score bars, seen, P/C/I, streaks, avg ms, recent-result dots), sortable; plus level/totals summary.                                                                                                                                                                                                                                                                                                         | `/api/admin/users`, `DELETE /api/admin/users/:id`; detail pulls `/api/writing-challenge/admin/user-stats`, `/settings`, `/debug-info` (per-profile/module) plus `/api/content/admin/char-tocfl-levels` and `/api/content/admin/char-ranking` (platform content). Scores computed client-side via `@shared/character-stats/mastery`. |
+| **Modules** (`ModulesPanel`)            | Enable/disable each installed module (toggle); click a module → its own admin (Stroke Practice or Word Sets; others show "No settings").                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | `/api/admin/modules`, `PATCH /api/admin/modules/:name`.                                                                                                                                                                                                                                                                             |
+| **Dictionary** (`DictionaryPanel`)      | Browse imported dictionaries (char/word/link/stroke counts). Drill into a dict: **Chars** (grid w/ stroke count + TOCFL, animated + static hanzi-writer preview on click, sorted by **Frequency** or **Blended** rank), **Words** (table), **TOCFL only** filter, search, pagination.                                                                                                                                                                                                                                                                                                                                                         | `/api/dictionaries`, `…/chars`, `…/words`, `…/char/:id`; blended sort uses `/api/content/admin/char-ranking`.                                                                                                                                                                                                                       |
+| **SQL** (`SqlBrowser`)                  | Raw SQL browser over the platform DB + each module DB. Sidebar lists DBs and tables (click a table → `SELECT * … LIMIT 50`); textarea runs arbitrary SQL (Cmd/Ctrl+Enter); results or error shown.                                                                                                                                                                                                                                                                                                                                                                                                                                            | `/api/admin/databases`, `POST /api/admin/sql/tables`, `POST /api/admin/sql/query`. **Arbitrary SQL against local dev DBs** — another reason this is dev-only.                                                                                                                                                                       |
+| **Sentence Bank** (`SentenceBankPanel`) | Coverage dashboard for the platform-owned sentence bank (`content.db`, §3.5) against the ranked char list. Sub-tabs: **Summary** (good/neutral/needs-attention health cards w/ clickable gap chars), **Bands** (P1–P6 coverage bars), **Grid** (per-char coverage heat grid), **Gaps** (under-target table), **Prompt** (builds a gap-filling generation prompt — adjustable count / chars-to-target / char-pool — to copy out, **plus a "Generate with Gemini" button**), **Import** (paste `中文 \| English` pairs; client pre-filters ≤6-CJK sentences; reports added/filled/skipped — and the server canonicalizes each on import, §3.5). | `/api/content/admin/char-coverage`, `…/bank-sentences` (GET/POST). **"Generate with Gemini" → `POST /api/content/admin/ai-generate`, which exists only on the dev server** and needs `GEMINI_API_KEY` in the dev `.env` (or a per-profile key saved in `localStorage`, picked up as a BYO fallback).                                |
 
 The module-level admin screens are: **Stroke Practice** (`StrokePracticeAdmin`) —
 the full writing-challenge engine settings (stroke recognition, the mastery
@@ -1072,7 +1125,7 @@ inline edit + bulk-delete grid, and a character-coverage modal). And **Word Sets
 dictionary search or manual entry, with drag-free up/down reordering.
 
 > **Dev vs prod, in one line:** Device Settings, the Levers panel, and the English
-> voice panel ship and run in production. The Admin console's *button* can be opened
+> voice panel ship and run in production. The Admin console's _button_ can be opened
 > in production (dev build, or the `8000`+`8001` admin unlock), but the routes behind it —
 > `/api/admin/*`, `/api/writing-challenge/admin/*`, `/api/content/admin/*` (the
 > platform-owned content/bank curation), `/api/dictionaries`, and
@@ -1105,7 +1158,7 @@ lazy-loaded so it never weighs on the app shell.
   lets visitors paste their own Traditional text to check against the level.
 - **Fonts.** The paperpad renders its Chinese in a handwritten Brush 楷 face — the
   **LXGW WenKai TC web font** (jsDelivr, unicode-range-subset slices) with a
-  system-Kaiti fallback. Web fonts are fine *here* because the landing is online;
+  system-Kaiti fallback. Web fonts are fine _here_ because the landing is online;
   the offline app shell deliberately does **not** depend on a web font.
 - **Install flow** — captures `beforeinstallprompt` (Chrome/Android/desktop) and
   fires `prompt()` from the CTA; iOS Safari (no such event) is sniffed and routed
