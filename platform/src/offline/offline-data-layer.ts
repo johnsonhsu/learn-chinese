@@ -854,27 +854,89 @@ export class OfflineDataLayer {
   }
 
   /**
-   * Seed chars at/below the estimated frontier as "known" via synthetic perfect
-   * history, so the existing level/known machinery places the user. Real practice
-   * overwrites these rows, and 30-day recency/decay self-heals any over-placement.
+   * Seed chars at/below the estimated frontier as a synthetic-but-varied
+   * practice history so the demo feels realistic: mixed recent results,
+   * staggered first/last seen, and plausible timing/streak values.
+   *
+   * Real practice overwrites these rows, and 30-day recency/decay self-heals
+   * any over-/under-placement.
    */
   async seedKnownFromPlacement(chars: string[]): Promise<void> {
     if (!this.platformProvider || chars.length === 0) return;
-    const now = new Date().toISOString();
-    const rows = chars.map((c) => ({
-      character: c, user_id: this.userId,
-      times_seen: 5, times_perfect: 5, times_correct: 0, times_incorrect: 0, times_hint_used: 0,
-      streak_perfect: 5, streak_correct: 5, streak_incorrect: 0,
-      best_streak_perfect: 5, best_streak_correct: 5,
-      first_seen: now, last_seen: now, last_perfect: now, last_correct: now, last_incorrect: '',
-      fastest_ms: 0, slowest_ms: 0, total_ms: 0,
-      last_result: 'perfect', last_failed_strokes: 0, last_hint_used: 0,
-      first_result: 'perfect', recent_results: 'P,P,P,P,P',
-    }));
+    const now = Date.now();
+    const dayMs = 86400000;
+    const rows = chars.map((c, i) => {
+      const rng = (function* (seed: number) {
+        // Simple splitmix32-derived bits; yields numbers in [0,1).
+        let s = seed;
+        for (;;) {
+          s |= 0; s = (s + 0x9e3779b9) | 0;
+          let h = 0; h ^= s; h = Math.imul(h, 0x85ebca6b); h ^= h >>> 13;
+          h = Math.imul(h, 0xc2b2ae35); h ^= h >>> 15;
+          yield (h >>> 0) / 4294967296;
+        }
+      })((this.userId * 397 ^ c.charCodeAt(0) * 1013 ^ i * 31) | 0);
+      const r = () => rng.next().value ?? 0;
+
+      const totalSeen = 4 + Math.floor(r() * 5); // 4-8
+      const incorrect = r() < 0.18 ? 1 : 0;
+      const skips = r() < 0.12 ? 1 : 0;
+      const perfect = Math.max(0, totalSeen - incorrect - skips);
+      const correct = totalSeen - perfect - incorrect - skips;
+      if (correct < 0) return null;
+
+      const recentCount = Math.min(5, totalSeen);
+      const recent: ('P' | 'C' | 'I' | 'S')[] = [];
+      for (let j = 0; j < recentCount; j++) {
+        if (j < incorrect) recent.push('I');
+        else if (j < incorrect + skips) recent.push('S');
+        else if (r() < 0.65) recent.push('P');
+        else recent.push('C');
+      }
+
+      const lastSeenOffset = Math.floor(r() * 28 * dayMs);
+      const firstSeenOffset = Math.floor(7 * dayMs + r() * 53 * dayMs);
+      const lastSeen = new Date(now - lastSeenOffset).toISOString();
+      const firstSeen = new Date(now - firstSeenOffset).toISOString();
+
+      const totalMs = Math.round(1800 + r() * 2600) * totalSeen;
+      const fastestMs = Math.round(1200 + r() * 1400);
+      const slowestMs = Math.round(Math.max(fastestMs + 100, 1400 + r() * 1800));
+      const lastResult = recent[0];
+      const firstResult = recent[recent.length - 1];
+
+      return {
+        character: c,
+        user_id: this.userId,
+        times_seen: totalSeen,
+        times_perfect: perfect,
+        times_correct: correct,
+        times_incorrect: incorrect,
+        times_hint_used: r() < 0.15 ? 1 : 0,
+        streak_perfect: perfect ? perfect : 1,
+        streak_correct: correct + perfect,
+        streak_incorrect: incorrect,
+        best_streak_perfect: perfect,
+        best_streak_correct: correct + perfect,
+        first_seen: firstSeen,
+        last_seen: lastSeen,
+        last_perfect: lastResult === 'P' ? lastSeen : '',
+        last_correct: (lastResult === 'P' || lastResult === 'C') ? lastSeen : '',
+        last_incorrect: lastResult === 'I' ? lastSeen : '',
+        fastest_ms: fastestMs,
+        slowest_ms: slowestMs,
+        total_ms: totalMs,
+        last_result: lastResult,
+        last_failed_strokes: lastResult === 'I' ? 1 + Math.floor(r() * 2) : 0,
+        last_hint_used: r() < 0.15 ? 1 : 0,
+        first_result: firstResult,
+        recent_results: recent.join(','),
+      };
+    }).filter(Boolean) as Record<string, unknown>[];
     for (const row of rows) {
       const cols = Object.keys(row);
       const placeholders = cols.map(() => '?').join(',');
-      const values = cols.map((c) => (row as Record<string, unknown>)[c] ?? null);
+      const values = cols.map((c) => row[c] ?? null);
       this.platformProvider.run(
         `INSERT OR REPLACE INTO character_stats (${cols.join(',')}) VALUES (${placeholders})`,
         values,
