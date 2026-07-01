@@ -44,6 +44,7 @@ export default {
   'settings.themeProfileHint': 'Override the device theme just for this profile. Gold and Silver are premium.',
   'settings.themeUseDevice': 'Use device theme',
   'theme.default': 'Paper',
+  'theme.80s-motiv': '80s Motiv',
   'theme.indigo': 'Indigo',
   'theme.gold': 'Gold',
   'theme.silver': 'Silver',

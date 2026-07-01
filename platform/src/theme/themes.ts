@@ -116,6 +116,7 @@ export const THEMES: Theme[] = [
   { id: 'midnight', name: 'Midnight', nameKey: 'theme.midnight', premium: false, arrangement: 'grid', cssDefined: true },
   { id: 'sakura',   name: 'Sakura',   nameKey: 'theme.sakura',   premium: false, arrangement: 'grid', cssDefined: true },
   { id: 'matcha',   name: 'Matcha',   nameKey: 'theme.matcha',   premium: false, arrangement: 'grid', cssDefined: true },
+  { id: '80s-motiv', name: '80s Motiv', nameKey: 'theme.80s-motiv', premium: false, arrangement: 'grid', cssDefined: true },
   // Premium foils — always listed LAST (the picker also sorts premium to the end).
   // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
   // behind the 9000 premium prerequisite.
