@@ -1,65 +1,104 @@
-import { useMemo } from 'react';
-import { useT } from '../i18n/index.ts';
-import { OptionSelect, type SelectOption } from './OptionSelect.tsx';
-import { THEMES, isThemeAvailable } from '../theme/theme-store.ts';
-import { isDevicePremiumUnlocked } from '../theme/theme-store.ts';
-import { PREMIUM_FEATURE } from '../theme/themes.ts';
+import { useMemo, type FormEvent } from "react";
+import { useT } from "../i18n/index.ts";
+import { THEMES, isThemeAvailable } from "../theme/theme-store.ts";
+import { THEME_GROUP_LABELS, type Theme, type ThemeGroup } from "../theme/themes.ts";
 
-/**
- * Theme picker — reuses the shared {@link OptionSelect} (the extracted voice
- * dropdown UI). Lists ONLY the themes available in this context: free themes
- * always, plus each premium foil once its OWN unlock is present (Silver ← 9900,
- * Gold ← 9901, both gated behind the 9000 premium prerequisite — so they appear
- * INDEPENDENTLY). Locked premium themes are NOT shown at all — there is no lock
- * badge and no redeem-on-select here.
- *
- * Unlocking premium happens elsewhere: under the Device ID in Device Settings,
- * via the {@link CodeEntry} keypad (9000 then 9900/9901), which unlocks for the
- * whole device. Pass a `refreshKey` that changes after such an unlock so this
- * selector re-derives its option list and the now-available themes appear.
- *
- * Selecting an option simply applies it via onChange. `inheritLabel` (optional)
- * adds a leading "use device theme" row whose value is '' — for the profile
- * selector.
- */
-export function ThemeSelect({ value, onChange, scope, profileId, inheritLabel, refreshKey }: {
+type GroupedEntry = {
+  group: ThemeGroup;
+  themes: Theme[];
+};
+
+const GROUP_ORDER: ThemeGroup[] = [
+  "default",
+  "dark",
+  "retro",
+  "foil",
+  "soft",
+  "disney",
+  "external",
+];
+
+function premiumUnlockHint(): string | undefined {
+  const premiumAvailable = THEMES.some((th) => th.premium && isThemeAvailable(th));
+  if (!premiumAvailable) return undefined;
+  return "9000 → 9900/9901";
+}
+
+export function ThemeSelect({
+  value,
+  onChange,
+  scope,
+  profileId,
+  inheritLabel,
+  refreshKey,
+}: {
   value: string;
   onChange: (_themeId: string) => void;
-  /** Documents which selector this is; both gate on the same device unlock. */
-  scope: 'device' | 'profile';
+  scope: "device" | "profile";
   profileId?: number;
-  /** When set, prepends an "inherit/use device" option with value ''. */
   inheritLabel?: string;
-  /** Bump to force the option list to re-derive after a device premium unlock. */
   refreshKey?: number;
 }) {
   const t = useT();
-  // scope/profileId are kept for caller clarity but no longer change gating.
-  void scope; void profileId;
+  void scope;
+  void profileId;
 
-  const options: SelectOption[] = useMemo(() => {
-    // refreshKey is a dep so the list refreshes after a device unlock.
+  const grouped: GroupedEntry[] = useMemo(() => {
     void refreshKey;
-    const opts: SelectOption[] = [];
-    if (inheritLabel !== undefined) opts.push({ value: '', label: inheritLabel });
-    // Premium themes ALWAYS sort to the end (free themes keep their registry
-    // order). Stable sort: free (0) before premium (1).
-    const ordered = [...THEMES].sort((a, b) => Number(a.premium) - Number(b.premium));
-    for (const th of ordered) {
-      // Only list themes that are actually available — locked premium themes
-      // do not appear at all.
-      if (!isThemeAvailable(th)) continue;
-      const label = th.nameKey ? t(th.nameKey as Parameters<typeof t>[0]) : th.name;
-      opts.push({ value: th.id, label });
+    const map: Record<ThemeGroup, Theme[]> = {
+      default: [],
+      dark: [],
+      retro: [],
+      foil: [],
+      soft: [],
+      disney: [],
+      external: [],
+    };
+    for (const theme of THEMES) {
+      if (!isThemeAvailable(theme)) continue;
+      map[theme.group].push(theme);
     }
-    return opts;
-  }, [t, inheritLabel, refreshKey]);
+    return GROUP_ORDER.reduce<GroupedEntry[]>((acc, group) => {
+      const themes = map[group];
+      if (!themes.length) return acc;
+      acc.push({ group, themes });
+      return acc;
+    }, []);
+  }, [t, refreshKey]);
+
+  const hint = premiumUnlockHint();
+
+  const submit = (e: FormEvent<HTMLSelectElement>) => {
+    const next = e.currentTarget.value;
+    if (!next) return;
+    onChange(next);
+  };
 
   return (
-    <OptionSelect value={value} options={options} onChange={onChange} ariaLabel={t('settings.theme')} />
+    <select
+      className="theme-select-groups"
+      aria-label={t("settings.theme")}
+      value={value}
+      onChange={submit}
+    >
+      {typeof inheritLabel === "string" && <option value="">{inheritLabel}</option>}
+      {grouped.map(({ group, themes }) => {
+        const isFoil = group === "foil";
+        return (
+          <optgroup key={group} label={THEME_GROUP_LABELS[group].en}>
+            {themes.map((theme) => {
+              const foilHint = isFoil && hint ? ` — ${hint}` : "";
+              return (
+                <option key={theme.id} value={theme.id}>
+                  {theme.nameKey ? t(theme.nameKey as Parameters<typeof t>[0]) : theme.name}
+                  {theme.premium ? " ★" : ""}
+                  {foilHint ? ` — ${hint}` : ""}
+                </option>
+              );
+            })}
+          </optgroup>
+        );
+      })}
+    </select>
   );
 }
-
-// Re-export so callers can show "premium unlocked" state without reaching into
-// the store directly.
-export { isDevicePremiumUnlocked, PREMIUM_FEATURE };
