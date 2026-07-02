@@ -1,0 +1,267 @@
+/* ======================================================================
+   🌿 THEME — "Jungle" / 「叢林」 (registry id: jungle)
+   ----------------------------------------------------------------------
+   A dense tropical rainforest aesthetic: deep rainforest-floor greens,
+   earthy cane borders, heat-haze amber accents, and warm mist ink. Keeps
+   Win95-style chrome but recolored for canopy readability. Scoped entirely
+   behind `body[data-theme="jungle"]` so it never leaks into other themes.
+   ====================================================================== */
+
+body[data-theme="jungle"] {
+  /* ── (A) Contract tokens re-pointed → themes EVERYTHING ──────────────────── */
+
+  /* Grounds + surfaces */
+  --paper: #14301b; /* rainforest floor dark-green ground */
+  --paper-raised: #26503a; /* canopy-lifted panel */
+  --paper-sunken: #0c1a11; /* deep shadow recessed */
+  --bg: var(--paper);
+  --bg-raised: #26503a;
+  --bg-raised-2: #1c3a26;
+  --bg-card: #26503a;
+  --bg-card2: #1c3a26;
+  --bg-input: #0c1a11;
+  --panel-bg: #26503a;
+
+  /* Canopy mist off-white text (never pure white) + muted steps */
+  --ink: #f6fff4;
+  --ink-soft: rgba(246, 255, 244, 0.72);
+  --ink-faint: rgba(246, 255, 244, 0.45);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules on earth glass */
+  --rule: #1e3322;
+  --rule-strong: #2a4630;
+  --border: #1e3322;
+  --border-hover: #ffb44e;
+  --panel-border: #1e3322;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #2a4630;
+
+  /* Heat-haze amber + parrot green */
+  --seal: #ffb44e;
+  --seal-deep: #d68a28;
+  --seal-wash: rgba(255, 180, 78, 0.17);
+  --accent: #ffb44e;
+  --accent-bg: rgba(255, 180, 78, 0.17);
+  --accent-hover: #ffcf84;
+  --screen-accent: #ffb44e;
+
+  /* Primary CTA face → parrot green */
+  --gold: #a4e86b;
+  --gold-dark: #7cc041;
+  --grad-primary: linear-gradient(135deg, #ffcf84 0%, #ffb44e 52%, #d68a28 100%);
+
+  /* Status — readable on dark green */
+  --error: #ff8888;
+  --danger: #ff8888;
+  --red: #ff8888;
+  --red-dark: #cc6666;
+  --success: #a4e86b;
+  --warning: #ffd166;
+
+  /* Module hues — rainforest family */
+  --teal: #3cb878;
+  --teal-dark: #287a4d;
+  --pink: #e88fa3;
+  --pink-dark: #c55e76;
+  --blue: #8ec0f0;
+  --blue-dark: #5b8ec0;
+  --orange: #ffb44e;
+  --orange-dark: #d68a28;
+  --purple: #c4b3ff;
+  --purple-dark: #9a80cc;
+  --green: #a4e86b;
+  --green-dark: #7cc041;
+  --green-bright: #a4e86b;
+  --green-bright-dark: #7cc041;
+
+  /* Wood/vine frame */
+  --wood: #3e2a1a;
+  --wood-dark: #24160b;
+  --wood-light: #5a3a22;
+
+  /* Screen background + depth */
+  --screen-bg: #14301b;
+  --screen-bg-dark: #0c1a11;
+  --grad-fluency: linear-gradient(135deg, #ffcf84 0%, #d68a28 100%);
+  --grad-success: linear-gradient(135deg, #a4e86b 0%, #7cc041 100%);
+  --shadow-sm: 0 1px 2px rgba(8, 16, 10, 0.55);
+  --shadow-md: 0 18px 40px -24px rgba(8, 16, 10, 0.7);
+  --shadow-glow: 0 0 0 1px rgba(164, 232, 107, 0.22), 0 14px 30px -20px rgba(8, 16, 10, 0.85);
+  --shadow-glow-success: 0 0 0 1px rgba(164, 232, 107, 0.26);
+
+  /* Typography — keep body font; lighten with weight */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* ── (B) Styled application: Jungle ──────────────────────────────────────── */
+body[data-theme="jungle"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(255, 180, 78, 0.1) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Headings — warm mist ink with faint amber lift */
+body[data-theme="jungle"] .welcome-header h1,
+body[data-theme="jungle"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(255, 180, 78, 0.18);
+}
+
+/* ── MODULE TILES ──────────────────────────────────────────────────────────── */
+body[data-theme="jungle"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-raised);
+  border-top-color: #3cb878;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #3cb878;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"] .module-card:hover {
+  box-shadow: 2px 2px 0 #24160b;
+}
+body[data-theme="jungle"] .module-card:active {
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"] .module-card .module-icon {
+  background: #26503a;
+  box-shadow:
+    inset 1px 1px 0 #a4e86b,
+    1px 1px 0 #24160b;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+body[data-theme="jungle"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #0c1a11;
+  border-top-color: #ffcf84;
+  border-right-color: #3e2a1a;
+  border-bottom-color: #3e2a1a;
+  border-left-color: #ffcf84;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"] .app-shell .ui-btn--primary:active {
+  border-top-color: #3e2a1a;
+  border-right-color: #ffcf84;
+  border-bottom-color: #ffcf84;
+  border-left-color: #3e2a1a;
+}
+body[data-theme="jungle"] .app-shell .ui-btn--secondary {
+  background: var(--paper-raised);
+  color: #f6fff4;
+  border-top-color: #a4e86b;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #a4e86b;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+
+/* ── SETTINGS ─────────────────────────────────────────────────────────────── */
+body[data-theme="jungle"] .settings-section,
+body[data-theme="jungle"] .placement-card,
+body[data-theme="jungle"] .restore-modal {
+  background: var(--paper-raised);
+  border-top-color: #a4e86b;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #a4e86b;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"] .settings-option,
+body[data-theme="jungle"] .lever-pill,
+body[data-theme="jungle"] .lever-reset-all {
+  background: var(--paper-raised);
+  color: #f6fff4;
+  border-top-color: #a4e86b;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #a4e86b;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"] .settings-option.active,
+body[data-theme="jungle"] .lever-pill.active {
+  background: #3a2213;
+  color: #f6fff4;
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="jungle"] .app-shell .char-tile {
+  --ct-face: var(--paper-raised);
+  --ct-line: #3cb878;
+  --ct-ink: #f6fff4;
+  --ct-ink-soft: var(--ink-soft);
+}
+body[data-theme="jungle"][data-screen="mychars"] .char-tile {
+  --ct-face: #26503a;
+  --ct-line: #7cc041;
+  border-top-color: #7cc041;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #7cc041;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"][data-screen="mychars"] .char-tile--known {
+  border-color: #7cc041;
+}
+body[data-theme="jungle"][data-screen="mychars"] .char-tile-glyph {
+  color: #f6fff4;
+}
+body[data-theme="jungle"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+body[data-theme="jungle"][data-screen="mychars"] .char-tile-level {
+  color: #f6fff4;
+  background: var(--paper-raised);
+  border-top-color: #a4e86b;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #a4e86b;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+@media (hover: hover) {
+  body[data-theme="jungle"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: #7cc041;
+    box-shadow:
+      inset 0 0 0 1px #a4e86b,
+      2px 2px 0 #24160b;
+  }
+}
+body[data-theme="jungle"] .char-tile-bar {
+  background: repeating-linear-gradient(90deg, #3a2213 0, #3a2213 2px, #24160b 2px, #24160b 4px);
+}
+body[data-theme="jungle"] .char-tile-bar-fill {
+  background: repeating-linear-gradient(90deg, #ffb44e 0, #ffb44e 4px, #d68a28 4px, #d68a28 8px);
+}
+
+/* ── WRITING PAD ──────────────────────────────────────────────────────────── */
+body[data-theme="jungle"] .canvas-wrapper {
+  background: #f7ffef;
+  border-top-color: #ffffff;
+  border-right-color: #3e2a1a;
+  border-bottom-color: #3e2a1a;
+  border-left-color: #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #24160b;
+}
+body[data-theme="jungle"] .sp-canvas-frame {
+  background: #223b28;
+  border-top-color: #3cb878;
+  border-right-color: #0c1a11;
+  border-bottom-color: #0c1a11;
+  border-left-color: #3cb878;
+  box-shadow: inset 1px 1px 0 #0e1c13;
+}

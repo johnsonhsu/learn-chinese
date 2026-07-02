@@ -181,6 +181,45 @@ export const THEMES: Theme[] = [
     cssDefined: true,
   },
   {
+    id: "jungle",
+    name: "Jungle",
+    nameKey: "theme.jungle",
+    premium: false,
+    arrangement: "grid",
+    group: "soft",
+    cssDefined: true,
+  },
+  {
+    id: "outer-space",
+    name: "Outer Space",
+    nameKey: "theme.outer-space",
+    premium: false,
+    arrangement: "grid",
+    group: "dark",
+    cssDefined: true,
+  },
+  {
+    id: "disney-boyish",
+    name: "Disney: Boyish",
+    nameKey: "theme.disney-boyish",
+    premium: false,
+    arrangement: "grid",
+    group: "disney",
+    cssDefined: true,
+  },
+  {
+    id: "disney-girlish",
+    name: "Disney: Girlish",
+    nameKey: "theme.disney-girlish",
+    premium: false,
+    arrangement: "grid",
+    group: "disney",
+    cssDefined: true,
+  },
+  // Premium foils — always listed LAST (the picker also sorts premium to the end).
+  // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
+  // behind the 9000 premium prerequisite.
+  {
     id: "gold",
     name: "Gold",
     nameKey: "theme.gold",

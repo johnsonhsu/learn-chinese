@@ -1,0 +1,264 @@
+/* ======================================================================
+   🧭 THEME — "Disney: Boyish" / 「迪士尼：冒険」 (registry id: disney-boyish)
+   ----------------------------------------------------------------------
+   Adventure storybook tone: navy adventure grounds, sky/amber chrome,
+   warm hero-friendly contrast. Additive and self-contained under
+   `body[data-theme="disney-boyish"]`.
+   ====================================================================== */
+
+body[data-theme="disney-boyish"] {
+  /* ── (A) Contract tokens re-pointed → themes EVERYTHING ──────────────────── */
+
+  /* Grounds + surfaces */
+  --paper: #2b3a67; /* adventure night-sky ground */
+  --paper-raised: #385297; /* adventure-day lifted panel */
+  --paper-sunken: #182545; /* deep-shadow recessed */
+  --bg: var(--paper);
+  --bg-raised: #385297;
+  --bg-raised-2: #2e3f73;
+  --bg-card: #385297;
+  --bg-card2: #2e3f73;
+  --bg-input: #182545;
+  --panel-bg: #385297;
+
+  /* Hero off-white text + muted steps */
+  --ink: #f8fbff;
+  --ink-soft: rgba(248, 251, 255, 0.72);
+  --ink-faint: rgba(248, 251, 255, 0.45);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules */
+  --rule: #1e2c52;
+  --rule-strong: #263a6a;
+  --border: #1e2c52;
+  --border-hover: #ffb347;
+  --panel-border: #1e2c52;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #263a6a;
+
+  /* Adventure sky/amber */
+  --seal: #ffb347;
+  --seal-deep: #d68a28;
+  --seal-wash: rgba(255, 179, 71, 0.18);
+  --accent: #ffb347;
+  --accent-bg: rgba(255, 179, 71, 0.18);
+  --accent-hover: #ffcf84;
+  --screen-accent: #ffb347;
+
+  /* Primary CTA face → sky blue */
+  --gold: #6cb4ff;
+  --gold-dark: #3a8fd1;
+  --grad-primary: linear-gradient(135deg, #6cb4ff 0%, #ffb347 52%, #d68a28 100%);
+
+  /* Status */
+  --error: #ff6b8a;
+  --danger: #ff6b8a;
+  --red: #ff6b8a;
+  --red-dark: #cc4466;
+  --success: #a4ffb8;
+  --warning: #ffd166;
+
+  /* Module hues */
+  --teal: #6cb4ff;
+  --teal-dark: #3a8fd1;
+  --pink: #ffb6d9;
+  --pink-dark: #d68a9f;
+  --blue: #6cb4ff;
+  --blue-dark: #3a8fd1;
+  --orange: #ffb347;
+  --orange-dark: #d68a28;
+  --purple: #b8a8ff;
+  --purple-dark: #8a78cc;
+  --green: #a4ffb8;
+  --green-dark: #5cc472;
+  --green-bright: #a4ffb8;
+  --green-bright-dark: #5cc472;
+
+  /* Wood → storybook binding */
+  --wood: #1e2c52;
+  --wood-dark: #14203a;
+  --wood-light: #2a3a60;
+
+  /* Screen background + depth */
+  --screen-bg: #2b3a67;
+  --screen-bg-dark: #182545;
+  --grad-fluency: linear-gradient(135deg, #ffb347 0%, #d68a28 100%);
+  --grad-success: linear-gradient(135deg, #a4ffb8 0%, #5cc472 100%);
+  --shadow-sm: 0 1px 2px rgba(10, 16, 30, 0.65);
+  --shadow-md: 0 18px 40px -24px rgba(10, 16, 30, 0.85);
+  --shadow-glow: 0 0 0 1px rgba(255, 179, 71, 0.18), 0 14px 30px -20px rgba(10, 16, 30, 0.9);
+  --shadow-glow-success: 0 0 0 1px rgba(164, 255, 184, 0.22);
+
+  /* Typography */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* ── (B) Styled application: Disney Boyish ────────────────────────────────── */
+body[data-theme="disney-boyish"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(108, 180, 255, 0.1) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+body[data-theme="disney-boyish"] .welcome-header h1,
+body[data-theme="disney-boyish"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(255, 179, 71, 0.2);
+}
+
+/* ── MODULE TILES ──────────────────────────────────────────────────────────── */
+body[data-theme="disney-boyish"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-raised);
+  border-top-color: #6cb4ff;
+  border-right-color: #182545;
+  border-bottom-color: #182545;
+  border-left-color: #6cb4ff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .module-card:hover {
+  box-shadow: 2px 2px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .module-card:active {
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .module-card .module-icon {
+  background: #385297;
+  box-shadow:
+    inset 1px 1px 0 #ffd166,
+    1px 1px 0 #14203a;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+body[data-theme="disney-boyish"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #14203a;
+  border-top-color: #ffd166;
+  border-right-color: #1e2c52;
+  border-bottom-color: #1e2c52;
+  border-left-color: #ffd166;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .app-shell .ui-btn--primary:active {
+  border-top-color: #1e2c52;
+  border-right-color: #ffd166;
+  border-bottom-color: #ffd166;
+  border-left-color: #1e2c52;
+}
+body[data-theme="disney-boyish"] .app-shell .ui-btn--secondary {
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-top-color: #6cb4ff;
+  border-right-color: #182545;
+  border-bottom-color: #182545;
+  border-left-color: #6cb4ff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+
+/* ── SETTINGS ─────────────────────────────────────────────────────────────── */
+body[data-theme="disney-boyish"] .settings-section,
+body[data-theme="disney-boyish"] .placement-card,
+body[data-theme="disney-boyish"] .restore-modal {
+  background: var(--paper-raised);
+  border-top-color: #6cb4ff;
+  border-right-color: #182545;
+  border-bottom-color: #182545;
+  border-left-color: #6cb4ff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .settings-option,
+body[data-theme="disney-boyish"] .lever-pill,
+body[data-theme="disney-boyish"] .lever-reset-all {
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-top-color: #6cb4ff;
+  border-right-color: #182545;
+  border-bottom-color: #182545;
+  border-left-color: #6cb4ff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .settings-option.active,
+body[data-theme="disney-boyish"] .lever-pill.active {
+  background: #22355d;
+  color: var(--ink);
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="disney-boyish"] .app-shell .char-tile {
+  --ct-face: var(--paper-raised);
+  --ct-line: #6cb4ff;
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-soft);
+}
+body[data-theme="disney-boyish"][data-screen="mychars"] .char-tile {
+  --ct-face: #385297;
+  --ct-line: #ffd166;
+  border-top-color: #ffd166;
+  border-right-color: #182545;
+  border-bottom-color: #182545;
+  border-left-color: #ffd166;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"][data-screen="mychars"] .char-tile--known {
+  border-color: #ffd166;
+}
+body[data-theme="disney-boyish"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+body[data-theme="disney-boyish"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+body[data-theme="disney-boyish"][data-screen="mychars"] .char-tile-level {
+  color: var(--ink);
+  background: var(--paper-raised);
+  border-top-color: #6cb4ff;
+  border-right-color: #182545;
+  border-bottom-color: #182545;
+  border-left-color: #6cb4ff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #14203a;
+}
+@media (hover: hover) {
+  body[data-theme="disney-boyish"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: #ffd166;
+    box-shadow:
+      inset 0 0 0 1px #ffd166,
+      2px 2px 0 #14203a;
+  }
+}
+body[data-theme="disney-boyish"] .char-tile-bar {
+  background: repeating-linear-gradient(90deg, #2a2e5a 0, #2a2e5a 2px, #14203a 2px, #14203a 4px);
+}
+body[data-theme="disney-boyish"] .char-tile-bar-fill {
+  background: repeating-linear-gradient(90deg, #ffb347 0, #ffb347 4px, #d68a28 4px, #d68a28 8px);
+}
+
+/* ── WRITING PAD ──────────────────────────────────────────────────────────── */
+body[data-theme="disney-boyish"] .canvas-wrapper {
+  background: #f8fbff;
+  border-top-color: #ffffff;
+  border-right-color: #1e2c52;
+  border-bottom-color: #1e2c52;
+  border-left-color: #ffffff;
+  box-shadow: 1px 1px 0 #14203a;
+}
+body[data-theme="disney-boyish"] .sp-canvas-frame {
+  background: #22355d;
+  border-top-color: #6cb4ff;
+  border-right-color: #14203a;
+  border-bottom-color: #14203a;
+  border-left-color: #6cb4ff;
+  box-shadow: inset 1px 1px 0 #1a2b52;
+}

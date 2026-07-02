@@ -1,0 +1,267 @@
+/* ======================================================================
+   🎄 THEME — "Christmas" / 「聖誕」 (registry id: christmas)
+   ----------------------------------------------------------------------
+   A cozy seasonal evergreen theme: deep fir-canopy greens, pine-crimson
+   chrome, and warm candlelight text. Reuses the same Win95 structural bevel
+   language as the other free themes, just recolored. scoped entirely
+   behind `body[data-theme="christmas"]` so it never leaks into other themes.
+   ====================================================================== */
+
+body[data-theme="christmas"] {
+  /* ── (A) Contract tokens re-pointed → themes EVERYTHING ──────────────────── */
+
+  /* Grounds + surfaces */
+  --paper: #1a331a; /* deep evergreen ground */
+  --paper-raised: #2e4f2e; /* fir-card lifted surface */
+  --paper-sunken: #0e1c0e; /* recessed shadow fill */
+  --bg: var(--paper);
+  --bg-raised: #2e4f2e;
+  --bg-raised-2: #243d24;
+  --bg-card: #2e4f2e;
+  --bg-card2: #243d24;
+  --bg-input: #0e1c0e;
+  --panel-bg: #2e4f2e;
+
+  /* Candlelight off-white text (never pure white) + muted steps */
+  --ink: #fff1e8;
+  --ink-soft: rgba(255, 241, 232, 0.72);
+  --ink-faint: rgba(255, 241, 232, 0.44);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules on pine glass */
+  --rule: #1e3322;
+  --rule-strong: #2a4630;
+  --border: #1e3322;
+  --border-hover: #e63946;
+  --panel-border: #1e3322;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #2a4630;
+
+  /* Holly crimson + pine */
+  --seal: #e63946;
+  --seal-deep: #b22532;
+  --seal-wash: rgba(230, 57, 70, 0.17);
+  --accent: #e63946;
+  --accent-bg: rgba(230, 57, 70, 0.17);
+  --accent-hover: #f07278;
+  --screen-accent: #e63946;
+
+  /* Primary CTA face → warm candlelight */
+  --gold: #ffd166;
+  --gold-dark: #d4a43c;
+  --grad-primary: linear-gradient(135deg, #ffd166 0%, #ffc043 52%, #d4a43c 100%);
+
+  /* Status — cozy seasonal hierarchy */
+  --error: #ff8a8a;
+  --danger: #ff8a8a;
+  --red: #ff8a8a;
+  --red-dark: #cc6666;
+  --success: #a4d48a;
+  --warning: #ffd166;
+
+  /* Module hues — Christmas palette */
+  --teal: #5bbf7a;
+  --teal-dark: #3a8f52;
+  --pink: #ff8fa3;
+  --pink-dark: #cc6680;
+  --blue: #7fb8e8;
+  --blue-dark: #5a8ec0;
+  --orange: #ffb44e;
+  --orange-dark: #cc8a28;
+  --purple: #cba0ff;
+  --purple-dark: #9a78cc;
+  --green: #7bcf5a;
+  --green-dark: #4f9a2e;
+  --green-bright: #7bcf5a;
+  --green-bright-dark: #4f9a2e;
+
+  /* Wood/frame tone → warm pine wood */
+  --wood: #3e2216;
+  --wood-dark: #26140a;
+  --wood-light: #5a3020;
+
+  /* Screen background + depth */
+  --screen-bg: #1a331a;
+  --screen-bg-dark: #0e1c0e;
+  --grad-fluency: linear-gradient(135deg, #ffd166 0%, #d4a43c 100%);
+  --grad-success: linear-gradient(135deg, #a4d48a 0%, #4f9a2e 100%);
+  --shadow-sm: 0 1px 2px rgba(10, 20, 10, 0.55);
+  --shadow-md: 0 18px 40px -24px rgba(10, 20, 10, 0.8);
+  --shadow-glow: 0 0 0 1px rgba(255, 209, 102, 0.22), 0 14px 30px -20px rgba(10, 20, 10, 0.9);
+  --shadow-glow-success: 0 0 0 1px rgba(123, 207, 90, 0.26);
+
+  /* Typography — keep body font; lighten with weight */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* ── (B) Styled application: Christmas ────────────────────────────────────── */
+body[data-theme="christmas"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(255, 209, 102, 0.1) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Headings — candlelight ink with faint warm lift */
+body[data-theme="christmas"] .welcome-header h1,
+body[data-theme="christmas"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(255, 209, 102, 0.18);
+}
+
+/* ── MODULE TILES ──────────────────────────────────────────────────────────── */
+body[data-theme="christmas"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-raised);
+  border-top-color: #5bbf7a;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #5bbf7a;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"] .module-card:hover {
+  box-shadow: 2px 2px 0 #26140a;
+}
+body[data-theme="christmas"] .module-card:active {
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"] .module-card .module-icon {
+  background: #2e4f2e;
+  box-shadow:
+    inset 1px 1px 0 #ffd166,
+    1px 1px 0 #26140a;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+body[data-theme="christmas"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #0e1c0e;
+  border-top-color: #ffd166;
+  border-right-color: #3e2216;
+  border-bottom-color: #3e2216;
+  border-left-color: #ffd166;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"] .app-shell .ui-btn--primary:active {
+  border-top-color: #3e2216;
+  border-right-color: #ffd166;
+  border-bottom-color: #ffd166;
+  border-left-color: #3e2216;
+}
+body[data-theme="christmas"] .app-shell .ui-btn--secondary {
+  background: var(--paper-raised);
+  color: #fff1e8;
+  border-top-color: #7bcf5a;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #7bcf5a;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+
+/* ── SETTINGS ─────────────────────────────────────────────────────────────── */
+body[data-theme="christmas"] .settings-section,
+body[data-theme="christmas"] .placement-card,
+body[data-theme="christmas"] .restore-modal {
+  background: var(--paper-raised);
+  border-top-color: #7bcf5a;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #7bcf5a;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"] .settings-option,
+body[data-theme="christmas"] .lever-pill,
+body[data-theme="christmas"] .lever-reset-all {
+  background: var(--paper-raised);
+  color: #fff1e8;
+  border-top-color: #7bcf5a;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #7bcf5a;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"] .settings-option.active,
+body[data-theme="christmas"] .lever-pill.active {
+  background: #3a2418;
+  color: #fff1e8;
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="christmas"] .app-shell .char-tile {
+  --ct-face: var(--paper-raised);
+  --ct-line: #5bbf7a;
+  --ct-ink: #fff1e8;
+  --ct-ink-soft: var(--ink-soft);
+}
+body[data-theme="christmas"][data-screen="mychars"] .char-tile {
+  --ct-face: #2e4f2e;
+  --ct-line: #4f9a2e;
+  border-top-color: #4f9a2e;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #4f9a2e;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"][data-screen="mychars"] .char-tile--known {
+  border-color: #4f9a2e;
+}
+body[data-theme="christmas"][data-screen="mychars"] .char-tile-glyph {
+  color: #fff1e8;
+}
+body[data-theme="christmas"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+body[data-theme="christmas"][data-screen="mychars"] .char-tile-level {
+  color: #fff1e8;
+  background: var(--paper-raised);
+  border-top-color: #7bcf5a;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #7bcf5a;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+@media (hover: hover) {
+  body[data-theme="christmas"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: #4f9a2e;
+    box-shadow:
+      inset 0 0 0 1px #a4d48a,
+      2px 2px 0 #26140a;
+  }
+}
+body[data-theme="christmas"] .char-tile-bar {
+  background: repeating-linear-gradient(90deg, #3a2418 0, #3a2418 2px, #26140a 2px, #26140a 4px);
+}
+body[data-theme="christmas"] .char-tile-bar-fill {
+  background: repeating-linear-gradient(90deg, #ffb44e 0, #ffb44e 4px, #d68a28 4px, #d68a28 8px);
+}
+
+/* ── WRITING PAD ──────────────────────────────────────────────────────────── */
+body[data-theme="christmas"] .canvas-wrapper {
+  background: #fff6ef;
+  border-top-color: #ffffff;
+  border-right-color: #3e2216;
+  border-bottom-color: #3e2216;
+  border-left-color: #ffffff;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #26140a;
+}
+body[data-theme="christmas"] .sp-canvas-frame {
+  background: #253d26;
+  border-top-color: #5bbf7a;
+  border-right-color: #0e1c0e;
+  border-bottom-color: #0e1c0e;
+  border-left-color: #5bbf7a;
+  box-shadow: inset 1px 1px 0 #142213;
+}
