@@ -560,8 +560,8 @@ things:
    stamped with a `__demoVersion` pref. A returning visitor on the current version keeps
    their session; bumping `DEMO_VERSION` reseeds everyone onto the new canonical demo. No
    bundled dataset to maintain. (A bare `/?demo` or `/try` would need a one-line
-   `shouldShowLanding` change or a `_redirects` rule — deliberately deferred to avoid
-   touching `App.tsx` while the theme refactor is in flight.)
+   `shouldShowLanding` change or a `_redirects` rule — deliberately deferred; not
+   needed while `?app&demo` covers the demo entry.)
 
 **Device gate — mobile/touch only (#66).** The demo is a mobile PWA experience (install +
 touch UI), so a **desktop** visitor on a demo path is gated OUT and shown an "open it on
@@ -626,18 +626,20 @@ exclusion list.
 ## 5.5 Theming (`platform/src/theme`)
 
 A registry-driven theming system layers an optional alternate skin over the
-default look. Six themes ship today — **Default**, the two premium foils **Gold**
-(warm foil) and **Silver** (cool platinum), and three FREE skins **Midnight**
-(墨夜, an ink-dark mode), **Sakura** (櫻花, a warm blush light theme), and
-**Matcha** (抹茶, a sage-green light theme) — and adding another is a single
-registry entry.
+default look. **13 themes ship today** (`theme/themes.ts`), organized into picker
+groups (#129): **default** (Indigo — the default _selection_ — and Paper, the
+token-less `:root` baseline), **dark** (Midnight, Outer Space), **soft/seasonal**
+(Sakura, Matcha, Jungle), **retro** (90s, 80s Motiv), **Disney** (Boyish, Girlish),
+and **foil** — the two premium skins **Gold** (warm foil) and **Silver** (cool
+platinum). Adding another is a single registry entry.
 
 - **The contract + catalogue** is `theme/themes.ts`: a `THEME_TOKENS` allow-list
   (the named CSS custom properties a theme may set — backgrounds, foil family,
   tile face/frame/glyph, button family, text family/scale/weight, and the
   module-selection `arrangement`) plus the `THEMES` registry (`id`, `name`,
-  `premium`, `arrangement`). **Default** sets no tokens — the `:root` editorial
-  values stand in, so the default look is byte-identical to pre-theming.
+  `premium`, `arrangement`, `group`). **Paper** (registry id `default`) sets no
+  tokens — the `:root` editorial values stand in, so that baseline look is
+  byte-identical to pre-theming; **Indigo** is the default _selection_.
 - **Token values live in CSS**, not the registry: each non-default theme is a
   `body[data-theme="<id>"] { … }` block — either inline in `index.css` (Gold/Silver)
   or in a standalone `theme/theme-<id>.css` file imported in `main.tsx`

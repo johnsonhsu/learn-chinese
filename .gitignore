@@ -60,6 +60,9 @@ pnpm-debug.log*
 *.db.backup*
 
 # ─── Scratch / one-off (not part of the app) ───
+# Branch handoff logs (AGENTS.md convention puts these in the repo PARENT folder;
+# ignore any that land in-repo so a stray one never gets committed).
+chatter.md
 ux-plan.html
 top-300-chars.csv
 sentence-bank-todo.md
