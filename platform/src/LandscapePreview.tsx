@@ -11,8 +11,8 @@ export default function LandscapePreview() {
     <div className="lsp-root">
       <header className="lsp-masthead">
         <div className="lsp-wrap">
-          <a className="lsp-back" href="?ui">
-            ← UI components
+          <a className="lsp-back" href="?devnotes">
+            ← Dev notes
           </a>
           <p className="lsp-eyebrow" style={{ marginTop: 20 }}>
             Design proposal · epic #152
