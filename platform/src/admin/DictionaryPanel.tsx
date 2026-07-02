@@ -354,7 +354,7 @@ export function DictionaryPanel() {
             <button key={c.id} className="dict-char-cell" onClick={() => handleCharClick(c.id)}>
               <span className="dict-char-big">{c.character}</span>
               <span className="dict-char-strokes">
-                {c.strokeCount > 0 ? `${c.strokeCount}画` : ""}
+                {c.strokeCount > 0 ? `${c.strokeCount}畫` : ""}
               </span>
               {c.tocfl_level ? (
                 <span className="dict-char-level">{String(c.tocfl_level)}</span>
