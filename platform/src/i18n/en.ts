@@ -63,6 +63,7 @@ export default {
   "theme.jungle": "Jungle",
   "theme.disney-boyish": "Disney: Boyish",
   "theme.disney-girlish": "Disney: Girlish",
+  "theme.christmas": "Christmas",
   "theme.group.default": "Modern",
   "theme.group.dark": "Dark Mode",
   "theme.group.retro": "Retro / 90s",

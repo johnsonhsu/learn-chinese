@@ -59,6 +59,7 @@ export default {
   "theme.jungle": "叢林",
   "theme.disney-boyish": "迪士尼：男孩風",
   "theme.disney-girlish": "迪士尼：女孩風",
+  "theme.christmas": "聖誕",
   "theme.group.default": "現代",
   "theme.group.dark": "深色模式",
   "theme.group.retro": "復古 / 90s",

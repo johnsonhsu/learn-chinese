@@ -673,7 +673,11 @@ registry entry.
   "Invalid code", no hint it's real — see §5.6). _Back-compat:_
   a device that stored the legacy blanket `premium` feature (retired code `9999`)
   keeps **both** foils. Midnight/Sakura/Matcha are `premium: false`, so they are
-  always available — no code required. There is **no per-profile unlock**: a profile
+  always available — no code required. A theme may also carry a **seasonal gate**
+  (`availableMonths`, 1-based): **Christmas** is only selectable Nov–Jan — out of
+  season it is hidden and any stored selection falls back to `default` through the
+  same `isThemeAvailable()` / `resolveEffectiveTheme` path as a locked foil (issue
+  #128). There is **no per-profile unlock**: a profile
   can only _override_ the theme among themes already available device-wide
   (`isThemeAvailable()` is per-theme; `isDevicePremiumUnlocked()` is the coarse
   "any foil" signal, in `theme-store.ts`). The theme selectors

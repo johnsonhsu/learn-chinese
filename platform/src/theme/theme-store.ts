@@ -20,11 +20,16 @@
  */
 
 import {
-  THEMES, getTheme, isThemeId, DEFAULT_THEME_ID, ROOT_THEME_ID, PREMIUM_FEATURE,
+  THEMES,
+  getTheme,
+  isThemeId,
+  DEFAULT_THEME_ID,
+  ROOT_THEME_ID,
+  PREMIUM_FEATURE,
   type Theme,
-} from './themes.js';
-import { isFeatureUnlocked, setUnlockedFeatures } from '../utils/unlocks.js';
-import { demoKey, resetDemoKeys } from '../offline/demo-key.js';
+} from "./themes.js";
+import { isFeatureUnlocked, setUnlockedFeatures } from "../utils/unlocks.js";
+import { demoKey, resetDemoKeys } from "../offline/demo-key.js";
 
 // Device-level theme selection. Reuses the historical localStorage key so an
 // existing gold/silver device keeps its selection across the theme refactor.
@@ -40,7 +45,7 @@ import { demoKey, resetDemoKeys } from '../offline/demo-key.js';
 // (resetDemoKeys, called from ensureDemoSeed); the real installed/non-demo path
 // keeps the historical keys untouched. demoKey() is decided by the memoized
 // isDemoMode(), fixed for the page session — capture once at module load.
-const DEVICE_THEME_KEY = demoKey('lc-gold-mode');
+const DEVICE_THEME_KEY = demoKey("lc-gold-mode");
 // Per-profile theme override, keyed by profile id. Empty/absent → use device.
 const profileThemeKey = (profileId: number) => demoKey(`lc-theme-u${profileId}`);
 
@@ -116,7 +121,9 @@ export function setProfileTheme(profileId: number, id: string | null): void {
  */
 export function isDevicePremiumUnlocked(): boolean {
   if (isFeatureUnlocked(PREMIUM_FEATURE)) return true;
-  return THEMES.some((th) => th.premium && th.unlockFeature != null && isFeatureUnlocked(th.unlockFeature));
+  return THEMES.some(
+    (th) => th.premium && th.unlockFeature != null && isFeatureUnlocked(th.unlockFeature),
+  );
 }
 
 /**
@@ -128,6 +135,12 @@ export function isDevicePremiumUnlocked(): boolean {
  * not shown at all.
  */
 export function isThemeAvailable(theme: Theme): boolean {
+  // Seasonal gate (issue #128): a theme with `availableMonths` is only
+  // selectable in those months (1-based, user's local time) — applies to free
+  // themes too (e.g. Christmas, Nov–Jan).
+  if (theme.availableMonths && !theme.availableMonths.includes(new Date().getMonth() + 1)) {
+    return false;
+  }
   if (!theme.premium) return true;
   // Legacy blanket unlock ungates every premium theme.
   if (isFeatureUnlocked(PREMIUM_FEATURE)) return true;
@@ -137,16 +150,16 @@ export function isThemeAvailable(theme: Theme): boolean {
 
 /**
  * EFFECTIVE THEME id for a profile: profileOverride ?? deviceTheme ?? 'default',
- * with a safety net — if the resolved theme is premium but premium is NOT
- * unlocked on this device (e.g. an unlock was revoked, or a backup carried a
- * selection without the unlock), fall back to 'default' so the UI never renders
- * a gated look the user can't otherwise reach.
+ * with a safety net — if the resolved theme is not currently available (a
+ * premium theme whose unlock is missing/revoked, or a seasonal theme that is
+ * out of season), fall back to 'default' so the UI never renders a look the
+ * user can't otherwise reach.
  */
 export function resolveEffectiveTheme(profileId: number | null): string {
   const override = profileId != null ? getProfileTheme(profileId) : null;
   const chosenId = override ?? getDeviceTheme();
   const theme = getTheme(chosenId);
-  if (theme.premium && !isThemeAvailable(theme)) {
+  if (!isThemeAvailable(theme)) {
     return DEFAULT_THEME_ID;
   }
   return theme.id;
@@ -203,14 +216,14 @@ export function exportThemeState(profileIds: number[]): ThemeBackup {
  */
 export function importThemeState(state: ThemeBackup | undefined): void {
   if (!state) return;
-  if (typeof state.device === 'string') setDeviceTheme(state.device);
+  if (typeof state.device === "string") setDeviceTheme(state.device);
   for (const [idStr, themeId] of Object.entries(state.profileThemes || {})) {
-    setProfileTheme(Number(idStr), typeof themeId === 'string' ? themeId : null);
+    setProfileTheme(Number(idStr), typeof themeId === "string" ? themeId : null);
   }
   // Promote any legacy per-profile unlock to the device-level set.
   const legacyFeatures = Object.values(state.profileUnlocks || {})
     .flat()
-    .filter((v): v is string => typeof v === 'string');
+    .filter((v): v is string => typeof v === "string");
   if (legacyFeatures.length) setUnlockedFeatures(Array.from(new Set(legacyFeatures)));
 }
 
