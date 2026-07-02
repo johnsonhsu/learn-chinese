@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars -- callback arity matches shared types */
-
 // Bridges the user's entered text into the shape the SHARED writing-challenge
 // PracticePage consumes (NextSentenceResponse), and routes finished sessions
 // back into the on-device progress store. This is what lets copybook reuse

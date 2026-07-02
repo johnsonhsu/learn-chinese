@@ -5,9 +5,9 @@
  */
 
 export interface DbQueryProvider {
-  queryAll<T>(sql: string, params?: any[]): T[];
-  queryOne<T>(sql: string, params?: any[]): T | undefined;
-  run(sql: string, params?: any[]): { changes: number; lastId: number };
+  queryAll<T>(sql: string, params?: unknown[]): T[];
+  queryOne<T>(sql: string, params?: unknown[]): T | undefined;
+  run(sql: string, params?: unknown[]): { changes: number; lastId: number };
 }
 
 export interface RankedChar {
@@ -63,4 +63,4 @@ export interface MergeFieldRow {
   sort_order: number;
 }
 
-export type { MasteryConfig } from './mastery.js';
+export type { MasteryConfig } from "./mastery.js";

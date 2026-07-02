@@ -23,7 +23,14 @@ export default [
     rules: {
       ...tseslint.configs.recommended?.rules,
       'react-hooks/rules-of-hooks': 'error',
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      // Use the TS-aware unused-vars rule; the base `no-unused-vars` false-positives
+      // on type-signature params (e.g. `queryAll(sql, params)` in a `type`/`interface`)
+      // and double-reports. typescript-eslint's docs say to disable the base rule.
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
     },
   },
 ];
