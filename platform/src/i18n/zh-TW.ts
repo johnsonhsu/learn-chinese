@@ -59,6 +59,8 @@ export default {
   "theme.jungle": "叢林",
   "theme.disney-boyish": "迪士尼：男孩風",
   "theme.disney-girlish": "迪士尼：女孩風",
+  "theme.christmas": "聖誕",
+  "theme.outer-space": "外太空",
   "theme.group.default": "現代",
   "theme.group.dark": "深色模式",
   "theme.group.retro": "復古 / 90s",
@@ -119,6 +121,7 @@ export default {
   "unlock.premiumUnlocked": "已解鎖進階 — 請再輸入主題代碼",
   "unlock.silverUnlocked": "已解鎖銀色主題",
   "unlock.goldUnlocked": "已解鎖金色主題",
+  "unlock.christmasUnlocked": "已解鎖聖誕主題 — 全年可用",
   "settings.levers": "參數微調",
   "levers.title": "參數微調",
   "levers.intro":

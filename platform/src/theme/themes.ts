@@ -102,6 +102,18 @@ export interface Theme {
    * the selector scannable without changing premium unlock/persistence rules.
    */
   group: ThemeGroup;
+  /**
+   * Seasonal gate (1-based months). When set, the theme is only selectable in
+   * those months — `isThemeAvailable` hides it otherwise and any stored
+   * selection falls back to the default (like a locked premium theme). Absent
+   * means always available.
+   */
+  availableMonths?: number[];
+  /**
+   * A feature key (utils/unlocks) that, when redeemed, LIFTS the seasonal gate
+   * so the theme is selectable all year — e.g. Christmas via code 9980.
+   */
+  seasonalUnlockFeature?: string;
   /** Token values are NOT inlined here — kept for registry completeness. */
   cssDefined: true;
 }
@@ -187,6 +199,18 @@ export const THEMES: Theme[] = [
     premium: false,
     arrangement: "grid",
     group: "soft",
+    cssDefined: true,
+  },
+  {
+    id: "christmas",
+    name: "Christmas",
+    nameKey: "theme.christmas",
+    premium: false,
+    arrangement: "grid",
+    group: "soft",
+    // Seasonal: only selectable Nov–Jan (issue #128); code 9980 lifts the gate.
+    availableMonths: [11, 12, 1],
+    seasonalUnlockFeature: "theme-christmas-allyear",
     cssDefined: true,
   },
   {
