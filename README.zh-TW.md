@@ -72,7 +72,7 @@
 ### 主題（Themes）
 
 在 kit 之上還有一套由註冊表（registry）驅動的 **主題系統**（`platform/src/theme/`）——`themes.ts` 中共
-**13 款主題**。預設*選擇*是 **Indigo**；純 `:root` 外觀是 **Paper**（註冊表 id `default`，不設定任何 token）。
+**14 款主題**。預設*選擇*是 **Indigo**；純 `:root` 外觀是 **Paper**（註冊表 id `default`，不設定任何 token）。
 主題選擇器依分類分組（#129）：**default**（Indigo、Paper）、**dark**（Midnight、Outer Space）、
 **soft／節慶**（Sakura、Matcha、Jungle）、**retro**（90s、80s Motiv）、**Disney**（Boyish、Girlish），以及
 **foil**——兩款付費皮膚 **Gold（暖金箔）** 與 **Silver（冷鉑金）**。一個主題就是 `themes.ts` 註冊表中的

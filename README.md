@@ -88,7 +88,7 @@ kit's stylesheet is imported once by `main.tsx`. Full details in
 ### Themes
 
 On top of the kit there's a registry-driven **theming system**
-(`platform/src/theme/`) — **13 themes** in `themes.ts`. The default _selection_ is
+(`platform/src/theme/`) — **14 themes** in `themes.ts`. The default _selection_ is
 **Indigo**; the bare `:root` look is **Paper** (registry id `default`, which sets
 nothing). The picker groups them by category (#129): **default** (Indigo, Paper),
 **dark** (Midnight, Outer Space), **soft/seasonal** (Sakura, Matcha, Jungle),
@@ -336,10 +336,10 @@ servers before committing `content.db` (don't commit it while a server holds it 
 
 ## Repo map
 
-| Path                        | What                                                                        |
-| --------------------------- | --------------------------------------------------------------------------- |
-| `shared/`                   | `@shared/character-stats` — ranking, mastery, "known", selection (pure)     |
-| `platform/`                 | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions  |
+| Path                        | What                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `shared/`                   | `@shared/character-stats` — ranking, mastery, "known", selection (pure)      |
+| `platform/`                 | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions   |
 | `modules/*`                 | the seven learning activities (see [modules/README.md](./modules/README.md)) |
-| `ARCHITECTURE.md`           | technical architecture (monorepo, module system, data, deploy)              |
-| `platform/src/ui/README.md` | the shared UI kit reference                                                 |
+| `ARCHITECTURE.md`           | technical architecture (monorepo, module system, data, deploy)               |
+| `platform/src/ui/README.md` | the shared UI kit reference                                                  |
