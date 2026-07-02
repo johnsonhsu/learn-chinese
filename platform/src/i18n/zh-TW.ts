@@ -56,6 +56,7 @@ export default {
   "theme.sakura": "櫻花",
   "theme.matcha": "抹茶",
   "theme.retro": "90年代",
+  "theme.jungle": "叢林",
   "settings.saving": "儲存中...",
   "settings.admin": "管理",
   "settings.advanced": "進階設定",

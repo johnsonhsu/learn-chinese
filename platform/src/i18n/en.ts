@@ -60,6 +60,7 @@ export default {
   "theme.sakura": "Sakura",
   "theme.matcha": "Matcha",
   "theme.retro": "90s",
+  "theme.jungle": "Jungle",
   "settings.saving": "Saving...",
   "settings.admin": "Admin",
   "settings.advanced": "Advanced settings",
