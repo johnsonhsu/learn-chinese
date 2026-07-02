@@ -50,6 +50,7 @@ const WelcomePopup = lazy(() => import("./WelcomePopup.tsx"));
 const LandingPage = lazy(() => import("./LandingPage.tsx"));
 const Styleguide = lazy(() => import("./Styleguide.tsx"));
 const LandscapePreview = lazy(() => import("./LandscapePreview.tsx"));
+const DevNotes = lazy(() => import("./DevNotes.tsx"));
 const DemoGate = lazy(() => import("./DemoGate.tsx"));
 
 interface ModuleManifest {
@@ -157,6 +158,13 @@ function shouldShowStyleguide(): boolean {
   return new URLSearchParams(location.search).has("ui");
 }
 
+// Dev/reference entry: `?devnotes` is the internal notes HUB (mirrors `?ui`). Bare
+// `?devnotes` shows the hub; `?devnotes=ideas` shows the 10-Ideas page. Deliberately
+// NOT linked from the app UI — reachable only by visiting `/?devnotes` directly.
+function shouldShowDevNotes(): boolean {
+  return new URLSearchParams(location.search).has("devnotes");
+}
+
 export default function App() {
   if (shouldShowStyleguide()) {
     // `?ui=landscape` is a distinct sub-page of the styleguide (the landscape
@@ -165,6 +173,15 @@ export default function App() {
     return (
       <Suspense fallback={<div className="loading" />}>
         {uiPage === "landscape" ? <LandscapePreview /> : <Styleguide />}
+      </Suspense>
+    );
+  }
+  if (shouldShowDevNotes()) {
+    // The Dev Notes hub links out to ?ui, ?ui=landscape, and ?devnotes=ideas.
+    const page = new URLSearchParams(location.search).get("devnotes");
+    return (
+      <Suspense fallback={<div className="loading" />}>
+        <DevNotes page={page} />
       </Suspense>
     );
   }
