@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { BackButton } from '@platform/ui/index.ts';
-import { demoKey } from '@platform/offline/demo-key.ts';
-import { useOffline } from '../offline/offline-context.tsx';
-import { speak } from '../speech.ts';
-import { buildReadingPool, tapTile, firstUnresolvedIndex, type ReadingSlot } from '../reading.ts';
-import type { ReadingQuestion } from '../cloze.ts';
-import { useT } from '../i18n/index.ts';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { BackButton } from "@platform/ui/index.ts";
+import { demoKey } from "@platform/offline/demo-key.ts";
+import { useOffline } from "../offline/offline-context.tsx";
+import { speak } from "../speech.ts";
+import { buildReadingPool, tapTile, firstUnresolvedIndex, type ReadingSlot } from "../reading.ts";
+import type { ReadingQuestion } from "../cloze.ts";
+import { useT } from "../i18n/index.ts";
 
 interface Props {
   onStop: () => void;
@@ -30,15 +30,15 @@ export function ReadingPage({ onStop }: Props) {
   const [wrongTile, setWrongTile] = useState<{ word: string; nonce: number } | null>(null);
   const [poppedIndex, setPoppedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [done, setDone] = useState(false);
 
-  const autoSkipKey = demoKey('reading_english_auto_skip');
-  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(autoSkipKey) === 'true');
+  const autoSkipKey = demoKey("reading_english_auto_skip");
+  const [autoSkip, setAutoSkip] = useState(() => localStorage.getItem(autoSkipKey) === "true");
   const toggleAutoSkip = () => {
     const next = !autoSkip;
     setAutoSkip(next);
-    localStorage.setItem(autoSkipKey, next ? 'true' : 'false');
+    localStorage.setItem(autoSkipKey, next ? "true" : "false");
   };
 
   const loadId = useRef(0);
@@ -56,7 +56,11 @@ export function ReadingPage({ onStop }: Props) {
     try {
       const q = dataLayer.getNextReadingSentence();
       if (loadId.current !== thisLoad) return;
-      if (!q) { setQuestion(null); setLoading(false); return; }
+      if (!q) {
+        setQuestion(null);
+        setLoading(false);
+        return;
+      }
       const pool = buildReadingPool({
         english: q.english,
         masteredWords: dataLayer.getMasteredWords(),
@@ -69,91 +73,147 @@ export function ReadingPage({ onStop }: Props) {
       setLoading(false);
       speak(q.english);
     } catch (e) {
-      if (loadId.current === thisLoad) { setError((e as Error).message); setLoading(false); }
+      if (loadId.current === thisLoad) {
+        setError((e as Error).message);
+        setLoading(false);
+      }
     }
   }, [dataLayer, autoSkip]);
 
-  useEffect(() => { loadSentence(); }, [loadSentence]);
+  useEffect(() => {
+    loadSentence();
+  }, [loadSentence]);
 
   // On completion, record EACH word into the reading store: an auto-skipped word
   // is a mastered read (recorded correct); a tapped word with no wrong attempts is
   // correct, with ≥1 wrong attempt is incorrect. Duplicate words are scored per
   // slot (each occurrence submits its own result for the same word key).
-  const finish = useCallback(async (finalSlots: ReadingSlot[]) => {
-    if (!dataLayer || !question) return;
-    for (let i = 0; i < finalSlots.length; i++) {
-      const s = finalSlots[i];
-      const correct = s.autoSkipped ? true : (mistakes.current[i] || 0) === 0;
-      await dataLayer.submitReadingResult(question.sentenceId, s.word, correct);
-    }
-    setDone(true);
-  }, [dataLayer, question]);
+  const finish = useCallback(
+    async (finalSlots: ReadingSlot[]) => {
+      if (!dataLayer || !question) return;
+      for (let i = 0; i < finalSlots.length; i++) {
+        const s = finalSlots[i];
+        const correct = s.autoSkipped ? true : (mistakes.current[i] || 0) === 0;
+        await dataLayer.submitReadingResult(question.sentenceId, s.word, correct);
+      }
+      setDone(true);
+    },
+    [dataLayer, question],
+  );
 
-  const onTapTile = useCallback((tapped: string, tileIdx: number) => {
-    const res = tapTile(slots, index, tiles, tapped);
-    if (res.outcome === 'wrong') {
-      mistakes.current[index] = (mistakes.current[index] || 0) + 1;
-      setWrongTile({ word: tapped, nonce: Date.now() + tileIdx });
-      return;
+  // Auto-complete guard: when a freshly-built pool has NO unresolved slots (every
+  // word auto-skipped because the whole sentence is already mastered and auto-skip
+  // is ON), there are no tiles to tap, so onTapTile's finish() path never fires and
+  // the puzzle renders blank/stalled. Detect that here and finish the round so each
+  // word is recorded (as a mastered read) and `done` flips. Placed AFTER `finish`
+  // is defined to avoid a TDZ against loadSentence's ordering.
+  useEffect(() => {
+    if (
+      !loading &&
+      question &&
+      !done &&
+      slots.length > 0 &&
+      firstUnresolvedIndex(slots) >= slots.length
+    ) {
+      void finish(slots);
     }
-    setWrongTile(null);
-    setPoppedIndex(index);
-    setTiles(res.tiles);
-    setIndex(res.nextIndex);
-    if (res.done) { void finish(slots); }
-  }, [slots, index, tiles, finish]);
+  }, [loading, question, done, slots, finish]);
+
+  const onTapTile = useCallback(
+    (tapped: string, tileIdx: number) => {
+      const res = tapTile(slots, index, tiles, tapped);
+      if (res.outcome === "wrong") {
+        mistakes.current[index] = (mistakes.current[index] || 0) + 1;
+        setWrongTile({ word: tapped, nonce: Date.now() + tileIdx });
+        return;
+      }
+      setWrongTile(null);
+      setPoppedIndex(index);
+      setTiles(res.tiles);
+      setIndex(res.nextIndex);
+      if (res.done) {
+        void finish(slots);
+      }
+    },
+    [slots, index, tiles, finish],
+  );
 
   // --- Done screen ---
   if (done) {
     const scored = slots.map((s, i) => ({ s, i })).filter(({ s }) => !s.autoSkipped);
     const perfect = scored.filter(({ i }) => (mistakes.current[i] ?? 0) === 0).length;
-    const perfectAll = scored.length > 0 && scored.every(({ i }) => (mistakes.current[i] ?? 0) === 0);
+    const perfectAll =
+      scored.length > 0 && scored.every(({ i }) => (mistakes.current[i] ?? 0) === 0);
     return (
       <div className="re-page re-page--done">
         <div className="re-done-card">
           {question && <div className="re-done-chinese">{question.chinese}</div>}
           <div className="re-done-sentence" onClick={() => question && speak(question.english)}>
             {slots.map((s, i) => (
-              <span key={i} className={`re-done-word${s.autoSkipped ? ' re-done-word--skip' : ''}`}>{s.word}</span>
+              <span key={i} className={`re-done-word${s.autoSkipped ? " re-done-word--skip" : ""}`}>
+                {s.word}
+              </span>
             ))}
           </div>
           {perfectAll ? (
-            <div className="re-celebrate"><span aria-hidden>✨</span> {t('reading.perfectAll')} <span aria-hidden>✨</span></div>
+            <div className="re-celebrate">
+              <span aria-hidden>✨</span> {t("reading.perfectAll")} <span aria-hidden>✨</span>
+            </div>
           ) : (
-            <div className="re-done-stats">{perfect} {t('reading.correct')}</div>
+            <div className="re-done-stats">
+              {perfect} {t("reading.correct")}
+            </div>
           )}
           <div className="re-done-actions">
-            <button className="re-btn-primary" onClick={loadSentence}>{t('reading.nextSession')}</button>
-            <button className="re-btn-secondary" onClick={onStop}>{t('reading.stop')}</button>
+            <button className="re-btn-primary" onClick={loadSentence}>
+              {t("reading.nextSession")}
+            </button>
+            <button className="re-btn-secondary" onClick={onStop}>
+              {t("reading.stop")}
+            </button>
           </div>
         </div>
       </div>
     );
   }
 
-  if (loading) return <div className="re-empty">{t('reading.loading')}</div>;
-  if (error) return <div className="re-empty" style={{ color: 'var(--error)' }}>{error}</div>;
-  if (!question) return <div className="re-empty">{t('reading.noSentences')}</div>;
+  if (loading) return <div className="re-empty">{t("reading.loading")}</div>;
+  if (error)
+    return (
+      <div className="re-empty" style={{ color: "var(--error)" }}>
+        {error}
+      </div>
+    );
+  if (!question) return <div className="re-empty">{t("reading.noSentences")}</div>;
 
   return (
     <div className="re-page">
       <div className="re-top">
-        <BackButton size="sm" onClick={onStop} label={t('reading.back')} />
+        <BackButton size="sm" onClick={onStop} label={t("reading.back")} />
         <div className="re-settings">
           <button
-            className={`sp-autoskip-toggle${autoSkip ? ' active' : ''}`}
+            className={`sp-autoskip-toggle${autoSkip ? " active" : ""}`}
             onClick={toggleAutoSkip}
             title="Auto-skip words you've mastered"
           >
-            {t('reading.autoSkip')} {autoSkip ? t('reading.on') : t('reading.off')}
+            {t("reading.autoSkip")} {autoSkip ? t("reading.on") : t("reading.off")}
           </button>
-          <button className="re-new-btn" onClick={loadSentence} title={t('reading.newSentence')}>↻</button>
+          <button className="re-new-btn" onClick={loadSentence} title={t("reading.newSentence")}>
+            ↻
+          </button>
         </div>
       </div>
 
       <div className="re-prompt-card">
         <div className="re-prompt-row">
-          <button type="button" className="re-audio-btn" onClick={() => speak(question.english)} aria-label={t('reading.hearSentence')}>🔊</button>
+          <button
+            type="button"
+            className="re-audio-btn"
+            onClick={() => speak(question.english)}
+            aria-label={t("reading.hearSentence")}
+          >
+            🔊
+          </button>
           <div className="re-prompt-chinese">{question.chinese}</div>
         </div>
 
@@ -164,21 +224,24 @@ export function ReadingPage({ onStop }: Props) {
             const filled = i < index;
             const isActive = i === index;
             const isAuto = s.autoSkipped;
-            const cls = ['re-slot',
-              filled && 're-slot--filled',
-              isActive && 're-slot--active',
-              isAuto && 're-slot--skip',
-              poppedIndex === i && 're-slot--pop',
-            ].filter(Boolean).join(' ');
+            const cls = [
+              "re-slot",
+              filled && "re-slot--filled",
+              isActive && "re-slot--active",
+              isAuto && "re-slot--skip",
+              poppedIndex === i && "re-slot--pop",
+            ]
+              .filter(Boolean)
+              .join(" ");
             return (
               <span key={i} className={cls}>
-                {(filled || isAuto) ? s.word : ''}
+                {filled || isAuto ? s.word : ""}
               </span>
             );
           })}
         </div>
 
-        <div className="re-instruction">{t('reading.instruction')}</div>
+        <div className="re-instruction">{t("reading.instruction")}</div>
 
         {/* Tile pool: the shuffled sentence words still to place. Each tap tests
             against the current slot; a correct tap consumes the tile. */}
@@ -188,7 +251,7 @@ export function ReadingPage({ onStop }: Props) {
             return (
               <button
                 key={`${w}-${i}`}
-                className={`re-tile${isWrong ? ' re-tile--wrong' : ''}`}
+                className={`re-tile${isWrong ? " re-tile--wrong" : ""}`}
                 onClick={() => onTapTile(w, i)}
               >
                 {w}
