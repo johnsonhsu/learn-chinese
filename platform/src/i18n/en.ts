@@ -61,6 +61,8 @@ export default {
   "theme.matcha": "Matcha",
   "theme.retro": "90s",
   "theme.jungle": "Jungle",
+  "theme.disney-boyish": "Disney: Boyish",
+  "theme.disney-girlish": "Disney: Girlish",
   "settings.saving": "Saving...",
   "settings.admin": "Admin",
   "settings.advanced": "Advanced settings",

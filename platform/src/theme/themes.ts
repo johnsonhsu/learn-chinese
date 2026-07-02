@@ -183,6 +183,22 @@ export const THEMES: Theme[] = [
     arrangement: "grid",
     cssDefined: true,
   },
+  {
+    id: "disney-boyish",
+    name: "Disney: Boyish",
+    nameKey: "theme.disney-boyish",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "disney-girlish",
+    name: "Disney: Girlish",
+    nameKey: "theme.disney-girlish",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
   // Premium foils — always listed LAST (the picker also sorts premium to the end).
   // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
   // behind the 9000 premium prerequisite.

@@ -1,0 +1,264 @@
+/* ======================================================================
+   👑 THEME — "Disney: Girlish" / 「迪士尼：公主」 (registry id: disney-girlish)
+   ----------------------------------------------------------------------
+   Princess/fairytale storybook tone: plum grounds, rose-gold chrome,
+   soft candlelight text and cozy readable contrast. Additive and
+   self-contained under `body[data-theme="disney-girlish"]`.
+   ====================================================================== */
+
+body[data-theme="disney-girlish"] {
+  /* ── (A) Contract tokens re-pointed → themes EVERYTHING ──────────────────── */
+
+  /* Grounds + surfaces */
+  --paper: #4b1f4b; /* fairytale plum ground */
+  --paper-raised: #6a3770; /* rose-loft lifted panel */
+  --paper-sunken: #300d30; /* deep-shadow recessed */
+  --bg: var(--paper);
+  --bg-raised: #6a3770;
+  --bg-raised-2: #55285a;
+  --bg-card: #6a3770;
+  --bg-card2: #55285a;
+  --bg-input: #300d30;
+  --panel-bg: #6a3770;
+
+  /* Princess candlelight text + muted steps */
+  --ink: #fff8fb;
+  --ink-soft: rgba(255, 248, 251, 0.7);
+  --ink-faint: rgba(255, 248, 251, 0.42);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules */
+  --rule: #452245;
+  --rule-strong: #553055;
+  --border: #452245;
+  --border-hover: #ff90b3;
+  --panel-border: #452245;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #553055;
+
+  /* Princess rose/gold */
+  --seal: #ff90b3;
+  --seal-deep: #cc6680;
+  --seal-wash: rgba(255, 144, 179, 0.18);
+  --accent: #ff90b3;
+  --accent-bg: rgba(255, 144, 179, 0.18);
+  --accent-hover: #ffb8cf;
+  --screen-accent: #ff90b3;
+
+  /* Primary CTA face → warm gold */
+  --gold: #ffd166;
+  --gold-dark: #d4a43c;
+  --grad-primary: linear-gradient(135deg, #ffb8cf 0%, #ff90b3 52%, #cc6680 100%);
+
+  /* Status */
+  --error: #ff9090;
+  --danger: #ff9090;
+  --red: #ff9090;
+  --red-dark: #cc6666;
+  --success: #b8ffd1;
+  --warning: #ffd166;
+
+  /* Module hues */
+  --teal: #ff90b3;
+  --teal-dark: #cc6680;
+  --pink: #ffb8cf;
+  --pink-dark: #d68a9f;
+  --blue: #b8c9ff;
+  --blue-dark: #8a9fd1;
+  --orange: #ffb347;
+  --orange-dark: #d68a28;
+  --purple: #d4a8ff;
+  --purple-dark: #9a78cc;
+  --green: #b8ffd1;
+  --green-dark: #6cc472;
+  --green-bright: #b8ffd1;
+  --green-bright-dark: #6cc472;
+
+  /* Wood → storybook spine */
+  --wood: #452245;
+  --wood-dark: #300d30;
+  --wood-light: #553055;
+
+  /* Screen background + depth */
+  --screen-bg: #4b1f4b;
+  --screen-bg-dark: #300d30;
+  --grad-fluency: linear-gradient(135deg, #ffb8cf 0%, #d68a9f 100%);
+  --grad-success: linear-gradient(135deg, #b8ffd1 0%, #6cc472 100%);
+  --shadow-sm: 0 1px 2px rgba(20, 10, 15, 0.65);
+  --shadow-md: 0 18px 40px -24px rgba(20, 10, 15, 0.85);
+  --shadow-glow: 0 0 0 1px rgba(255, 144, 179, 0.18), 0 14px 30px -20px rgba(20, 10, 15, 0.9);
+  --shadow-glow-success: 0 0 0 1px rgba(184, 255, 209, 0.22);
+
+  /* Typography */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* ── (B) Styled application: Disney Girlish ───────────────────────────────── */
+body[data-theme="disney-girlish"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(255, 184, 207, 0.1) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+body[data-theme="disney-girlish"] .welcome-header h1,
+body[data-theme="disney-girlish"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(255, 144, 179, 0.18);
+}
+
+/* ── MODULE TILES ──────────────────────────────────────────────────────────── */
+body[data-theme="disney-girlish"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-raised);
+  border-top-color: #ffb8cf;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffb8cf;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .module-card:hover {
+  box-shadow: 2px 2px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .module-card:active {
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .module-card .module-icon {
+  background: #6a3770;
+  box-shadow:
+    inset 1px 1px 0 #ffd166,
+    1px 1px 0 #300d30;
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+body[data-theme="disney-girlish"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #300d30;
+  border-top-color: #ffd166;
+  border-right-color: #452245;
+  border-bottom-color: #452245;
+  border-left-color: #ffd166;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .app-shell .ui-btn--primary:active {
+  border-top-color: #452245;
+  border-right-color: #ffd166;
+  border-bottom-color: #ffd166;
+  border-left-color: #452245;
+}
+body[data-theme="disney-girlish"] .app-shell .ui-btn--secondary {
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-top-color: #ffb8cf;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffb8cf;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+
+/* ── SETTINGS ─────────────────────────────────────────────────────────────── */
+body[data-theme="disney-girlish"] .settings-section,
+body[data-theme="disney-girlish"] .placement-card,
+body[data-theme="disney-girlish"] .restore-modal {
+  background: var(--paper-raised);
+  border-top-color: #ffb8cf;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffb8cf;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .settings-option,
+body[data-theme="disney-girlish"] .lever-pill,
+body[data-theme="disney-girlish"] .lever-reset-all {
+  background: var(--paper-raised);
+  color: var(--ink);
+  border-top-color: #ffb8cf;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffb8cf;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .settings-option.active,
+body[data-theme="disney-girlish"] .lever-pill.active {
+  background: #4a2548;
+  color: var(--ink);
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="disney-girlish"] .app-shell .char-tile {
+  --ct-face: var(--paper-raised);
+  --ct-line: #ffb8cf;
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-soft);
+}
+body[data-theme="disney-girlish"][data-screen="mychars"] .char-tile {
+  --ct-face: #6a3770;
+  --ct-line: #ffd166;
+  border-top-color: #ffd166;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffd166;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"][data-screen="mychars"] .char-tile--known {
+  border-color: #ffd166;
+}
+body[data-theme="disney-girlish"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+body[data-theme="disney-girlish"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+body[data-theme="disney-girlish"][data-screen="mychars"] .char-tile-level {
+  color: var(--ink);
+  background: var(--paper-raised);
+  border-top-color: #ffb8cf;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffb8cf;
+  border-radius: 0;
+  box-shadow: 1px 1px 0 #300d30;
+}
+@media (hover: hover) {
+  body[data-theme="disney-girlish"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: #ffd166;
+    box-shadow:
+      inset 0 0 0 1px #ffd166,
+      2px 2px 0 #300d30;
+  }
+}
+body[data-theme="disney-girlish"] .char-tile-bar {
+  background: repeating-linear-gradient(90deg, #3e2040 0, #3e2040 2px, #300d30 2px, #300d30 4px);
+}
+body[data-theme="disney-girlish"] .char-tile-bar-fill {
+  background: repeating-linear-gradient(90deg, #ffb347 0, #ffb347 4px, #d68a28 4px, #d68a28 8px);
+}
+
+/* ── WRITING PAD ──────────────────────────────────────────────────────────── */
+body[data-theme="disney-girlish"] .canvas-wrapper {
+  background: #fff8fb;
+  border-top-color: #ffffff;
+  border-right-color: #452245;
+  border-bottom-color: #452245;
+  border-left-color: #ffffff;
+  box-shadow: 1px 1px 0 #300d30;
+}
+body[data-theme="disney-girlish"] .sp-canvas-frame {
+  background: #4a2548;
+  border-top-color: #ffb8cf;
+  border-right-color: #300d30;
+  border-bottom-color: #300d30;
+  border-left-color: #ffb8cf;
+  box-shadow: inset 1px 1px 0 #3a1038;
+}
