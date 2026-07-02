@@ -136,6 +136,7 @@ jobs:
               `- 🎮 Try the demo: ${prBase}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${prBase}/?app`,
               `- UI components (styleguide): ${prBase}/?ui`,
+              `- 📐 Landscape UI (redesign ref): ${prBase}/?ui=landscape`,
               `- 🔒 Feedback admin (secret-gated): ${prBase}/feedback-admin`,
               `- Marketing: ${prBase}`,
               '',
@@ -144,6 +145,7 @@ jobs:
               `- 🎮 Try the demo: ${url}/?app&demo  (preset profiles)`,
               `- App (no demo data): ${url}/?app`,
               `- UI components (styleguide): ${url}/?ui`,
+              `- 📐 Landscape UI (redesign ref): ${url}/?ui=landscape`,
               `- 🔒 Feedback admin (secret-gated): ${url}/feedback-admin`,
               `- Marketing: ${url}`,
             ].join('\n');
