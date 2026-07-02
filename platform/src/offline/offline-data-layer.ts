@@ -5,7 +5,7 @@
 
 import { initSqlite, openDatabase, sqlJsProvider, type SqlJsDatabase } from './sql-db.js';
 import { loadDb, downloadAndStoreDb, getContentVersion, setContentVersion, type DownloadProgress } from './db-store.js';
-import { listProfiles, putProfile, createProfile, deleteProfile, getProfileCharStats, putProfileCharStats, countProfileCharStats, getLegacyCharStats, getPref, setPref, deletePref, listPrefKeys, type CharStatRecord, type Skill } from './user-store.js';
+import { listProfiles, putProfile, createProfile, deleteProfile, getProfileCharStats, putProfileCharStats, countProfileCharStats, getLegacyCharStats, getPref, setPref, deletePref, listPrefKeys, statsTableFor, type CharStatRecord, type Skill } from './user-store.js';
 import { loadStrokeData } from './stroke-data.js';
 import { getRankedChars } from '@shared/character-stats/char-ranker';
 import { getTargetChars, computeUserLevel } from '@shared/character-stats/char-knowledge';
@@ -229,18 +229,12 @@ export class OfflineDataLayer {
     return this.strokeReady ?? Promise.resolve(false);
   }
 
-  /** SQLite table backing a skill's per-user stats. Writing is the historical
-   *  default table; reading (issue #65) is the independent parallel track. */
-  private statsTableFor(skill: Skill): string {
-    return skill === 'reading' ? 'character_stats_reading' : 'character_stats';
-  }
-
   /** Overwrite the in-memory stats table for `skill` with the active profile's
    *  records. Called once per skill on profile switch, so reading + writing are
    *  both replayed but into their own tables (never cross-contaminating). */
   private async applyUserStats(skill: Skill = 'writing'): Promise<void> {
     if (!this.platformProvider) return;
-    const table = this.statsTableFor(skill);
+    const table = statsTableFor(skill);
     const records = await getProfileCharStats(this.userId, skill);
     this.platformProvider.run(`DELETE FROM ${table} WHERE user_id = ?`, [this.userId]);
     for (const rec of records) {
@@ -361,7 +355,7 @@ export class OfflineDataLayer {
 
   private getCharacterStats(skill: Skill = 'writing'): CharStat[] {
     if (!this.platformProvider) throw new Error('Not initialized');
-    const table = this.statsTableFor(skill);
+    const table = statsTableFor(skill);
     const rows = this.platformProvider.queryAll<CharStatRow>(
       `SELECT * FROM ${table} WHERE user_id = ? ORDER BY last_seen DESC`,
       [this.userId],
@@ -472,7 +466,7 @@ export class OfflineDataLayer {
   ): Promise<SentenceResultResponse> {
     if (!this.platformProvider || !this.platformDb) throw new Error('Not initialized');
 
-    const table = this.statsTableFor(skill);
+    const table = statsTableFor(skill);
     const settings = this.getSettings();
     const now = new Date().toISOString();
 
