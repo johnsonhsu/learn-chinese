@@ -1,0 +1,264 @@
+/* ======================================================================
+   🚀 THEME — "Outer Space" / 「外太空」 (registry id: outer-space)
+   ----------------------------------------------------------------------
+   A deep-space exploration aesthetic: near-black grounds, holographic
+   cyan/lavender accents, HUD-like chrome, and tight sci-fi typography.
+   Still legible: module tiles, buttons, settings, tiles, and writing canvas
+   follow the shared token contract, so adding this theme needs no module
+   edits. Scoped entirely behind `body[data-theme="outer-space"]` so it
+   never leaks into other themes.
+   ====================================================================== */
+
+body[data-theme="outer-space"] {
+  /* ── (A) Contract tokens re-pointed → themes EVERYTHING ──────────────────── */
+
+  /* Grounds + surfaces */
+  --paper: #0b0d17; /* near-black space ground */
+  --paper-raised: #131829; /* dark panel surface */
+  --paper-sunken: #06070f; /* recessed fills */
+  --bg: var(--paper);
+  --bg-raised: #131829;
+  --bg-raised-2: #0d101c;
+  --bg-card: #131829;
+  --bg-card2: #0d101c;
+  --bg-input: #06070f;
+  --panel-bg: #131829;
+
+  /* Starlight off-white text (never pure white) + muted steps */
+  --ink: #e8f0ff;
+  --ink-soft: rgba(232, 240, 255, 0.72);
+  --ink-faint: rgba(232, 240, 255, 0.45);
+  --text: var(--ink);
+  --text-muted: var(--ink-soft);
+  --text-dim: var(--ink-faint);
+
+  /* Hairline rules on dark glass */
+  --rule: #1e2333;
+  --rule-strong: #2a3147;
+  --border: #1e2333;
+  --border-hover: #4ae1ff;
+  --panel-border: #1e2333;
+  --tile-edge: rgba(0, 0, 0, 0.45);
+  --key-edge: #2a3147;
+
+  /* Holographic cyan + lavender */
+  --seal: #4ae1ff;
+  --seal-deep: #2bb6cc;
+  --seal-wash: rgba(74, 225, 255, 0.18);
+  --accent: #4ae1ff;
+  --accent-bg: rgba(74, 225, 255, 0.18);
+  --accent-hover: #7be9ff;
+  --screen-accent: #4ae1ff;
+
+  /* Primary CTA face → lavender */
+  --gold: #9b8fff;
+  --gold-dark: #7460d1;
+  --grad-primary: linear-gradient(135deg, #7be9ff 0%, #4ae1ff 52%, #2bb6cc 100%);
+
+  /* Status colors tuned for dark ground */
+  --error: #ff6b8a;
+  --danger: #ff6b8a;
+  --red: #ff6b8a;
+  --red-dark: #cc4466;
+  --success: #6bffc0;
+  --warning: #ffd166;
+
+  /* Module hues — cohesive HUD family */
+  --teal: #4ae1ff;
+  --teal-dark: #2bb6cc;
+  --pink: #ff8fa8;
+  --pink-dark: #cc6680;
+  --blue: #7fb8ff;
+  --blue-dark: #5a8fd1;
+  --orange: #ffb84d;
+  --orange-dark: #cc8a28;
+  --purple: #9b8fff;
+  --purple-dark: #7460d1;
+  --green: #6bffc0;
+  --green-dark: #3ed69a;
+  --green-bright: #6bffc0;
+  --green-bright-dark: #3ed69a;
+
+  /* Wood tone → dark-blue steel frame */
+  --wood: #182038;
+  --wood-dark: #0f1628;
+  --wood-light: #243054;
+
+  /* Screen background + depth */
+  --screen-bg: #0b0d17;
+  --screen-bg-dark: #05060b;
+  --grad-fluency: linear-gradient(135deg, #4ae1ff 0%, #2bb6cc 100%);
+  --grad-success: linear-gradient(135deg, #6bffc0 0%, #3ed69a 100%);
+  --shadow-sm: 0 1px 2px rgba(5, 6, 11, 0.65);
+  --shadow-md: 0 18px 40px -24px rgba(5, 6, 11, 0.85);
+  --shadow-glow: 0 0 0 1px rgba(74, 225, 255, 0.25), 0 14px 30px -20px rgba(5, 6, 11, 0.9);
+  --shadow-glow-success: 0 0 0 1px rgba(107, 255, 192, 0.28);
+
+  /* Typography — keep body font; lighten it with weight */
+  --font-display: var(--font);
+  --text-weight: 500;
+}
+
+/* ── (B) Styled application: Outer Space ──────────────────────────────────── */
+body[data-theme="outer-space"] {
+  font-weight: var(--text-weight, 400);
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(74, 225, 255, 0.08) 0%, transparent 55%),
+    var(--screen-bg);
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Headings — holographic ink with faint cyan lift */
+body[data-theme="outer-space"] .welcome-header h1,
+body[data-theme="outer-space"] .user-picker h1 {
+  color: var(--ink);
+  text-shadow: 0 1px 18px rgba(74, 225, 255, 0.18);
+}
+
+/* ── MODULE TILES ──────────────────────────────────────────────────────────── */
+body[data-theme="outer-space"] .module-card {
+  border: 1px solid var(--rule-strong);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)), var(--bg-raised);
+  box-shadow:
+    0 6px 0 #0f1628,
+    0 16px 30px -22px rgba(0, 0, 0, 0.9);
+}
+body[data-theme="outer-space"] .module-card .module-icon {
+  background: #0d101c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.6);
+}
+@media (hover: hover) {
+  body[data-theme="outer-space"] .module-card:hover {
+    border-color: var(--seal);
+    box-shadow:
+      0 10px 0 #0f1628,
+      0 22px 40px -22px rgba(0, 0, 0, 0.95),
+      0 0 0 1px rgba(74, 225, 255, 0.35);
+  }
+}
+
+/* Fluency banner — quiet dark glass with cyan hairline */
+body[data-theme="outer-space"] .welcome-level {
+  background: #0d101c;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--seal) 50%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-weight: 700;
+}
+
+/* Profile-picker add button — lavender CTA */
+body[data-theme="outer-space"] .user-create button {
+  background: var(--grad-primary);
+  color: #05060b;
+  box-shadow: 0 2px 0 var(--gold-dark);
+}
+
+/* ── BUTTONS ──────────────────────────────────────────────────────────────── */
+body[data-theme="outer-space"] .app-shell .ui-btn--primary {
+  background: var(--grad-primary);
+  color: #05060b;
+  box-shadow:
+    0 2px 0 var(--gold-dark),
+    0 8px 20px -10px rgba(74, 225, 255, 0.5);
+}
+body[data-theme="outer-space"] .app-shell .ui-btn--secondary {
+  background: #131829;
+  color: var(--ink);
+  border: 1px solid var(--rule-strong);
+}
+@media (hover: hover) {
+  body[data-theme="outer-space"] .app-shell .ui-btn--secondary:hover:not(:disabled) {
+    border-color: var(--seal);
+  }
+}
+
+/* ── SETTINGS ─────────────────────────────────────────────────────────────── */
+body[data-theme="outer-space"] .settings-section,
+body[data-theme="outer-space"] .placement-card,
+body[data-theme="outer-space"] .restore-modal {
+  background: #131829;
+  border: 1px solid var(--rule);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.03),
+    0 14px 30px -22px rgba(0, 0, 0, 0.85);
+}
+body[data-theme="outer-space"] .settings-option,
+body[data-theme="outer-space"] .lever-pill,
+body[data-theme="outer-space"] .lever-reset-all {
+  background: #0d101c;
+  border: 1px solid var(--rule-strong);
+  color: var(--ink);
+}
+body[data-theme="outer-space"] .settings-option.active,
+body[data-theme="outer-space"] .lever-pill.active {
+  background: color-mix(in srgb, var(--accent) 18%, #0b0d17);
+  border-color: var(--accent);
+  color: var(--ink);
+  text-shadow: none;
+}
+
+/* ── MY-CHARACTERS CHAR TILES ─────────────────────────────────────────────── */
+body[data-theme="outer-space"] .app-shell .char-tile {
+  --ct-face: #131829;
+  --ct-line: var(--rule);
+  --ct-ink: var(--ink);
+  --ct-ink-soft: var(--ink-faint);
+}
+body[data-theme="outer-space"][data-screen="mychars"] .char-tile {
+  --ct-face: #0d101c;
+  --ct-line: var(--rule-strong);
+  border: 1px solid var(--rule-strong);
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 14px rgba(0, 0, 0, 0.65);
+}
+body[data-theme="outer-space"][data-screen="mychars"] .char-tile--known {
+  border-color: color-mix(in srgb, var(--success) 55%, var(--rule-strong));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 14px rgba(0, 0, 0, 0.65),
+    0 0 16px color-mix(in srgb, var(--success) 28%, transparent);
+}
+body[data-theme="outer-space"][data-screen="mychars"] .char-tile-glyph {
+  color: var(--ink);
+}
+body[data-theme="outer-space"][data-screen="mychars"] .char-tile-rank {
+  color: var(--ink-soft);
+}
+body[data-theme="outer-space"][data-screen="mychars"] .char-tile-level {
+  color: #05060b;
+  background: var(--seal);
+  border-color: var(--seal-deep);
+}
+@media (hover: hover) {
+  body[data-theme="outer-space"][data-screen="mychars"] .char-tile--tappable:hover {
+    border-color: var(--seal);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 8px 22px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(74, 225, 255, 0.3);
+  }
+}
+
+/* ── WRITING PAD ──────────────────────────────────────────────────────────── */
+body[data-theme="outer-space"] .canvas-wrapper {
+  background: #f7fbff;
+  border-top: 2px solid #ffffff;
+  border-right: 2px solid #0f1628;
+  border-bottom: 2px solid #0f1628;
+  border-left: 2px solid #ffffff;
+  box-shadow: 1px 1px 0 #0f1628;
+}
+body[data-theme="outer-space"] .sp-canvas-frame {
+  background: #1b1f36;
+  border-top: 2px solid #4ae1ff;
+  border-right: 2px solid #05060b;
+  border-bottom: 2px solid #05060b;
+  border-left: 2px solid #4ae1ff;
+  box-shadow: inset 1px 1px 0 #0e1225;
+}

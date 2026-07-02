@@ -168,6 +168,22 @@ export const THEMES: Theme[] = [
     cssDefined: true,
   },
   {
+    id: "jungle",
+    name: "Jungle",
+    nameKey: "theme.jungle",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
+    id: "outer-space",
+    name: "Outer Space",
+    nameKey: "theme.outer-space",
+    premium: false,
+    arrangement: "grid",
+    cssDefined: true,
+  },
+  {
     id: "disney-boyish",
     name: "Disney: Boyish",
     nameKey: "theme.disney-boyish",
