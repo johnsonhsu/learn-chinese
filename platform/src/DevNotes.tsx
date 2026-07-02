@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useMemo, useState, type ChangeEvent } from "react";
 import "./DevNotes.css";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -44,6 +44,14 @@ const NOTES: HubEntry[] = [
     desc: "Ranked bets to attract users, monetize, and add out-of-world features.",
     href: "?devnotes=ideas",
   },
+  {
+    glyph: "審",
+    tag: "Quality",
+    category: "oow",
+    title: "Sentence QA",
+    desc: "Cross-model review of bank sentences — advisory only, never edits the curriculum (#74).",
+    href: "?devnotes=sentence-qa",
+  },
 ];
 
 // The styleguide + landscape pages are `?devnotes` sub-pages too now; they stay
@@ -69,6 +77,7 @@ export default function DevNotes() {
     );
   }
   if (page === "ideas") return <IdeasPage />;
+  if (page === "sentence-qa") return <SentenceQAPage />;
   return <Hub />;
 }
 
@@ -624,6 +633,329 @@ function IdeasPage() {
 
         <footer className="dn-foot">
           Ten bets · ranked for a local-first, no-server, hand-curated Taiwan/zhuyin product
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+/* ── sentence-QA viewer (?devnotes=sentence-qa) ───────────────────────────────
+   In-app viewer for the local-LLM sentence-QA harness (#74, scripts/sentence-qa.ts).
+   ADVISORY ONLY — it reads a results .jsonl and surfaces cross-model disagreement so
+   a human can eyeball the sentences worth a look; it NEVER touches content.db. Renders
+   the embedded demo fixture on load; a real run's .jsonl loads via the file picker. */
+
+interface QARec {
+  id: number;
+  sentence: string;
+  english: string;
+  model: string;
+  verdict: "ok" | "issue";
+  issue_categories: string[];
+  severity: "none" | "minor" | "major";
+  note: string;
+}
+
+// Demo data — mirrors scripts/fixtures/sentence-qa-sample.jsonl (the canonical fixture
+// the #74 harness/report use). Embedded so this page renders a live report with no run;
+// a real results .jsonl loads via the file picker. Stable, hand-authored demo rows.
+const QA_FIXTURE: QARec[] = [
+  { id: 634, sentence: "他今天沒開車。", english: "He didn't drive today.", model: "llama-3-taiwan:8b", verdict: "ok", issue_categories: [], severity: "none", note: "natural, grammatical Taiwan usage" },
+  { id: 634, sentence: "他今天沒開車。", english: "He didn't drive today.", model: "qwen2.5:7b", verdict: "ok", issue_categories: [], severity: "none", note: "correct and clear" },
+  { id: 1201, sentence: "我昨天去書店買了一本書。", english: "Yesterday I went to the bookstore and bought a book.", model: "llama-3-taiwan:8b", verdict: "ok", issue_categories: [], severity: "none", note: "natural everyday sentence" },
+  { id: 1201, sentence: "我昨天去書店買了一本書。", english: "Yesterday I went to the bookstore and bought a book.", model: "qwen2.5:7b", verdict: "ok", issue_categories: [], severity: "none", note: "grammatical" },
+  { id: 2450, sentence: "外面在下雨，記得帶傘。", english: "It's raining outside, remember to bring an umbrella.", model: "llama-3-taiwan:8b", verdict: "ok", issue_categories: [], severity: "none", note: "natural imperative" },
+  { id: 2450, sentence: "外面在下雨，記得帶傘。", english: "It's raining outside, remember to bring an umbrella.", model: "qwen2.5:7b", verdict: "issue", issue_categories: ["naturalness"], severity: "minor", note: "slightly abrupt without a subject" },
+  { id: 3702, sentence: "我用手機叫了一輛出租車。", english: "I used my phone to call a taxi.", model: "llama-3-taiwan:8b", verdict: "issue", issue_categories: ["mainland-vocab"], severity: "major", note: "出租車 is Mainland; Taiwan uses 計程車" },
+  { id: 3702, sentence: "我用手機叫了一輛出租車。", english: "I used my phone to call a taxi.", model: "qwen2.5:7b", verdict: "ok", issue_categories: [], severity: "none", note: "reads fine (mainland vocab not flagged)" },
+  { id: 5013, sentence: "他喜欢吃苹果。", english: "He likes to eat apples.", model: "llama-3-taiwan:8b", verdict: "issue", issue_categories: ["simplified-leak"], severity: "major", note: "喜欢/苹果 are Simplified; expect 喜歡/蘋果" },
+  { id: 5013, sentence: "他喜欢吃苹果。", english: "He likes to eat apples.", model: "qwen2.5:7b", verdict: "ok", issue_categories: [], severity: "none", note: "did not flag the Simplified characters" },
+  { id: 6288, sentence: "我把書放。", english: "I put the book. (incomplete)", model: "llama-3-taiwan:8b", verdict: "issue", issue_categories: ["grammar"], severity: "major", note: "把 needs a resultative/location complement" },
+  { id: 6288, sentence: "我把書放。", english: "I put the book. (incomplete)", model: "qwen2.5:7b", verdict: "issue", issue_categories: ["grammar"], severity: "major", note: "incomplete 把 construction" },
+];
+
+type Agreement = "single" | "all-ok" | "all-issue" | "divergent";
+type Sev = "none" | "minor" | "major";
+interface QAGroup {
+  id: number;
+  sentence: string;
+  english: string;
+  byModel: Record<string, QARec>;
+  agreement: Agreement;
+  worst: Sev;
+  categories: string[];
+}
+
+const QA_SEV: Record<Sev, number> = { none: 0, minor: 1, major: 2 };
+
+function parseQaJsonl(text: string): QARec[] {
+  const out: QARec[] = [];
+  for (const line of text.split("\n")) {
+    const t = line.trim();
+    if (!t) continue;
+    try {
+      out.push(JSON.parse(t) as QARec);
+    } catch {
+      /* tolerate a malformed / partial line from an interrupted run */
+    }
+  }
+  return out;
+}
+
+function groupQA(records: QARec[]): { rows: QAGroup[]; models: string[] } {
+  const models = [...new Set(records.map((r) => r.model))].sort();
+  const byId = new Map<number, QAGroup>();
+  for (const r of records) {
+    let g = byId.get(r.id);
+    if (!g) {
+      g = {
+        id: r.id,
+        sentence: r.sentence,
+        english: r.english,
+        byModel: {},
+        agreement: "single",
+        worst: "none",
+        categories: [],
+      };
+      byId.set(r.id, g);
+    }
+    g.byModel[r.model] = r;
+  }
+  for (const g of byId.values()) {
+    const recs = Object.values(g.byModel);
+    const verdicts = new Set(recs.map((r) => r.verdict));
+    g.agreement =
+      recs.length < 2
+        ? "single"
+        : verdicts.size > 1
+          ? "divergent"
+          : verdicts.has("issue")
+            ? "all-issue"
+            : "all-ok";
+    g.worst = recs.reduce<Sev>((w, r) => (QA_SEV[r.severity] > QA_SEV[w] ? r.severity : w), "none");
+    g.categories = [...new Set(recs.flatMap((r) => r.issue_categories))].sort();
+  }
+  const agrRank: Record<Agreement, number> = { divergent: 0, "all-issue": 1, "all-ok": 2, single: 3 };
+  const rows = [...byId.values()].sort(
+    (a, b) => agrRank[a.agreement] - agrRank[b.agreement] || QA_SEV[b.worst] - QA_SEV[a.worst] || a.id - b.id,
+  );
+  return { rows, models };
+}
+
+function QACell({ r }: { r?: QARec }) {
+  if (!r)
+    return (
+      <td className="dn-qa-cell">
+        <span className="dn-qa-none">—</span>
+      </td>
+    );
+  return (
+    <td className="dn-qa-cell">
+      <div className="dn-qa-verdict">
+        <span className={`dn-qa-pill ${r.verdict}`}>{r.verdict}</span>
+        {r.severity !== "none" ? (
+          <span className={`dn-qa-sev ${r.severity}`}>{r.severity}</span>
+        ) : null}
+      </div>
+      {r.issue_categories.length > 0 ? (
+        <div className="dn-qa-cats">
+          {r.issue_categories.map((c) => (
+            <span className="dn-qa-cat" key={c}>
+              {c}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {r.note ? <p className="dn-qa-note">{r.note}</p> : null}
+    </td>
+  );
+}
+
+function SentenceQAPage() {
+  const [records, setRecords] = useState<QARec[]>(QA_FIXTURE);
+  const [source, setSource] = useState("demo fixture · sentence-qa-sample.jsonl");
+  const [agr, setAgr] = useState("");
+  const [minSev, setMinSev] = useState("0");
+  const [cat, setCat] = useState("");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("review");
+
+  const { rows, models } = useMemo(() => groupQA(records), [records]);
+  const cats = useMemo(() => [...new Set(rows.flatMap((r) => r.categories))].sort(), [rows]);
+  const shown = useMemo(() => {
+    const q = query.trim();
+    let out = rows.filter((r) => {
+      if (agr && r.agreement !== agr) return false;
+      if (+minSev && QA_SEV[r.worst] < +minSev) return false;
+      if (cat && !r.categories.includes(cat)) return false;
+      if (
+        q &&
+        !(
+          r.sentence.includes(q) ||
+          r.english.toLowerCase().includes(q.toLowerCase()) ||
+          String(r.id) === q
+        )
+      )
+        return false;
+      return true;
+    });
+    if (sort === "id") out = [...out].sort((a, b) => a.id - b.id);
+    else if (sort === "sev")
+      out = [...out].sort((a, b) => QA_SEV[b.worst] - QA_SEV[a.worst] || a.id - b.id);
+    return out; // "review" keeps groupQA's divergent-first order
+  }, [rows, agr, minSev, cat, query, sort]);
+
+  const kpi = {
+    sentences: rows.length,
+    divergent: rows.filter((r) => r.agreement === "divergent").length,
+    allIssue: rows.filter((r) => r.agreement === "all-issue").length,
+    allOk: rows.filter((r) => r.agreement === "all-ok").length,
+  };
+
+  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    void f.text().then((txt) => {
+      setRecords(parseQaJsonl(txt));
+      setSource(`loaded · ${f.name}`);
+    });
+  };
+
+  return (
+    <div className="dn-root">
+      <header className="dn-masthead">
+        <div className="dn-deco" aria-hidden="true">
+          審
+        </div>
+        <div className="dn-wrap">
+          <p className="dn-eyebrow">
+            Sentence QA · <b>advisory only</b>
+          </p>
+          <h1>Cross-model sentence review</h1>
+          <p className="dn-dek">
+            The local-LLM QA harness (#74) scores bank sentences with ≥2 models; this page surfaces
+            where they <b>disagree</b> — the sentences most worth a human look. A review aid: it
+            never edits the curriculum. Showing <b>{source}</b>.
+          </p>
+          <label className="dn-qa-load">
+            Load a results file (.jsonl)
+            <input type="file" accept=".jsonl,.json,.txt" onChange={onFile} />
+          </label>
+          <a className="dn-back" href="?devnotes">
+            ← Dev notes
+          </a>
+        </div>
+      </header>
+
+      <div className="dn-wrap">
+        <div className="dn-qa-kpis">
+          <div className="dn-qa-kpi">
+            <b>{kpi.sentences}</b>
+            <span>sentences</span>
+          </div>
+          <div className="dn-qa-kpi div">
+            <b>{kpi.divergent}</b>
+            <span>divergent</span>
+          </div>
+          <div className="dn-qa-kpi issue">
+            <b>{kpi.allIssue}</b>
+            <span>all-issue</span>
+          </div>
+          <div className="dn-qa-kpi ok">
+            <b>{kpi.allOk}</b>
+            <span>all-ok</span>
+          </div>
+        </div>
+
+        <div className="dn-qa-controls">
+          <label>
+            agreement
+            <select value={agr} onChange={(e) => setAgr(e.target.value)}>
+              <option value="">all</option>
+              <option value="divergent">divergent</option>
+              <option value="all-issue">all-issue</option>
+              <option value="all-ok">all-ok</option>
+            </select>
+          </label>
+          <label>
+            min severity
+            <select value={minSev} onChange={(e) => setMinSev(e.target.value)}>
+              <option value="0">any</option>
+              <option value="1">minor +</option>
+              <option value="2">major</option>
+            </select>
+          </label>
+          <label>
+            category
+            <select value={cat} onChange={(e) => setCat(e.target.value)}>
+              <option value="">all</option>
+              {cats.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            sort
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="review">divergent → severity</option>
+              <option value="id">by id</option>
+              <option value="sev">severity</option>
+            </select>
+          </label>
+          <input
+            placeholder="filter 中文 / english / id"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <div className="dn-tablewrap">
+          <table className="dn-table dn-qa-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Sentence</th>
+                {models.map((m) => (
+                  <th key={m}>{m}</th>
+                ))}
+                <th>Agreement</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.length === 0 ? (
+                <tr>
+                  <td className="dn-qa-noresult" colSpan={models.length + 3}>
+                    No sentences match these filters.
+                  </td>
+                </tr>
+              ) : null}
+              {shown.map((r) => (
+                <tr key={r.id} className={r.agreement === "divergent" ? "is-div" : ""}>
+                  <td className="rk">{r.id}</td>
+                  <td className="dn-qa-sent">
+                    <div className="zh">{r.sentence}</div>
+                    <div className="en">{r.english}</div>
+                  </td>
+                  {models.map((m) => (
+                    <QACell r={r.byModel[m]} key={m} />
+                  ))}
+                  <td>
+                    <span className={`dn-qa-agr ${r.agreement}`}>{r.agreement}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="dn-table-note">
+          Ordered divergent-first (models disagree → most worth a human look), then by severity.
+          Verdicts are model opinions, not ground truth — this never changes a sentence; curation
+          stays manual (cardinal rule: don't trust LLM output into the bank).
+        </p>
+        <footer className="dn-foot">
+          Sentence QA · cross-model advisory review · harness in scripts/sentence-qa.ts (#74)
         </footer>
       </div>
     </div>
