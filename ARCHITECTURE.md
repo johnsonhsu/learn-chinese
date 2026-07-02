@@ -498,6 +498,16 @@ be added or updated and record that test impact in the issue spec / PR; new engi
 fixed bug lands with its guarding unit/parity test in the same PR. Keeping the suite a
 well-oiled machine is the contributor's job — not something the deploy gate backstops.
 
+**Curriculum QA harness (dev-only, advisory — #74).** Separate from the automated gates,
+`npm run sentence-qa` runs `bank_sentences` (READ-ONLY) through **≥2 local LLMs** (Ollama,
+`http://localhost:11434`; models + endpoint configurable, temperature 0 + fixed seed,
+batched + resumable) for a grammar/semantics/naturalness verdict targeting Taiwan-Traditional
+usage; `npm run sentence-qa:report` renders a self-contained HTML viewer that joins the models
+per sentence and surfaces **cross-model disagreement**. It writes only a separate JSONL results
+store, **never `content.db`**, never rewrites glyphs (flags Simplified/Mainland-vocab leakage
+only), and is a **human review aid — never a deploy gate** (LLM quality stays out of `test:data`).
+Local-only (no cloud LLM), dev-only (never shipped). Full docs + flags: [`scripts/README.md`](./scripts/README.md).
+
 **CI/CD — `.github/workflows/ci.yml`.** One job on `pull_request` and `push: master`:
 `npm ci` → unit tests → Python parity (`pip install opencc pytest`) → **type-check
 (`tsc`)** → **lint (`eslint . --max-warnings=0`, BLOCKING)** → `npm run build -w platform`
