@@ -99,11 +99,6 @@ function pick(arr: string[]): string {
   return arr[Math.floor(Math.random() * arr.length)] || '';
 }
 
-function pickExcluding(arr: string[], exclude: Set<string>): string {
-  const filtered = arr.filter(w => !exclude.has(w));
-  return filtered[Math.floor(Math.random() * filtered.length)] || pick(arr);
-}
-
 const templates: Template[] = [
   // Subject + Verb + Object
   (b) => `${pick(b.pronouns)}${pick(['要', '去', '會', '喜歡'])}${pick(['吃飯', '喝水', '看書', '上學'])}`,
@@ -130,7 +125,7 @@ const templates: Template[] = [
   // Subject + 都 + Verb
   (b) => `${pick(b.pronouns)}都${pick(['要', '會', '喜歡', '在'])}${pick(['吃飯', '看書', '喝水', '這裡'])}`,
   // 這/那 + 個 + Noun + 很 + Adj
-  (b) => `${pick(['這個', '那個'])}${pick(['人', '東西', '地'])}${pick(['很大', '很好', '不對'])}`,
+  () => `${pick(['這個', '那個'])}${pick(['人', '東西', '地'])}${pick(['很大', '很好', '不對'])}`,
   // 對 + Subject + 來說
   (b) => `對${pick(b.pronouns)}來說${pick(['這個', '學校', '東西'])}${pick(['很好', '很大', '不對'])}`,
   // Longer: Time + Subject + 在 + Location + Verb + Object
@@ -142,7 +137,7 @@ const templates: Template[] = [
   // Subject + 也 + Verb
   (b) => `${pick(b.pronouns)}也要${pick(['去', '來', '吃飯', '看書', '喝水'])}`,
   // 有的...有的
-  (b) => `有的人喜歡${pick(['吃飯', '看書', '喝水'])}`,
+  () => `有的人喜歡${pick(['吃飯', '看書', '喝水'])}`,
   // Phrase-based
   (b) => {
     const p = pick(b.phrases);

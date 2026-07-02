@@ -931,5 +931,5 @@ export function updateDailyHistory(profileId: number, session: PracticeSessionRo
 export function getDailyHistory(profileId: number, days = 30): { session_date: string; sessions_count: number; total_duration_ms: number; words_learned: number; chars_practiced: number; avg_perfect_rate: number }[] {
   return db.prepare(
     'SELECT * FROM session_history WHERE profile_id = ? ORDER BY session_date DESC LIMIT ?'
-  ).all(profileId, days) as any[];
+  ).all(profileId, days) as { session_date: string; sessions_count: number; total_duration_ms: number; words_learned: number; chars_practiced: number; avg_perfect_rate: number }[];
 }

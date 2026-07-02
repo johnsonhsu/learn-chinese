@@ -389,7 +389,7 @@ function useScrollReveal(deps: unknown[]) {
     });
     return () => io.disconnect();
     // Re-run when language or install state changes the rendered tree.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // (react-hooks/exhaustive-deps isn't enabled in this repo's eslint config.)
   }, deps);
 }
 

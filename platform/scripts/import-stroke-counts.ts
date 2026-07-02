@@ -50,7 +50,7 @@ async function processBatch(batch: { id: number; character: string }[]): Promise
   );
 
   let updated = 0;
-  for (const { id, character, count } of results) {
+  for (const { id, count } of results) {
     if (count !== null) {
       update.run(count, id);
       updated++;

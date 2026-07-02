@@ -22,7 +22,7 @@ export function sqlJsProvider(db: SqlJsDatabase): DbQueryProvider {
   return {
     queryAll<T>(sql: string, params?: unknown[]): T[] {
       const stmt = db.prepare(sql);
-      if (params) stmt.bind(params as any[]);  
+      if (params) stmt.bind(params);
       const results: T[] = [];
       while (stmt.step()) {
         results.push(stmt.getAsObject() as T);
@@ -32,7 +32,7 @@ export function sqlJsProvider(db: SqlJsDatabase): DbQueryProvider {
     },
     queryOne<T>(sql: string, params?: unknown[]): T | undefined {
       const stmt = db.prepare(sql);
-      if (params) stmt.bind(params as any[]);  
+      if (params) stmt.bind(params);
       const result = stmt.step() ? (stmt.getAsObject() as T) : undefined;
       stmt.free();
       return result;

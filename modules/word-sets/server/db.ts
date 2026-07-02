@@ -63,7 +63,10 @@ export function getAllCategories(): Category[] {
     LEFT JOIN category_words cw ON cw.category_id = c.id
     GROUP BY c.id
     ORDER BY c.sort_order, c.name_en
-  `).all() as any[];
+  `).all() as Array<{
+    id: number; name_zh: string; name_en: string; icon: string;
+    color: string; sort_order: number; word_count: number;
+  }>;
   return rows.map(r => ({
     id: r.id,
     nameZh: r.name_zh,
@@ -109,7 +112,10 @@ export interface CategoryWord {
 export function getCategoryWords(categoryId: number): CategoryWord[] {
   const rows = db.prepare(
     'SELECT * FROM category_words WHERE category_id = ? ORDER BY sort_order, word'
-  ).all(categoryId) as any[];
+  ).all(categoryId) as Array<{
+    id: number; category_id: number; word: string; definition: string;
+    zhuyin: string; pinyin: string; sort_order: number;
+  }>;
   return rows.map(r => ({
     id: r.id,
     categoryId: r.category_id,

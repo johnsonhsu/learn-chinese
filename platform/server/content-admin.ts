@@ -37,9 +37,9 @@ export const contentAdminRoutes = Router();
 
 function betterSqliteProvider(db: InstanceType<typeof Database>): DbQueryProvider {
   return {
-    queryAll: <T>(sql: string, params?: any[]) => db.prepare(sql).all(...(params || [])) as T[],
-    queryOne: <T>(sql: string, params?: any[]) => db.prepare(sql).get(...(params || [])) as T | undefined,
-    run: (sql: string, params?: any[]) => {
+    queryAll: <T>(sql: string, params?: unknown[]) => db.prepare(sql).all(...(params || [])) as T[],
+    queryOne: <T>(sql: string, params?: unknown[]) => db.prepare(sql).get(...(params || [])) as T | undefined,
+    run: (sql: string, params?: unknown[]) => {
       const r = db.prepare(sql).run(...(params || []));
       return { changes: r.changes, lastId: Number(r.lastInsertRowid) };
     },

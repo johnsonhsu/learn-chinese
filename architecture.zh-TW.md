@@ -424,9 +424,16 @@ Workbox 快取（資料層在 IndexedDB 中自行管理它們）；`/data/versio
 **測試紀律——貢獻者的責任。** 上述閘門守護的是*出貨資料*，無法攔截引擎的回歸。因此**任何**變更都要評估是否需要新增或更新測試，並把測試影響記在 issue spec／PR 裡；新引擎邏輯或修好的 bug，會在同一個 PR 內附上守護它的單元／對等測試。把測試套件維持成保養良好的機器是貢獻者的工作，不是靠部署閘門兜底的。
 
 **CI/CD —— `.github/workflows/ci.yml`。** 單一 job，觸發於 `pull_request` 與 `push: master`：
-`npm ci` → 單元測試 → Python 對等測試（`pip install opencc pytest`）→ `npm run build -w platform`
-→ **資料完整性閘門** → `cloudflare/wrangler-action` 部署 →（僅 PR）留言 preview + `/?app&demo` 網址。
-任一步驟失敗都會在部署前中止，因此壞內容／程式碼無法出貨。
+`npm ci` → 單元測試 → Python 對等測試（`pip install opencc pytest`）→ **型別檢查（`tsc`）**
+→ **Lint（`eslint . --max-warnings=0`，阻擋性閘門）** → `npm run build -w platform`
+→ **資料完整性閘門** → **相依套件稽核閘門**（`npm audit --omit=dev --audit-level=high`）
+→ `cloudflare/wrangler-action` 部署 →（僅 PR）留言 preview + `/?app&demo` 網址。
+任一步驟失敗都會在部署前中止，因此壞內容／程式碼無法出貨。**Lint 是硬性閘門**（自 #86／#103–#108
+的基線清理起）：整個 tree 已維持 0 error，因此任何新的 lint error 或失效的 `eslint-disable`
+指示都會讓 CI 失敗——請保持綠燈。eslint 設定位於根目錄的 `eslint.config.js`（flat config；採用
+TS 感知的 `@typescript-eslint/no-unused-vars` 搭配 `^_` 忽略樣式、`no-explicit-any`、
+`react-hooks/rules-of-hooks`）；Husky 的 `pre-commit` hook 會對已 stage 的 `*.{ts,tsx}`
+執行 `lint-staged`（`eslint --fix` + `prettier`）。
 
 Cloudflare 以部署的 `--branch` 是否等於專案的 **production 分支** 來判定 preview／production；此
 _direct-upload_（無 Git 連接）Pages 專案的 production 分支是 **`learning-chinese`**（不是 `master`）。

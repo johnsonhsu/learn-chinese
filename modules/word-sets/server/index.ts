@@ -94,7 +94,7 @@ routes.get('/admin/dict-search', (req, res) => {
       LEFT JOIN dict_word_pronunciations p_py ON p_py.word_id = w.id AND p_py.type = 'pinyin'
       WHERE w.word LIKE ? OR w.definition LIKE ?
       LIMIT 20
-    `).all(`%${q}%`, `%${q}%`) as any[];
+    `).all(`%${q}%`, `%${q}%`) as Record<string, unknown>[];
     res.json(rows);
   } finally {
     pdb.close();
