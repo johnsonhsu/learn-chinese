@@ -456,7 +456,7 @@ export default function Styleguide() {
             >
               <textarea
                 className="fb-textarea"
-                defaultValue={lang === "en" ? "The quick brown fox" : "我是一只透明的小 drafting"}
+                defaultValue={lang === "en" ? "The quick brown fox" : "我是一隻透明的小 drafting"}
                 placeholder={lang === "en" ? "Shared-kit field…" : "共用元件庫欄位…"}
               />
             </Specimen>
