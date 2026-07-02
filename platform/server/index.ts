@@ -100,10 +100,10 @@ app.get('/api/dictionaries', (_req, res) => {
   const db = getPlatformDb();
   const dicts = getAllDictionaries();
   const result = dicts.map(d => {
-    const charCount = (db.prepare('SELECT COUNT(*) as n FROM dict_chars WHERE dictionary_id = ?').get(d.id) as any).n;
-    const wordCount = (db.prepare('SELECT COUNT(*) as n FROM dict_words WHERE dictionary_id = ?').get(d.id) as any).n;
-    const linkCount = (db.prepare('SELECT COUNT(*) as n FROM dict_char_words cw JOIN dict_chars c ON c.id = cw.char_id WHERE c.dictionary_id = ?').get(d.id) as any).n;
-    const withStrokes = (db.prepare('SELECT COUNT(*) as n FROM dict_chars WHERE dictionary_id = ? AND stroke_count > 0').get(d.id) as any).n;
+    const charCount = (db.prepare('SELECT COUNT(*) as n FROM dict_chars WHERE dictionary_id = ?').get(d.id) as { n: number }).n;
+    const wordCount = (db.prepare('SELECT COUNT(*) as n FROM dict_words WHERE dictionary_id = ?').get(d.id) as { n: number }).n;
+    const linkCount = (db.prepare('SELECT COUNT(*) as n FROM dict_char_words cw JOIN dict_chars c ON c.id = cw.char_id WHERE c.dictionary_id = ?').get(d.id) as { n: number }).n;
+    const withStrokes = (db.prepare('SELECT COUNT(*) as n FROM dict_chars WHERE dictionary_id = ? AND stroke_count > 0').get(d.id) as { n: number }).n;
     return { ...d, charCount, wordCount, linkCount, withStrokes };
   });
   res.json(result);
@@ -121,7 +121,8 @@ app.get('/api/dictionaries/:id/chars', (req, res) => {
     ? 'AND EXISTS (SELECT 1 FROM dict_char_metadata tocfl WHERE tocfl.char_id = c.id AND tocfl.key = \'tocfl_level\')'
     : '';
 
-  let rows: any[];
+  type DictCharRow = { id: number; character: string; stroke_count: number; metadata: string | null; freq_rank: number };
+  let rows: DictCharRow[];
   if (q) {
     rows = db.prepare(`
       SELECT c.id, c.character, c.stroke_count,
@@ -138,7 +139,7 @@ app.get('/api/dictionaries/:id/chars', (req, res) => {
       GROUP BY c.id
       ORDER BY freq_rank, c.character
       LIMIT ? OFFSET ?
-    `).all(dictId, `%${q}%`, `%${q}%`, limit, offset);
+    `).all(dictId, `%${q}%`, `%${q}%`, limit, offset) as DictCharRow[];
   } else {
     rows = db.prepare(`
       SELECT c.id, c.character, c.stroke_count,
@@ -152,7 +153,7 @@ app.get('/api/dictionaries/:id/chars', (req, res) => {
       GROUP BY c.id
       ORDER BY freq_rank, c.character
       LIMIT ? OFFSET ?
-    `).all(dictId, limit, offset);
+    `).all(dictId, limit, offset) as DictCharRow[];
   }
 
   const chars = rows.map(r => {
@@ -179,7 +180,7 @@ app.get('/api/dictionaries/:id/words', (req, res) => {
   const tocflOnly = req.query.tocfl === '1';
   const tocflFilter = tocflOnly ? "AND w.level_source = 'TOCFL'" : '';
 
-  let rows: any[];
+  let rows: Record<string, unknown>[];
   if (q) {
     rows = db.prepare(`
       SELECT w.id, w.word, w.definition, w.grammar, w.level, w.level_source,
@@ -191,7 +192,7 @@ app.get('/api/dictionaries/:id/words', (req, res) => {
       ${tocflFilter}
       ORDER BY w.level, w.word
       LIMIT ? OFFSET ?
-    `).all(dictId, `%${q}%`, `%${q}%`, limit, offset);
+    `).all(dictId, `%${q}%`, `%${q}%`, limit, offset) as Record<string, unknown>[];
   } else {
     rows = db.prepare(`
       SELECT w.id, w.word, w.definition, w.grammar, w.level, w.level_source,
@@ -203,7 +204,7 @@ app.get('/api/dictionaries/:id/words', (req, res) => {
       ${tocflFilter}
       ORDER BY w.level, w.word
       LIMIT ? OFFSET ?
-    `).all(dictId, limit, offset);
+    `).all(dictId, limit, offset) as Record<string, unknown>[];
   }
 
   res.json(rows);
@@ -213,7 +214,9 @@ app.get('/api/dictionaries/:id/char/:charId', (req, res) => {
   const db = getPlatformDb();
   const charId = Number(req.params.charId);
 
-  const char = db.prepare('SELECT * FROM dict_chars WHERE id = ?').get(charId) as any;
+  const char = db.prepare('SELECT * FROM dict_chars WHERE id = ?').get(charId) as
+    | { id: number; character: string; stroke_count: number }
+    | undefined;
   if (!char) return res.status(404).json({ error: 'not found' });
 
   const meta = db.prepare('SELECT key, value FROM dict_char_metadata WHERE char_id = ?').all(charId) as { key: string; value: string }[];
@@ -224,7 +227,7 @@ app.get('/api/dictionaries/:id/char/:charId', (req, res) => {
     LEFT JOIN dict_word_pronunciations p ON p.word_id = w.id AND p.type = 'zhuyin'
     WHERE cw.char_id = ?
     ORDER BY w.level, w.word
-  `).all(charId) as any[];
+  `).all(charId) as Record<string, unknown>[];
 
   const metadata: Record<string, string> = {};
   for (const m of meta) metadata[m.key] = m.value;

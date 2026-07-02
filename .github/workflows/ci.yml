@@ -54,10 +54,13 @@ jobs:
       - name: Type-check
         run: npm run typecheck
 
-      # Lint: report issues without blocking deploy/preview.
+      # Lint (BLOCKING): the baseline was swept clean (#86 and the scoped
+      #    follow-ups #103/#106/#107/#108), so lint now gates the build/deploy just
+      #    like the type-check above. `eslint . --max-warnings=0` fails the job on
+      #    any error OR warning, and `--report-unused-disable-directives` also fails
+      #    on stale `eslint-disable` comments. Keep the tree at zero.
       - name: Lint
         id: lint
-        continue-on-error: true
         run: npm run lint
 
       # 4) Build the shippable app from the committed content-only seeds

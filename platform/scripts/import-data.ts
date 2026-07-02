@@ -23,7 +23,7 @@ platformDb.pragma('journal_mode = WAL');
 wcDb.pragma('journal_mode = WAL');
 wsDb.pragma('journal_mode = WAL');
 
-function loadJson(filename: string): any[] {
+function loadJson(filename: string): Record<string, unknown>[] {
   const path = join(EXPORT_DIR, filename);
   if (!existsSync(path)) { console.log(`  SKIP ${filename} (not found)`); return []; }
   return JSON.parse(readFileSync(path, 'utf-8'));

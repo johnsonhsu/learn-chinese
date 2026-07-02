@@ -499,10 +499,17 @@ fixed bug lands with its guarding unit/parity test in the same PR. Keeping the s
 well-oiled machine is the contributor's job — not something the deploy gate backstops.
 
 **CI/CD — `.github/workflows/ci.yml`.** One job on `pull_request` and `push: master`:
-`npm ci` → unit tests → Python parity (`pip install opencc pytest`) → `npm run build -w
-platform` → **data-integrity gate** → `cloudflare/wrangler-action` deploy → (PRs only) a
-sticky comment with the preview + `/?app&demo` URLs. A failing step aborts before the
-deploy, so bad content/code can never ship.
+`npm ci` → unit tests → Python parity (`pip install opencc pytest`) → **type-check
+(`tsc`)** → **lint (`eslint . --max-warnings=0`, BLOCKING)** → `npm run build -w platform`
+→ **data-integrity gate** → **dependency-audit gate** (`npm audit --omit=dev
+--audit-level=high`) → `cloudflare/wrangler-action` deploy → (PRs only) a sticky comment
+with the preview + `/?app&demo` URLs. A failing step aborts before the deploy, so bad
+content/code can never ship. **Lint is a hard gate** (as of the #86/#103–#108 baseline
+sweep): the tree is at zero errors, so any new lint error or stale `eslint-disable`
+directive fails CI — keep it green. eslint config lives in the root `eslint.config.js`
+(flat config; the TS-aware `@typescript-eslint/no-unused-vars` with `^_` ignore patterns,
+`no-explicit-any`, `react-hooks/rules-of-hooks`); a Husky `pre-commit` hook runs
+`lint-staged` (`eslint --fix` + `prettier`) on staged `*.{ts,tsx}`.
 
 Cloudflare decides preview-vs-production by comparing the deploy `--branch` to the
 project's **production branch**, which on this _direct-upload_ (no Git-connection) Pages
