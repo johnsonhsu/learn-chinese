@@ -37,6 +37,15 @@ describe('storage mapping — writing and reading use disjoint IndexedDB stores'
   });
 });
 
+describe('SQL table mapping — writing and reading use disjoint SQLite tables (statsTableFor)', () => {
+  it('statsTableFor maps the two skills to specific tables — a reading write can never land in the writing table', async () => {
+    const { statsTableFor } = await import('../user-store.js');
+    expect(statsTableFor('writing')).toBe('character_stats');
+    expect(statsTableFor('reading')).toBe('character_stats_reading');
+    expect(statsTableFor('writing')).not.toBe(statsTableFor('reading'));
+  });
+});
+
 // --- SQL-level isolation, exercised against the real two-table schema ---
 
 const STATS_COLUMNS = `
@@ -84,27 +93,43 @@ function recordFreshInto(db: Database.Database, table: string, userId: number, c
 }
 
 describe('SQL recording — a reading attempt never mutates the writing table', () => {
-  it('recording into character_stats_reading leaves character_stats empty (and vice-versa)', () => {
+  it('recording into the reading table (via the REAL statsTableFor router) leaves the writing table empty (and vice-versa)', async () => {
+    const { statsTableFor } = await import('../user-store.js');
+    const WRITING = statsTableFor('writing');
+    const READING = statsTableFor('reading');
+
+    // If a future edit mis-wired reading to the writing table these would be equal,
+    // and the second CREATE TABLE below would throw (duplicate) → this test fails.
+    expect(WRITING).not.toBe(READING);
+
     const db = new Database(':memory:');
-    db.exec(`CREATE TABLE character_stats (${STATS_COLUMNS});`);
-    db.exec(`CREATE TABLE character_stats_reading (${STATS_COLUMNS});`);
+    db.exec(`CREATE TABLE ${WRITING} (${STATS_COLUMNS});`);
+    db.exec(`CREATE TABLE ${READING} (${STATS_COLUMNS});`);
 
     // Record a WRITING attempt for 好.
-    recordFreshInto(db, 'character_stats', 1, '好');
+    recordFreshInto(db, WRITING, 1, '好');
     // Record a READING attempt for 好 (same char, same user).
-    recordFreshInto(db, 'character_stats_reading', 1, '好');
+    recordFreshInto(db, READING, 1, '好');
 
-    const writing = db.prepare('SELECT character, times_seen FROM character_stats WHERE user_id = 1').all() as { character: string; times_seen: number }[];
-    const reading = db.prepare('SELECT character, times_seen FROM character_stats_reading WHERE user_id = 1').all() as { character: string; times_seen: number }[];
+    const writing = db
+      .prepare(`SELECT character, times_seen FROM ${WRITING} WHERE user_id = 1`)
+      .all() as { character: string; times_seen: number }[];
+    const reading = db
+      .prepare(`SELECT character, times_seen FROM ${READING} WHERE user_id = 1`)
+      .all() as { character: string; times_seen: number }[];
 
     // Each track has EXACTLY its own single row — no cross-write, no double-count.
     expect(writing).toEqual([{ character: '好', times_seen: 1 }]);
     expect(reading).toEqual([{ character: '好', times_seen: 1 }]);
 
     // A second reading attempt must NOT bump the writing count.
-    recordFreshInto(db, 'character_stats_reading', 1, '學');
-    const writingAfter = db.prepare('SELECT COUNT(*) c FROM character_stats WHERE user_id = 1').get() as { c: number };
-    const readingAfter = db.prepare('SELECT COUNT(*) c FROM character_stats_reading WHERE user_id = 1').get() as { c: number };
+    recordFreshInto(db, READING, 1, '學');
+    const writingAfter = db
+      .prepare(`SELECT COUNT(*) c FROM ${WRITING} WHERE user_id = 1`)
+      .get() as { c: number };
+    const readingAfter = db
+      .prepare(`SELECT COUNT(*) c FROM ${READING} WHERE user_id = 1`)
+      .get() as { c: number };
     expect(writingAfter.c).toBe(1); // still just 好
     expect(readingAfter.c).toBe(2); // 好 + 學
     db.close();

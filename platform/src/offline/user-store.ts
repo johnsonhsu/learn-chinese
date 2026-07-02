@@ -45,6 +45,14 @@ export function statsStoreFor(skill: Skill): string {
   return skill === 'reading' ? PROFILE_STATS_READING_STORE : PROFILE_STATS_STORE;
 }
 
+/** SQLite TABLE backing a given skill's per-user character stats — the SQL twin of
+ *  statsStoreFor. Writing is the historical default table; reading (issue #65) is
+ *  the independent parallel track. Exported so the "reading writes never touch the
+ *  writing table" guarantee is unit-testable directly (issue #116). */
+export function statsTableFor(skill: Skill): string {
+  return skill === 'reading' ? 'character_stats_reading' : 'character_stats';
+}
+
 /** A raw character_stats row (snake_case, mirrors the SQLite schema). */
 export type CharStatRecord = Record<string, unknown> & { character: string };
 
