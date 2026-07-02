@@ -290,6 +290,18 @@ export default function Styleguide() {
             className="sg-subtitle"
             dangerouslySetInnerHTML={{ __html: tc("styleguide.subtitle") }}
           />
+          <a
+            className="sg-subtitle"
+            href="?ui=landscape"
+            style={{
+              display: "inline-block",
+              marginTop: 6,
+              fontWeight: 700,
+              textDecoration: "underline",
+            }}
+          >
+            Landscape-native redesign (epic #152) →
+          </a>
         </header>
 
         {/* ── BUTTONS ─────────────────────────────────────────────────────── */}
