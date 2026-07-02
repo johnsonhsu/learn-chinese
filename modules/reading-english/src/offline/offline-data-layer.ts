@@ -10,11 +10,24 @@
  * computed only from THIS layer's own word store, never practice-english's.
  */
 
-import { initSqlite, openDatabase, type SqlJsDatabase } from './sql-db.js';
-import { loadDb, downloadAndStoreDb, getContentVersion, setContentVersion } from './db-store.js';
-import { listProfiles, putProfile, getProfileWordStats, putProfileWordStats,
-  getPref, setPref, type WordStatRecord, type Profile } from './user-store.js';
-import { selectNextSentence, type Sentence, type ReadingQuestion } from '../cloze.js';
+import { initSqlite, openDatabase, type SqlJsDatabase } from "./sql-db.js";
+import { loadDb, downloadAndStoreDb, getContentVersion, setContentVersion } from "./db-store.js";
+import {
+  listProfiles,
+  putProfile,
+  getProfileWordStats,
+  putProfileWordStats,
+  getPref,
+  setPref,
+  type WordStatRecord,
+  type Profile,
+} from "./user-store.js";
+import {
+  selectNextSentence,
+  recordRecentSentenceId,
+  type Sentence,
+  type ReadingQuestion,
+} from "../cloze.js";
 
 export interface WordStat {
   word: string;
@@ -31,16 +44,16 @@ export interface WordStat {
 
 function rowToWordStat(r: WordStatRecord): WordStat {
   return {
-    word: String(r['character']),
-    timesSeen: Number(r['times_seen'] ?? 0),
-    timesCorrect: Number(r['times_correct'] ?? 0),
-    timesIncorrect: Number(r['times_incorrect'] ?? 0),
-    streakCorrect: Number(r['streak_correct'] ?? 0),
-    bestStreakCorrect: Number(r['best_streak_correct'] ?? 0),
-    firstSeen: String(r['first_seen'] ?? ''),
-    lastSeen: String(r['last_seen'] ?? ''),
-    lastCorrect: String(r['last_correct'] ?? ''),
-    recentResults: String(r['recent_results'] ?? ''),
+    word: String(r["character"]),
+    timesSeen: Number(r["times_seen"] ?? 0),
+    timesCorrect: Number(r["times_correct"] ?? 0),
+    timesIncorrect: Number(r["times_incorrect"] ?? 0),
+    streakCorrect: Number(r["streak_correct"] ?? 0),
+    bestStreakCorrect: Number(r["best_streak_correct"] ?? 0),
+    firstSeen: String(r["first_seen"] ?? ""),
+    lastSeen: String(r["last_seen"] ?? ""),
+    lastCorrect: String(r["last_correct"] ?? ""),
+    recentResults: String(r["recent_results"] ?? ""),
   };
 }
 
@@ -49,7 +62,11 @@ export class OfflineDataLayer {
   private sentences: Sentence[] = [];
   private contentVersion: string | null = null;
   private userId = 0;
-  private localUser: { id: number; name: string; displayName: string } = { id: 0, name: 'me', displayName: 'Me' };
+  private localUser: { id: number; name: string; displayName: string } = {
+    id: 0,
+    name: "me",
+    displayName: "Me",
+  };
   private wordStats: Map<string, WordStat> = new Map();
   private recentSentenceIds: number[] = [];
 
@@ -58,21 +75,23 @@ export class OfflineDataLayer {
 
     let remoteVersion: string | null = null;
     try {
-      const res = await fetch('/data/version.json', { cache: 'no-cache' });
+      const res = await fetch("/data/version.json", { cache: "no-cache" });
       // Gate DB re-download on the DATA fingerprint `contentHash`, not per-build `version`.
       if (res.ok) {
         const j = (await res.json()) as { version?: string; contentHash?: string };
         remoteVersion = j.contentHash ?? j.version ?? null;
       }
-    } catch { /* offline */ }
+    } catch {
+      /* offline */
+    }
 
     const cachedVersion = await getContentVersion();
-    let dbData = await loadDb('content');
+    let dbData = await loadDb("content");
     const needDownload = !dbData || (remoteVersion !== null && remoteVersion !== cachedVersion);
 
     if (needDownload) {
-      const bust = remoteVersion ? `?v=${remoteVersion}` : '';
-      dbData = await downloadAndStoreDb('content', `/data/content.db${bust}`);
+      const bust = remoteVersion ? `?v=${remoteVersion}` : "";
+      dbData = await downloadAndStoreDb("content", `/data/content.db${bust}`);
       if (remoteVersion) await setContentVersion(remoteVersion);
     }
 
@@ -80,7 +99,9 @@ export class OfflineDataLayer {
     this.sentenceDb = openDatabase(dbData!);
 
     // Load all sentences into memory for fast selection.
-    const stmt = this.sentenceDb.prepare('SELECT id, sentence, english FROM bank_sentences ORDER BY id');
+    const stmt = this.sentenceDb.prepare(
+      "SELECT id, sentence, english FROM bank_sentences ORDER BY id",
+    );
     while (stmt.step()) {
       const r = stmt.getAsObject() as { id: number; sentence: string; english: string };
       if (r.english) this.sentences.push({ id: r.id, chinese: r.sentence, english: r.english });
@@ -88,30 +109,38 @@ export class OfflineDataLayer {
     stmt.free();
   }
 
-  get isReady(): boolean { return this.sentenceDb !== null; }
-  get contentVersionId(): string | null { return this.contentVersion; }
+  get isReady(): boolean {
+    return this.sentenceDb !== null;
+  }
+  get contentVersionId(): string | null {
+    return this.contentVersion;
+  }
 
   // --- Profile management (platform owns identity; we key our reading store by it) ---
 
-  listProfiles(): Promise<Profile[]> { return listProfiles(); }
+  listProfiles(): Promise<Profile[]> {
+    return listProfiles();
+  }
 
   async setActiveProfile(profileId: number): Promise<void> {
     const profiles = await listProfiles();
     const p = profiles.find((x) => x.id === profileId);
     // Ensure a profile row exists so per-profile reading stats stay attributable.
-    if (!p) await putProfile({ id: profileId, name: 'me', createdAt: new Date().toISOString() });
+    if (!p) await putProfile({ id: profileId, name: "me", createdAt: new Date().toISOString() });
     this.userId = profileId;
-    this.localUser = { id: profileId, name: p?.name ?? 'me', displayName: p?.name ?? 'Me' };
+    this.localUser = { id: profileId, name: p?.name ?? "me", displayName: p?.name ?? "Me" };
     await this.loadWordStats();
   }
 
-  getLocalUser() { return this.localUser; }
+  getLocalUser() {
+    return this.localUser;
+  }
 
   // --- Settings prefs ---
 
-  async getSettingsPrefs(): Promise<{ language: 'zh-TW' | 'en' }> {
-    const language = (await getPref<string>('language')) as 'zh-TW' | 'en' | null;
-    return { language: language || 'zh-TW' };
+  async getSettingsPrefs(): Promise<{ language: "zh-TW" | "en" }> {
+    const language = (await getPref<string>("language")) as "zh-TW" | "en" | null;
+    return { language: language || "zh-TW" };
   }
 
   // --- Reading word stats (this layer's OWN store only) ---
@@ -134,10 +163,10 @@ export class OfflineDataLayer {
   getMasteredWords(): Set<string> {
     const mastered = new Set<string>();
     for (const s of this.wordStats.values()) {
-      const codes = s.recentResults.split(',').filter(Boolean);
+      const codes = s.recentResults.split(",").filter(Boolean);
       if (codes.length < 3) continue;
       const last4 = codes.slice(-4);
-      const correct = last4.filter((c) => c === 'C').length;
+      const correct = last4.filter((c) => c === "C").length;
       if (correct >= 3) mastered.add(s.word);
     }
     return mastered;
@@ -152,17 +181,18 @@ export class OfflineDataLayer {
 
   /** Record one word's reading outcome into the READING store only. */
   async submitReadingResult(sentenceId: number, word: string, correct: boolean): Promise<void> {
-    this.recentSentenceIds.push(sentenceId);
-    if (this.recentSentenceIds.length > 30) this.recentSentenceIds.shift();
+    // Record the sentence ONCE per sentence, not once per word (this method runs
+    // per-word) — recordRecentSentenceId dedupes consecutive repeats + caps length.
+    this.recentSentenceIds = recordRecentSentenceId(this.recentSentenceIds, sentenceId);
 
     const now = new Date().toISOString();
     const existing = this.wordStats.get(word);
-    const code = correct ? 'C' : 'I';
+    const code = correct ? "C" : "I";
 
     let updated: WordStat;
     if (existing) {
-      const recent = (existing.recentResults ? existing.recentResults + ',' : '') + code;
-      const recentTrimmed = recent.split(',').slice(-10).join(',');
+      const recent = (existing.recentResults ? existing.recentResults + "," : "") + code;
+      const recentTrimmed = recent.split(",").slice(-10).join(",");
       const streakCorrect = correct ? existing.streakCorrect + 1 : 0;
       updated = {
         ...existing,
@@ -185,7 +215,7 @@ export class OfflineDataLayer {
         bestStreakCorrect: correct ? 1 : 0,
         firstSeen: now,
         lastSeen: now,
-        lastCorrect: correct ? now : '',
+        lastCorrect: correct ? now : "",
         recentResults: code,
       };
     }
@@ -218,5 +248,7 @@ export class OfflineDataLayer {
     };
   }
 
-  setLanguagePref(language: string): Promise<void> { return setPref('language', language); }
+  setLanguagePref(language: string): Promise<void> {
+    return setPref("language", language);
+  }
 }

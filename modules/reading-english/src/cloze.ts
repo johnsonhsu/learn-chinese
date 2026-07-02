@@ -39,7 +39,9 @@ export function tokenizeSentence(english: string): SentenceToken[] {
 
 /** All words in a sentence, in order, lowercased (for tap-matching + mastery tracking). */
 export function practiceWords(english: string): string[] {
-  return tokenizeSentence(english).filter((t) => t.isWord).map((t) => t.text.toLowerCase());
+  return tokenizeSentence(english)
+    .filter((t) => t.isWord)
+    .map((t) => t.text.toLowerCase());
 }
 
 export interface Sentence {
@@ -96,4 +98,18 @@ export function selectNextSentence(
     if (q) return q;
   }
   return null;
+}
+
+/**
+ * Append a sentence id to the "recently seen" recency list — but ONLY when it
+ * differs from the current last id, capped at `cap`. reading-english submits
+ * results ONE WORD AT A TIME (a loop over the sentence's slots), so a naive push
+ * would record the same id N times and collapse selectNextSentence's `slice(-10)`
+ * window to ~1 distinct sentence. Deduping consecutive repeats keeps the window a
+ * list of DISTINCT recent sentences. Pure: returns a NEW array, never mutates.
+ */
+export function recordRecentSentenceId(recent: number[], id: number, cap = 30): number[] {
+  if (recent.at(-1) === id) return recent;
+  const next = [...recent, id];
+  return next.length > cap ? next.slice(next.length - cap) : next;
 }
