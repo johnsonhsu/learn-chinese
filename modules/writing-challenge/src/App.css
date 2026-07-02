@@ -1727,19 +1727,55 @@ canvas {
   color: var(--text-muted, #6b4c20);
 }
 
-/* ===== Landscape (issue #130) ==============================================
-   Portrait is left untouched. In landscape the practice column is centered
-   (not stretched full-width on a tablet) and the writing pad is fit to the
-   short landscape height. The canvas already CSS-scales to its wrapper — the
-   same path a narrow portrait phone uses — so stroke-input coordinate mapping
-   is unaffected. Lock-to-portrait users get the rotate overlay instead. */
+/* ===== Landscape — two-pane practice (issue #153, epic #152) ===============
+   Portrait is left untouched — the whole block is orientation-gated. In
+   landscape the prompt card becomes a two-pane GRID: the prompt (audio +
+   meaning), the zhuyin row and the hint/peek/skip controls stack in a LEFT
+   column, while the writing pad spans a RIGHT column at full height. CSS
+   grid-template-areas reposition the card's four EXISTING children with no
+   markup change, so portrait source order stays identical. The canvas keeps
+   its `size` prop (no HanziWriter remount — cardinal rule #4); it only
+   CSS-scales to fill the pane, the same path a narrow portrait phone uses, so
+   stroke-input mapping is unaffected. Lock-to-portrait users get the rotate
+   overlay instead. */
 @media (orientation: landscape) {
   .sp-assessment {
-    max-width: 680px;
+    max-width: 900px;
     margin-inline: auto;
     padding: 8px 24px;
   }
+  /* Prompt card → two panes. Left column: prompt (top), zhuyin (fills), controls
+     (bottom). Right column: the pad, spanning the full height. */
+  .sp-prompt-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "prompt   canvas"
+      "zhuyin   canvas"
+      "controls canvas";
+    column-gap: 20px;
+    align-items: start;
+  }
+  .sp-prompt-card .sp-prompt-row {
+    grid-area: prompt;
+  }
+  .sp-prompt-card .sp-char-scroll {
+    grid-area: zhuyin;
+    align-self: start;
+  }
+  .sp-prompt-card .sp-canvas-frame {
+    grid-area: canvas;
+    align-self: stretch;
+    align-items: center;
+  }
+  .sp-prompt-card .sp-top-bar {
+    grid-area: controls;
+    align-self: end;
+  }
+  /* Pad fills the taller landscape dimension, still capped at the writer's
+     native size so it never remounts. */
   .sp-canvas-frame .canvas-wrapper {
-    max-width: min(320px, 46vh);
+    max-width: min(320px, 82vh);
   }
 }
