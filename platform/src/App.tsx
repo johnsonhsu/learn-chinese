@@ -48,8 +48,6 @@ const EnglishVoicePanel = lazy(() => import("./EnglishVoicePanel.tsx"));
 const Onboarding = lazy(() => import("./Onboarding.tsx"));
 const WelcomePopup = lazy(() => import("./WelcomePopup.tsx"));
 const LandingPage = lazy(() => import("./LandingPage.tsx"));
-const Styleguide = lazy(() => import("./Styleguide.tsx"));
-const LandscapePreview = lazy(() => import("./LandscapePreview.tsx"));
 const DevNotes = lazy(() => import("./DevNotes.tsx"));
 const DemoGate = lazy(() => import("./DemoGate.tsx"));
 
@@ -154,30 +152,17 @@ function shouldShowLanding(): boolean {
 // Dev/reference entry: `?ui` is the styleguide's OWN distinct URL (mirrors the
 // `?landing`/`?app` query-param pattern). It is deliberately NOT linked from
 // anywhere in the app UI — reachable only by visiting `/?ui` directly.
-function shouldShowStyleguide(): boolean {
-  return new URLSearchParams(location.search).has("ui");
-}
-
-// `?devnotes` is the dev-notes HUB — an internal index of reference pages
-// (UI components, landscape design, growth ideas). Same query-param pattern as
-// `?ui`; deliberately unlinked from the app, reachable only by direct URL.
+// `?devnotes` is the dev-notes HUB — an internal index of reference pages, each
+// a `?devnotes=<slug>` sub-page (ui = styleguide, landscape, ideas). `?ui` and
+// `?ui=landscape` are kept as silent legacy aliases. Same query-param pattern as
+// `?app`/`?landing`; deliberately unlinked from the app, reachable by direct URL.
 function shouldShowDevnotes(): boolean {
-  return new URLSearchParams(location.search).has("devnotes");
+  const params = new URLSearchParams(location.search);
+  return params.has("devnotes") || params.has("ui");
 }
 
 export default function App() {
-  if (shouldShowStyleguide()) {
-    // `?ui=landscape` is a distinct sub-page of the styleguide (the landscape
-    // redesign reference, epic #152); bare `?ui` shows the component gallery.
-    const uiPage = new URLSearchParams(location.search).get("ui");
-    return (
-      <Suspense fallback={<div className="loading" />}>
-        {uiPage === "landscape" ? <LandscapePreview /> : <Styleguide />}
-      </Suspense>
-    );
-  }
   if (shouldShowDevnotes()) {
-    // Bare `?devnotes` shows the hub; `?devnotes=<slug>` (e.g. ideas) is a sub-page.
     return (
       <Suspense fallback={<div className="loading" />}>
         <DevNotes />

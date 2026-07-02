@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import "./DevNotes.css";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -25,7 +26,7 @@ const NOTES: HubEntry[] = [
     category: "oow",
     title: "UI Components",
     desc: "The shared component gallery & styleguide — buttons, cards, char-tiles, tokens.",
-    href: "?ui",
+    href: "?devnotes=ui",
   },
   {
     glyph: "橫",
@@ -33,7 +34,7 @@ const NOTES: HubEntry[] = [
     category: "attract",
     title: "Landscape design",
     desc: "Landscape-native redesign reference — the two-pane rethink (epic #152).",
-    href: "?ui=landscape",
+    href: "?devnotes=landscape",
   },
   {
     glyph: "策",
@@ -45,12 +46,30 @@ const NOTES: HubEntry[] = [
   },
 ];
 
+// The styleguide + landscape pages are `?devnotes` sub-pages too now; they stay
+// their own lazy chunks (not bundled into DevNotes).
+const Styleguide = lazy(() => import("./Styleguide.tsx"));
+const LandscapePreview = lazy(() => import("./LandscapePreview.tsx"));
+
 function devnotesPage(): string {
-  return new URLSearchParams(location.search).get("devnotes") ?? "";
+  const params = new URLSearchParams(location.search);
+  // `?devnotes=<slug>` is canonical; `?ui` / `?ui=landscape` are legacy aliases.
+  if (params.has("devnotes")) return params.get("devnotes") ?? "";
+  if (params.has("ui")) return params.get("ui") === "landscape" ? "landscape" : "ui";
+  return "";
 }
 
 export default function DevNotes() {
-  return devnotesPage() === "ideas" ? <IdeasPage /> : <Hub />;
+  const page = devnotesPage();
+  if (page === "ui" || page === "landscape") {
+    return (
+      <Suspense fallback={<div className="loading" />}>
+        {page === "landscape" ? <LandscapePreview /> : <Styleguide />}
+      </Suspense>
+    );
+  }
+  if (page === "ideas") return <IdeasPage />;
+  return <Hub />;
 }
 
 /* ── hub ──────────────────────────────────────────────────────────────── */
