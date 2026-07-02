@@ -68,6 +68,18 @@ export type ThemeToken = (typeof THEME_TOKENS)[number];
  *  without touching App.tsx. */
 export type ModuleArrangement = "grid" | "list";
 
+export type ThemeGroup = "default" | "dark" | "retro" | "foil" | "soft" | "disney" | "external";
+
+export const THEME_GROUP_LABELS: Record<ThemeGroup, { en: string; zhTW: string }> = {
+  default: { en: "Modern", zhTW: "現代" },
+  dark: { en: "Dark Mode", zhTW: "深色模式" },
+  retro: { en: "Retro / 90s", zhTW: "復古" },
+  foil: { en: "Foil / Premium", zhTW: "金屬箔" },
+  soft: { en: "Soft / Seasonal", zhTW: "柔和 / 節慶" },
+  disney: { en: "Disney", zhTW: "迪士尼" },
+  external: { en: "Modules", zhTW: "模組主題" },
+};
+
 export interface Theme {
   /** Stable id — also the value of `body[data-theme]` + the persisted key. */
   id: string;
@@ -81,22 +93,16 @@ export interface Theme {
    * feature (see `unlockFeature`), gated behind the 9000 premium prerequisite.
    */
   premium: boolean;
-  /**
-   * For a premium theme, the unlock feature key (in utils/unlocks CODE_FEATURES)
-   * that makes it available — Silver keys off 9900's grant, Gold off 9901's.
-   * Free themes leave this unset. A device that stored the LEGACY blanket
-   * 'premium' feature (old code 9999) still ungates every premium theme — see
-   * theme-store.isThemeAvailable's back-compat branch.
-   */
+  /** For a premium theme, the unlock feature key. Free themes leave this unset. */
   unlockFeature?: string;
   /** Module-selection layout variant. Defaults to 'grid'. */
   arrangement: ModuleArrangement;
   /**
-   * Token values are NOT inlined here — they live in index.css under
-   * `body[data-theme="<id>"]` (so the cascade, media queries, ::before/::after
-   * and animations all work natively). This flag documents that a theme's tokens
-   * are CSS-defined; kept for the registry to stay declarative + future-proof.
+   * Picker group for this theme. Over time the catalog can grow; groups keep
+   * the selector scannable without changing premium unlock/persistence rules.
    */
+  group: ThemeGroup;
+  /** Token values are NOT inlined here — kept for registry completeness. */
   cssDefined: true;
 }
 
@@ -117,6 +123,7 @@ export const THEMES: Theme[] = [
     nameKey: "theme.indigo",
     premium: false,
     arrangement: "grid",
+    group: "default",
     cssDefined: true,
   },
   {
@@ -125,6 +132,7 @@ export const THEMES: Theme[] = [
     nameKey: "theme.default",
     premium: false,
     arrangement: "grid",
+    group: "default",
     cssDefined: true,
   },
   {
@@ -133,6 +141,7 @@ export const THEMES: Theme[] = [
     nameKey: "theme.midnight",
     premium: false,
     arrangement: "grid",
+    group: "dark",
     cssDefined: true,
   },
   {
@@ -141,6 +150,7 @@ export const THEMES: Theme[] = [
     nameKey: "theme.sakura",
     premium: false,
     arrangement: "grid",
+    group: "soft",
     cssDefined: true,
   },
   {
@@ -149,6 +159,7 @@ export const THEMES: Theme[] = [
     nameKey: "theme.matcha",
     premium: false,
     arrangement: "grid",
+    group: "soft",
     cssDefined: true,
   },
   {
@@ -157,6 +168,7 @@ export const THEMES: Theme[] = [
     nameKey: "theme.retro",
     premium: false,
     arrangement: "grid",
+    group: "retro",
     cssDefined: true,
   },
   {
@@ -165,11 +177,9 @@ export const THEMES: Theme[] = [
     nameKey: "theme.80s-motiv",
     premium: false,
     arrangement: "grid",
+    group: "retro",
     cssDefined: true,
   },
-  // Premium foils — always listed LAST (the picker also sorts premium to the end).
-  // Each keys on its OWN unlock feature (Gold ← 9901, Silver ← 9900), gated
-  // behind the 9000 premium prerequisite.
   {
     id: "gold",
     name: "Gold",
@@ -177,6 +187,7 @@ export const THEMES: Theme[] = [
     premium: true,
     unlockFeature: "theme-gold",
     arrangement: "grid",
+    group: "foil",
     cssDefined: true,
   },
   {
@@ -186,6 +197,7 @@ export const THEMES: Theme[] = [
     premium: true,
     unlockFeature: "theme-silver",
     arrangement: "grid",
+    group: "foil",
     cssDefined: true,
   },
 ];
