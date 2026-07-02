@@ -88,15 +88,18 @@ kit's stylesheet is imported once by `main.tsx`. Full details in
 ### Themes
 
 On top of the kit there's a registry-driven **theming system**
-(`platform/src/theme/`): **Default**, two premium skins — **Gold** (warm foil)
-and **Silver** (cool platinum) — and three FREE skins, **Midnight** (墨夜, ink-dark
-and three FREE skins, **Midnight** (墨夜, ink-dark mode), **Sakura** (櫻花, blush light), **Matcha** (抹茶, sage-green light), and **80s Motiv** (八零動力, neon chrome). A theme
-is one entry in the `themes.ts` registry; its look is a `body[data-theme="<id>"]`
-block — inline in `index.css` (Gold/Silver) or a standalone `theme/theme-<id>.css`
-file imported in `main.tsx` (Midnight/Sakura/Matcha/80s Motiv/retro). Default sets nothing — it
-_is_ the `:root` look. You can set a theme **for the whole device** in Device
-Settings, or **per profile** in that profile's settings; the effective theme
-resolves as `profileOverride ?? device ?? default`. The four new skins are free;
+(`platform/src/theme/`) — **14 themes** in `themes.ts`. The default _selection_ is
+**Indigo**; the bare `:root` look is **Paper** (registry id `default`, which sets
+nothing). The picker groups them by category (#129): **default** (Indigo, Paper),
+**dark** (Midnight, Outer Space), **soft/seasonal** (Sakura, Matcha, Jungle, Christmas),
+**retro** (90s, 80s Motiv), **Disney** (Boyish, Girlish), and **foil** — the two
+premium skins **Gold** (warm foil) and **Silver** (cool platinum). A theme is one
+entry in the `themes.ts` registry; its look is a `body[data-theme="<id>"]` block —
+inline in `index.css` or a standalone `theme/theme-<id>.css` imported in `main.tsx`.
+You can set a theme **for the whole device** in Device Settings, or **per profile**
+in that profile's settings; the effective theme resolves as
+`profileOverride ?? device ?? default`. Every theme is free except the two **foil**
+skins;
 only Gold/Silver are premium and unlock **device-wide only**, each by its **own
 code** behind a premium **prerequisite** — redeem **`9000`** first (grants the
 prerequisite, reveals nothing), then **`9900`** → Silver and/or **`9901`** → Gold,
@@ -225,7 +228,7 @@ pytest test/test_glyph_canon.py    # Python side of glyph-parity (needs: pip ins
 - **Engine** — sentence selection (target char is _binding_, parity/coverage), mastery/retention, "known"/level, char ranking, zhuyin.
 - **Glyph-canonicalization parity** — the TS importer (`canonicalizeTW`) and the Python scrub (`bank-fix.py canon()`) are checked against one shared golden fixture (`test/fixtures/glyph-canon.json`) so they can't drift: 台/臺 preserved, variant unification (汙→污…), Simplified→Traditional.
 - **Data-integrity gate** — the shipped DBs carry no Simplified/undrawable glyphs, are referentially sound, contain **no personal data**, and every curriculum char used in the bank is drawable offline.
-- _(A theme-resolution suite — selection, premium gating, per-profile override, `body[data-theme]` apply — is written and lands with the theme refactor it depends on.)_
+- **Theme resolution** — selection, premium gating, per-profile override, and `body[data-theme]` apply are covered by the theme-store suite (`platform/src/theme/__tests__/theme-store*.test.ts`).
 
 **Test discipline.** Treat the suite as a well-oiled machine: on **any** change, decide whether tests need to be added or updated and state that test impact in the issue/PR. The data-integrity gate blocks deploys on bad content automatically, but **unit + parity coverage is the contributor's job** — new engine logic or a fixed bug ships with its guarding test in the same PR.
 
@@ -333,10 +336,10 @@ servers before committing `content.db` (don't commit it while a server holds it 
 
 ## Repo map
 
-| Path                        | What                                                                        |
-| --------------------------- | --------------------------------------------------------------------------- |
-| `shared/`                   | `@shared/character-stats` — ranking, mastery, "known", selection (pure)     |
-| `platform/`                 | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions  |
-| `modules/*`                 | the five learning activities (see [modules/README.md](./modules/README.md)) |
-| `ARCHITECTURE.md`           | technical architecture (monorepo, module system, data, deploy)              |
-| `platform/src/ui/README.md` | the shared UI kit reference                                                 |
+| Path                        | What                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `shared/`                   | `@shared/character-stats` — ranking, mastery, "known", selection (pure)      |
+| `platform/`                 | PWA shell, offline data layer, UI kit, admin, bake/deploy, Pages Functions   |
+| `modules/*`                 | the seven learning activities (see [modules/README.md](./modules/README.md)) |
+| `ARCHITECTURE.md`           | technical architecture (monorepo, module system, data, deploy)               |
+| `platform/src/ui/README.md` | the shared UI kit reference                                                  |
