@@ -15,6 +15,8 @@
     "build:data": "npm -w modules/writing-challenge run build:data",
     "extract": "npm -w modules/writing-challenge run extract",
     "analyze-bank": "python3 scripts/analyze-bank.py",
+    "sentence-qa": "tsx scripts/sentence-qa.ts",
+    "sentence-qa:report": "tsx scripts/sentence-qa-report.ts",
     "seed:dbs": "tsx scripts/seed-dbs.ts",
     "test": "vitest run",
     "test:unit": "vitest run shared/ platform/src/",

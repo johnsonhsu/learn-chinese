@@ -423,6 +423,8 @@ Workbox 快取（資料層在 IndexedDB 中自行管理它們）；`/data/versio
 
 **測試紀律——貢獻者的責任。** 上述閘門守護的是*出貨資料*，無法攔截引擎的回歸。因此**任何**變更都要評估是否需要新增或更新測試，並把測試影響記在 issue spec／PR 裡；新引擎邏輯或修好的 bug，會在同一個 PR 內附上守護它的單元／對等測試。把測試套件維持成保養良好的機器是貢獻者的工作，不是靠部署閘門兜底的。
 
+**課程品質審查工具（僅供開發、僅供參考 — #74）。** 與自動閘門分開，`npm run sentence-qa` 會把 `bank_sentences`（唯讀）送過 **≥2 個本機 LLM**（Ollama，`http://localhost:11434`；模型與端點可設定、temperature 0 + 固定 seed、分批且可續跑），針對台灣繁體用法做文法／語意／自然度判定；`npm run sentence-qa:report` 產生自足的 HTML 檢視器，逐句彙整各模型並凸顯**模型間分歧**。它只寫入獨立的 JSONL 結果檔，**絕不寫 `content.db`**，也絕不改寫字形（僅*標記*簡體／大陸用語外洩），且是**人類審查輔助——絕非部署閘門**（LLM 品質不進 `test:data`）。純本機（無雲端 LLM）、僅供開發（絕不出貨）。完整說明與旗標見 [`scripts/README.md`](./scripts/README.md)。
+
 **CI/CD —— `.github/workflows/ci.yml`。** 單一 job，觸發於 `pull_request` 與 `push: master`：
 `npm ci` → 單元測試 → Python 對等測試（`pip install opencc pytest`）→ **型別檢查（`tsc`）**
 → **Lint（`eslint . --max-warnings=0`，阻擋性閘門）** → `npm run build -w platform`
