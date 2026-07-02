@@ -302,6 +302,18 @@ export default function Styleguide() {
           >
             Landscape-native redesign (epic #152) →
           </a>
+          <a
+            className="sg-subtitle"
+            href="?devnotes"
+            style={{
+              display: "inline-block",
+              marginTop: 6,
+              fontWeight: 700,
+              textDecoration: "underline",
+            }}
+          >
+            Dev notes hub →
+          </a>
         </header>
 
         {/* ── BUTTONS ─────────────────────────────────────────────────────── */}

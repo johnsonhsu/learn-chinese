@@ -50,6 +50,7 @@ const WelcomePopup = lazy(() => import("./WelcomePopup.tsx"));
 const LandingPage = lazy(() => import("./LandingPage.tsx"));
 const Styleguide = lazy(() => import("./Styleguide.tsx"));
 const LandscapePreview = lazy(() => import("./LandscapePreview.tsx"));
+const DevNotes = lazy(() => import("./DevNotes.tsx"));
 const DemoGate = lazy(() => import("./DemoGate.tsx"));
 
 interface ModuleManifest {
@@ -157,6 +158,13 @@ function shouldShowStyleguide(): boolean {
   return new URLSearchParams(location.search).has("ui");
 }
 
+// `?devnotes` is the dev-notes HUB — an internal index of reference pages
+// (UI components, landscape design, growth ideas). Same query-param pattern as
+// `?ui`; deliberately unlinked from the app, reachable only by direct URL.
+function shouldShowDevnotes(): boolean {
+  return new URLSearchParams(location.search).has("devnotes");
+}
+
 export default function App() {
   if (shouldShowStyleguide()) {
     // `?ui=landscape` is a distinct sub-page of the styleguide (the landscape
@@ -165,6 +173,14 @@ export default function App() {
     return (
       <Suspense fallback={<div className="loading" />}>
         {uiPage === "landscape" ? <LandscapePreview /> : <Styleguide />}
+      </Suspense>
+    );
+  }
+  if (shouldShowDevnotes()) {
+    // Bare `?devnotes` shows the hub; `?devnotes=<slug>` (e.g. ideas) is a sub-page.
+    return (
+      <Suspense fallback={<div className="loading" />}>
+        <DevNotes />
       </Suspense>
     );
   }
