@@ -45,7 +45,8 @@
 }
 
 /* Practice result stats */
-.sp-result-stats, .sp-coverage-row {
+.sp-result-stats,
+.sp-coverage-row {
   display: flex;
   gap: 16px;
   justify-content: center;
@@ -206,12 +207,21 @@
   touch-action: manipulation;
   -webkit-appearance: none;
   box-shadow: var(--shadow-glow);
-  transition: transform var(--transition, 0.18s), box-shadow var(--transition, 0.18s);
+  transition:
+    transform var(--transition, 0.18s),
+    box-shadow var(--transition, 0.18s);
 }
 
-.sp-btn-primary:hover { transform: translateY(-2px); }
-.sp-btn-primary:active { transform: translateY(0) scale(0.98); }
-.sp-btn-primary:disabled { opacity: 0.5; box-shadow: none; }
+.sp-btn-primary:hover {
+  transform: translateY(-2px);
+}
+.sp-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+.sp-btn-primary:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+}
 
 .sp-btn-secondary {
   font-size: 16px;
@@ -226,7 +236,9 @@
   -webkit-appearance: none;
 }
 
-.sp-btn-secondary:active { background: var(--bg, #1a1a1a); }
+.sp-btn-secondary:active {
+  background: var(--bg, #1a1a1a);
+}
 
 /* Practice level indicator */
 .sp-practice-level {
@@ -237,7 +249,7 @@
   background: var(--grad-fluency, linear-gradient(135deg, #22d3ee, #5b8cff, #8b5cff));
   padding: 6px 16px;
   border-radius: 999px;
-  box-shadow: var(--shadow-glow, 0 6px 22px rgba(91,140,255,0.35));
+  box-shadow: var(--shadow-glow, 0 6px 22px rgba(91, 140, 255, 0.35));
 }
 
 /* Sentence done screen */
@@ -271,23 +283,43 @@
   border: none;
   color: var(--text, #e6e8ee);
   background: var(--bg-raised, #181b24);
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.4)), inset 0 1px 0 rgba(255,255,255,0.06);
+  box-shadow:
+    var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.4)),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   padding-bottom: 4px;
   animation: sp-tile-pop 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 /* Result = a tinted, glowing 3D tile (char stays readable in both themes) */
 .sp-result-perfect {
-  background: linear-gradient(160deg, color-mix(in srgb, #4caf50 30%, var(--bg-raised)), var(--bg-raised));
-  box-shadow: 0 5px 16px rgba(76,175,80,0.42), inset 0 1px 0 rgba(255,255,255,0.10);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #4caf50 30%, var(--bg-raised)),
+    var(--bg-raised)
+  );
+  box-shadow:
+    0 5px 16px rgba(76, 175, 80, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .sp-result-correct {
-  background: linear-gradient(160deg, color-mix(in srgb, #ff9800 28%, var(--bg-raised)), var(--bg-raised));
-  box-shadow: 0 5px 16px rgba(255,152,0,0.38), inset 0 1px 0 rgba(255,255,255,0.10);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #ff9800 28%, var(--bg-raised)),
+    var(--bg-raised)
+  );
+  box-shadow:
+    0 5px 16px rgba(255, 152, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 .sp-result-incorrect {
-  background: linear-gradient(160deg, color-mix(in srgb, #f44336 26%, var(--bg-raised)), var(--bg-raised));
-  box-shadow: 0 5px 16px rgba(244,67,54,0.34), inset 0 1px 0 rgba(255,255,255,0.10);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #f44336 26%, var(--bg-raised)),
+    var(--bg-raised)
+  );
+  box-shadow:
+    0 5px 16px rgba(244, 67, 54, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* User skip: flat, muted */
@@ -311,7 +343,7 @@
   left: 4px;
   font-size: 13px;
   line-height: 1;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
   animation: sp-token-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.18s both;
   z-index: 2;
 }
@@ -327,7 +359,7 @@
   background: var(--grad-success, linear-gradient(135deg, #34d399, #059669));
   padding: 8px 22px;
   border-radius: 999px;
-  box-shadow: var(--shadow-glow-success, 0 6px 22px rgba(52,211,153,0.4));
+  box-shadow: var(--shadow-glow-success, 0 6px 22px rgba(52, 211, 153, 0.4));
   animation: sp-celebrate-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .sp-celebrate-spark {
@@ -336,20 +368,42 @@
 }
 
 @keyframes sp-tile-pop {
-  from { opacity: 0; transform: scale(0.6) translateY(6px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: scale(0.6) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 @keyframes sp-token-pop {
-  from { opacity: 0; transform: scale(0); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes sp-celebrate-in {
-  from { opacity: 0; transform: scale(0.7); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes sp-spark {
-  from { transform: scale(1) rotate(-10deg); }
-  to { transform: scale(1.25) rotate(10deg); }
+  from {
+    transform: scale(1) rotate(-10deg);
+  }
+  to {
+    transform: scale(1.25) rotate(10deg);
+  }
 }
 
 /* Rank corner indicator */
@@ -369,9 +423,15 @@
   border-color: transparent;
 }
 
-.sp-rank-corner-below { border-right-color: #4a90d9; }
-.sp-rank-corner-target { border-right-color: #4caf50; }
-.sp-rank-corner-above { border-right-color: #f44336; }
+.sp-rank-corner-below {
+  border-right-color: #4a90d9;
+}
+.sp-rank-corner-target {
+  border-right-color: #4caf50;
+}
+.sp-rank-corner-above {
+  border-right-color: #f44336;
+}
 
 .sp-sentence-done-actions {
   display: flex;
@@ -392,7 +452,7 @@
 }
 
 .sp-landing-fluency::after {
-  content: '';
+  content: "";
 }
 
 .sp-center-card .sp-landing-fluency + .sp-landing-known {
@@ -443,7 +503,7 @@
   line-height: 1.4;
   background: var(--bg-raised, #181b24);
   border-radius: 16px;
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.4));
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
 /* Practice top row */
@@ -470,22 +530,25 @@
   border-radius: 999px;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,0.4));
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.4));
   transition: transform var(--transition, 0.18s);
 }
-.sp-autoskip-toggle:active { transform: scale(0.95); }
+.sp-autoskip-toggle:active {
+  transform: scale(0.95);
+}
 
 .sp-autoskip-toggle.active {
   color: #fff;
   background: var(--grad-primary, #4a90d9);
-  box-shadow: var(--shadow-glow, 0 6px 22px rgba(91,140,255,0.35));
+  box-shadow: var(--shadow-glow, 0 6px 22px rgba(91, 140, 255, 0.35));
 }
 
-.sp-new-sentence-btn, .sp-report-btn {
+.sp-new-sentence-btn,
+.sp-report-btn {
   font-size: 18px;
   width: 38px;
   height: 38px;
-  border: 1px solid var(--tile-edge, rgba(255,255,255,0.14));
+  border: 1px solid var(--tile-edge, rgba(255, 255, 255, 0.14));
   background: var(--bg-raised, #2a2a2a);
   color: var(--text, #e6e8ee);
   border-radius: 12px;
@@ -494,13 +557,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
   transition: transform var(--transition, 0.18s);
 }
-.sp-new-sentence-btn:active, .sp-report-btn:active { transform: scale(0.9); }
+.sp-new-sentence-btn:active,
+.sp-report-btn:active {
+  transform: scale(0.9);
+}
 
-.sp-report-btn { font-size: 14px; transition: background 0.3s, color 0.3s; }
-.sp-report-btn.reported { background: #4caf50; color: #fff; border-color: #4caf50; }
+.sp-report-btn {
+  font-size: 14px;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+.sp-report-btn.reported {
+  background: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
+}
 
 /* Progress bar */
 .sp-progress-bar {
@@ -533,7 +608,9 @@
   align-items: center;
 }
 
-.sp-char-scroll::-webkit-scrollbar { display: none; }
+.sp-char-scroll::-webkit-scrollbar {
+  display: none;
+}
 
 .char-box {
   flex-shrink: 0;
@@ -543,49 +620,69 @@
   font-size: 15px;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0) 46%),
     var(--chip-upcoming, #3b9bff);
   box-shadow:
-    0 2px 6px rgba(0,0,0,0.35),
-    inset 0 2px 0 rgba(255,255,255,0.55),
-    inset 0 -3px 5px rgba(0,0,0,0.22);
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 2px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.22);
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
-  transition: transform var(--transition, 0.18s), box-shadow var(--transition, 0.18s);
+  transition:
+    transform var(--transition, 0.18s),
+    box-shadow var(--transition, 0.18s);
 }
 
 .char-box-active {
   color: #3a2208;
-  text-shadow: 0 1px 1px rgba(255,255,255,0.3);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 46%),
     var(--grad-primary, #4a90d9);
   font-size: 24px;
   font-weight: 800;
   padding: 12px 18px;
   box-shadow:
-    var(--shadow-glow, 0 2px 10px rgba(242,169,62,0.3)),
-    inset 0 2px 0 rgba(255,255,255,0.65),
-    inset 0 -3px 5px rgba(0,0,0,0.18);
+    var(--shadow-glow, 0 2px 10px rgba(242, 169, 62, 0.3)),
+    inset 0 2px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.18);
   transform: translateY(-2px) scale(1.06);
 }
 
 .char-box-warn {
-  background: linear-gradient(160deg, color-mix(in srgb, #ff9800 30%, var(--bg-raised)), var(--bg-raised));
-  box-shadow: 0 4px 14px rgba(255,152,0,0.38), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #ff9800 30%, var(--bg-raised)),
+    var(--bg-raised)
+  );
+  box-shadow:
+    0 4px 14px rgba(255, 152, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .char-box-fail {
-  background: linear-gradient(160deg, color-mix(in srgb, #f44336 28%, var(--bg-raised)), var(--bg-raised));
-  box-shadow: 0 4px 14px rgba(244,67,54,0.34), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #f44336 28%, var(--bg-raised)),
+    var(--bg-raised)
+  );
+  box-shadow:
+    0 4px 14px rgba(244, 67, 54, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .char-box-pass {
-  background: linear-gradient(160deg, color-mix(in srgb, #4caf50 32%, var(--bg-raised)), var(--bg-raised));
-  box-shadow: 0 4px 16px rgba(76,175,80,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, #4caf50 32%, var(--bg-raised)),
+    var(--bg-raised)
+  );
+  box-shadow:
+    0 4px 16px rgba(76, 175, 80, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .sp-result-char {
@@ -604,14 +701,14 @@
 /* Above-level / auto-skipped — a muted RED pill signalling "above your level" */
 .char-box-above {
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 46%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 46%),
     var(--chip-above, #bb4a41);
   color: rgba(255, 255, 255, 0.82);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   box-shadow:
-    0 3px 8px rgba(0,0,0,0.4),
-    inset 0 1px 0 rgba(255,255,255,0.18),
-    inset 0 -3px 6px rgba(0,0,0,0.25);
+    0 3px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.25);
   opacity: 0.9;
 }
 
@@ -628,7 +725,7 @@
   font-size: 26px;
   width: 54px;
   height: 54px;
-  border: 1px solid var(--tile-edge, rgba(255,255,255,0.14));
+  border: 1px solid var(--tile-edge, rgba(255, 255, 255, 0.14));
   background: var(--bg-raised, #2a2a2a);
   border-radius: 16px;
   cursor: pointer;
@@ -636,10 +733,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition: transform var(--transition, 0.18s);
 }
-.sp-audio-btn:active { transform: scale(0.9); }
+.sp-audio-btn:active {
+  transform: scale(0.9);
+}
 
 .sp-sentence-hint {
   flex: 1;
@@ -652,16 +753,18 @@
   font-size: 14px;
   font-weight: 700;
   padding: 10px 18px;
-  border: 1px solid var(--tile-edge, rgba(255,255,255,0.14));
+  border: 1px solid var(--tile-edge, rgba(255, 255, 255, 0.14));
   background: var(--bg-raised, #2a2a2a);
   color: var(--text, #e6e8ee);
   border-radius: 14px;
   cursor: pointer;
   touch-action: manipulation;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.45);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45);
   transition: transform var(--transition, 0.18s);
 }
-.sp-skip-btn:active { transform: scale(0.92); }
+.sp-skip-btn:active {
+  transform: scale(0.92);
+}
 
 /* Canvas wrapper */
 .canvas-wrapper {
@@ -670,9 +773,9 @@
   background: var(--bg-input, #182c20);
   aspect-ratio: 1;
   box-shadow:
-    0 10px 28px rgba(0,0,0,0.55),
-    inset 0 0 0 1px rgba(0,0,0,0.4),
-    inset 0 2px 2px rgba(255,220,170,0.22);
+    0 10px 28px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 2px 2px rgba(255, 220, 170, 0.22);
   overflow: hidden;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Cline x1='50%25' y1='0' x2='50%25' y2='100%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='0' y1='50%25' x2='100%25' y2='50%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='0' y1='0' x2='100%25' y2='100%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3Cline x1='100%25' y1='0' x2='0' y2='100%25' stroke='%23444' stroke-width='1' stroke-dasharray='6,6'/%3E%3C/svg%3E");
   background-size: 100% 100%;
@@ -721,8 +824,14 @@ canvas {
 }
 
 @keyframes flash-in {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Picker — fills entire available space */
@@ -960,17 +1069,17 @@ canvas {
 /* Canvas keeps a contrasting drawing surface inside a hairline-framed slot.
    A soft ledger-grey ground reads as ink-paper, framed by a thin rule. */
 .canvas-wrapper {
-  border: 1px solid var(--rule-strong, #C7BCA6);
+  border: 1px solid var(--rule-strong, #c7bca6);
   border-radius: var(--radius, 12px);
-  background-color: #2B2925;
-  box-shadow: inset 0 1px 4px rgba(0,0,0,0.3);
+  background-color: #2b2925;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* English prompt = quiet paper card */
 .sp-word-definition {
-  background: var(--paper-raised, #FBF8F0);
-  color: var(--ink, #1C1A17);
-  border: 1px solid var(--rule, #DAD2C2);
+  background: var(--paper-raised, #fbf8f0);
+  color: var(--ink, #1c1a17);
+  border: 1px solid var(--rule, #dad2c2);
   border-radius: var(--radius, 12px);
   font-weight: 600;
   padding: 8px 18px;
@@ -980,23 +1089,35 @@ canvas {
 /* Char-scroll tiles → quiet paper chips with hairline borders. The state colors
    live in the ink palette: celadon=upcoming, seal=above, green=pass, ochre=warn. */
 .char-box {
-  background: var(--paper-raised, #FBF8F0);
-  border: 1px solid var(--rule-strong, #C7BCA6);
-  color: var(--ink, #1C1A17);
+  background: var(--paper-raised, #fbf8f0);
+  border: 1px solid var(--rule-strong, #c7bca6);
+  color: var(--ink, #1c1a17);
   text-shadow: none;
   box-shadow: none;
 }
 .char-box-active {
-  background: var(--ink, #1C1A17);
-  color: var(--paper, #F3EEE2);
-  border-color: var(--ink, #1C1A17);
+  background: var(--ink, #1c1a17);
+  color: var(--paper, #f3eee2);
+  border-color: var(--ink, #1c1a17);
   box-shadow: none;
   transform: translateY(-1px);
 }
 /* Done + user-skipped: placed AFTER the editorial .char-box base above so their
    distinct colors win the cascade (the base was clobbering them by source order). */
-.char-box-done { background: var(--bg-raised-2, #ECE5D5); border-color: var(--tile-edge, rgba(28,26,23,0.10)); color: var(--ink-soft, #56514A); font-size: 22px; padding: 10px 16px; box-shadow: none; }
-.char-box-skipped { background: var(--paper-raised, #FBF8F0); border-color: var(--rule, #DAD2C2); color: var(--text-dim, #8A8377); box-shadow: none; }
+.char-box-done {
+  background: var(--bg-raised-2, #ece5d5);
+  border-color: var(--tile-edge, rgba(28, 26, 23, 0.1));
+  color: var(--ink-soft, #56514a);
+  font-size: 22px;
+  padding: 10px 16px;
+  box-shadow: none;
+}
+.char-box-skipped {
+  background: var(--paper-raised, #fbf8f0);
+  border-color: var(--rule, #dad2c2);
+  color: var(--text-dim, #8a8377);
+  box-shadow: none;
+}
 /* Above-level / auto-skip = the SAME red as .char-box-fail, ALWAYS, in every theme.
    Per reviewer: above-level/auto-skip is a negative state and must track the fail
    colour — tie it to the themed --error token with the same color-mix wash recipe as
@@ -1013,7 +1134,12 @@ canvas {
    auto-skipped tile rendered grey). It stays BEFORE the pass/warn/fail trio below so a
    graded above-level char (auto-skip OFF: drawn + scored, carries -above + a trio class)
    keeps its result colour — only the passed-auto-skipped (ungraded) case turns red. */
-.char-box-above { background: color-mix(in srgb, var(--error, #B23B30) 16%, var(--paper-raised)); border-color: var(--error, #B23B30); color: var(--error, #B23B30); box-shadow: none; }
+.char-box-above {
+  background: color-mix(in srgb, var(--error, #b23b30) 16%, var(--paper-raised));
+  border-color: var(--error, #b23b30);
+  color: var(--error, #b23b30);
+  box-shadow: none;
+}
 /* Stroke-result trio (pass=green → warn=orange → fail=red).
    ORDER MATTERS: these MUST come AFTER .char-box-done because a COMPLETED char in the
    live track (PracticePage) carries BOTH classes together, e.g. `char-box-done
@@ -1024,8 +1150,18 @@ canvas {
    only sets background/border/colour, so the done tile keeps its larger glyph
    font-size/padding. In the Styleguide the trio renders stand-alone (no -done) and is
    unchanged. */
-.char-box-pass { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); border-color: var(--success, #4F7A3A); color: var(--success, #4F7A3A); box-shadow: none; }
-.char-box-warn { background: color-mix(in srgb, var(--warning, #B5701C) 16%, var(--paper-raised)); border-color: var(--warning, #B5701C); color: var(--warning, #B5701C); box-shadow: none; }
+.char-box-pass {
+  background: color-mix(in srgb, var(--success, #4f7a3a) 16%, var(--paper-raised));
+  border-color: var(--success, #4f7a3a);
+  color: var(--success, #4f7a3a);
+  box-shadow: none;
+}
+.char-box-warn {
+  background: color-mix(in srgb, var(--warning, #b5701c) 16%, var(--paper-raised));
+  border-color: var(--warning, #b5701c);
+  color: var(--warning, #b5701c);
+  box-shadow: none;
+}
 /* Fail = RED, routed through the themed --error token (NOT --seal). --seal is each
    theme's single ACCENT (gold in indigo/gold, teal in midnight, green in matcha, pink
    in sakura, platinum in silver) — only Paper's accent is red — so keying fail off
@@ -1033,129 +1169,277 @@ canvas {
    EVERY theme. Same wash recipe as .char-box-pass/-warn above so the trio reads as one
    set. NOTE: .char-box-above (above-level / auto-skip) deliberately uses this SAME
    recipe — keep them in lock-step if this red ever changes. */
-.char-box-fail { background: color-mix(in srgb, var(--error, #B23B30) 16%, var(--paper-raised)); border-color: var(--error, #B23B30); color: var(--error, #B23B30); box-shadow: none; }
+.char-box-fail {
+  background: color-mix(in srgb, var(--error, #b23b30) 16%, var(--paper-raised));
+  border-color: var(--error, #b23b30);
+  color: var(--error, #b23b30);
+  box-shadow: none;
+}
 
 /* Result tiles → paper with a colored hairline + tinted wash (no candy fills) */
-.sp-result-perfect   { background: color-mix(in srgb, var(--success, #4F7A3A) 14%, var(--paper-raised)); border: 1px solid var(--success, #4F7A3A); color: var(--ink, #1C1A17); box-shadow: none; }
-.sp-result-correct   { background: color-mix(in srgb, var(--teal, #4E7C76) 14%, var(--paper-raised)); border: 1px solid var(--teal, #4E7C76); color: var(--ink, #1C1A17); box-shadow: none; }
-.sp-result-incorrect { background: color-mix(in srgb, var(--error, #B23B30) 14%, var(--paper-raised)); border: 1px solid var(--error, #B23B30); color: var(--ink, #1C1A17); box-shadow: none; }
+.sp-result-perfect {
+  background: color-mix(in srgb, var(--success, #4f7a3a) 14%, var(--paper-raised));
+  border: 1px solid var(--success, #4f7a3a);
+  color: var(--ink, #1c1a17);
+  box-shadow: none;
+}
+.sp-result-correct {
+  background: color-mix(in srgb, var(--teal, #4e7c76) 14%, var(--paper-raised));
+  border: 1px solid var(--teal, #4e7c76);
+  color: var(--ink, #1c1a17);
+  box-shadow: none;
+}
+.sp-result-incorrect {
+  background: color-mix(in srgb, var(--error, #b23b30) 14%, var(--paper-raised));
+  border: 1px solid var(--error, #b23b30);
+  color: var(--ink, #1c1a17);
+  box-shadow: none;
+}
 
 /* Primary action button → flat ink */
 .sp-btn-primary {
-  background: var(--ink, #1C1A17);
-  color: var(--paper, #F3EEE2);
+  background: var(--ink, #1c1a17);
+  color: var(--paper, #f3eee2);
   border: none;
   border-radius: var(--radius, 12px);
   font-weight: 700;
   box-shadow: none;
-  transition: background 0.16s ease, transform 0.1s ease;
+  transition:
+    background 0.16s ease,
+    transform 0.1s ease;
 }
-.sp-btn-primary:hover { transform: none; background: #000; }
-.sp-btn-primary:active:not(:disabled) { transform: translateY(1px); }
+.sp-btn-primary:hover {
+  transform: none;
+  background: #000;
+}
+.sp-btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
 
 /* Control + utility buttons → hairline paper chips */
-.sp-show-btn, .sp-hint-btn, .sp-audio-btn, .sp-skip-btn,
-.sp-new-sentence-btn, .sp-report-btn, .sp-autoskip-toggle, .sp-btn-secondary {
-  background: var(--paper-raised, #FBF8F0);
-  color: var(--ink, #1C1A17);
-  border: 1px solid var(--rule-strong, #C7BCA6);
+.sp-show-btn,
+.sp-hint-btn,
+.sp-audio-btn,
+.sp-skip-btn,
+.sp-new-sentence-btn,
+.sp-report-btn,
+.sp-autoskip-toggle,
+.sp-btn-secondary {
+  background: var(--paper-raised, #fbf8f0);
+  color: var(--ink, #1c1a17);
+  border: 1px solid var(--rule-strong, #c7bca6);
   box-shadow: none;
-  transition: border-color 0.16s ease, background 0.16s ease, transform 0.1s ease;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    transform 0.1s ease;
 }
-.sp-show-btn:active, .sp-hint-btn:active, .sp-audio-btn:active, .sp-skip-btn:active,
-.sp-new-sentence-btn:active, .sp-report-btn:active, .sp-autoskip-toggle:active {
+.sp-show-btn:active,
+.sp-hint-btn:active,
+.sp-audio-btn:active,
+.sp-skip-btn:active,
+.sp-new-sentence-btn:active,
+.sp-report-btn:active,
+.sp-autoskip-toggle:active {
   transform: translateY(1px);
 }
 /* Active toggles fill with ink (the on-state reads instantly). */
-.sp-show-btn.active, .sp-autoskip-toggle.active {
-  background: var(--ink, #1C1A17); border-color: var(--ink, #1C1A17); color: var(--paper, #F3EEE2); box-shadow: none;
+.sp-show-btn.active,
+.sp-autoskip-toggle.active {
+  background: var(--ink, #1c1a17);
+  border-color: var(--ink, #1c1a17);
+  color: var(--paper, #f3eee2);
+  box-shadow: none;
 }
-.sp-report-btn.reported { background: color-mix(in srgb, var(--success, #4F7A3A) 16%, var(--paper-raised)); color: var(--success, #4F7A3A); border-color: var(--success, #4F7A3A); box-shadow: none; }
+.sp-report-btn.reported {
+  background: color-mix(in srgb, var(--success, #4f7a3a) 16%, var(--paper-raised));
+  color: var(--success, #4f7a3a);
+  border-color: var(--success, #4f7a3a);
+  box-shadow: none;
+}
 
 /* Text sitting on the paper page bg → ink */
-.sp-center-card h2, .sp-landing-title, .sp-result-level, .sp-practice-progress { color: var(--ink, #1C1A17); }
-.sp-center-card h2, .sp-landing-title { font-family: var(--font-serif); font-weight: 600; }
-.sp-center-card p { color: var(--ink-soft, #56514A); }
-.sp-top-bar { color: var(--ink, #1C1A17); }
+.sp-center-card h2,
+.sp-landing-title,
+.sp-result-level,
+.sp-practice-progress {
+  color: var(--ink, #1c1a17);
+}
+.sp-center-card h2,
+.sp-landing-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+.sp-center-card p {
+  color: var(--ink-soft, #56514a);
+}
+.sp-top-bar {
+  color: var(--ink, #1c1a17);
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .sp-btn-primary, .sp-show-btn, .sp-hint-btn, .sp-audio-btn, .sp-skip-btn,
-  .sp-new-sentence-btn, .sp-report-btn, .sp-autoskip-toggle { transition: none; }
-  .sp-btn-primary:active, .sp-show-btn:active, .sp-hint-btn:active, .sp-audio-btn:active { transform: none; }
+  .sp-btn-primary,
+  .sp-show-btn,
+  .sp-hint-btn,
+  .sp-audio-btn,
+  .sp-skip-btn,
+  .sp-new-sentence-btn,
+  .sp-report-btn,
+  .sp-autoskip-toggle {
+    transition: none;
+  }
+  .sp-btn-primary:active,
+  .sp-show-btn:active,
+  .sp-hint-btn:active,
+  .sp-audio-btn:active {
+    transform: none;
+  }
 }
 
 /* ===== Session-done / landing screen — sits on the paper bg, so ink text ===== */
-.sp-landing-fluency, .sp-sentence-done-stats {
-  color: var(--ink-soft, #56514A); font-weight: 600;
+.sp-landing-fluency,
+.sp-sentence-done-stats {
+  color: var(--ink-soft, #56514a);
+  font-weight: 600;
 }
 /* "Next up" lives INSIDE the paper landing card. The char tiles are the shared
    kit <CharTile size="sm">. */
-.sp-landing-targets { margin-top: 4px; }
-.sp-landing-targets-label { color: var(--ink-faint, #8A8377); font-weight: 700; }
-.sp-landing-known { color: var(--ink, #1C1A17); font-family: var(--font-serif); font-weight: 600; }
-.sp-sentence-done-level { color: var(--ink, #1C1A17); font-family: var(--font-serif); font-weight: 600; }
-.sp-landing-title, .sp-center-card h2, .sp-result-level { color: var(--ink, #1C1A17); }
-.sp-center-card p { color: var(--ink-soft, #56514A); }
+.sp-landing-targets {
+  margin-top: 4px;
+}
+.sp-landing-targets-label {
+  color: var(--ink-faint, #8a8377);
+  font-weight: 700;
+}
+.sp-landing-known {
+  color: var(--ink, #1c1a17);
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+.sp-sentence-done-level {
+  color: var(--ink, #1c1a17);
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+.sp-landing-title,
+.sp-center-card h2,
+.sp-result-level {
+  color: var(--ink, #1c1a17);
+}
+.sp-center-card p {
+  color: var(--ink-soft, #56514a);
+}
 
 /* Practice-done result chars → paper tiles, calligraphic char, mastery strip
    flush to the bottom edge. (Landing "Next up" tiles use the shared <CharTile>.) */
 .sp-result-char {
-  background: var(--paper-raised, #FBF8F0);
-  color: var(--ink, #1C1A17);
-  border: 1px solid var(--rule, #DAD2C2);
+  background: var(--paper-raised, #fbf8f0);
+  color: var(--ink, #1c1a17);
+  border: 1px solid var(--rule, #dad2c2);
   border-radius: var(--radius, 12px);
   box-shadow: var(--shadow-sm);
   padding-bottom: 0;
   font-family: var(--font-han, serif);
   font-weight: 500;
   overflow: hidden;
-  width: 56px; height: 56px;
+  width: 56px;
+  height: 56px;
 }
 .sp-result-char .mastery-bar {
-  position: absolute; left: 0; right: 0; bottom: 0; width: auto; margin: 0;
-  height: 4px; border-radius: 0; background: var(--rule, #DAD2C2); overflow: hidden;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  margin: 0;
+  height: 4px;
+  border-radius: 0;
+  background: var(--rule, #dad2c2);
+  overflow: hidden;
 }
 
 /* Stop = hairline paper button, matching Next Session */
-.sp-btn-primary { font-weight: 700; }
+.sp-btn-primary {
+  font-weight: 700;
+}
 .sp-btn-secondary {
   font-weight: 600;
-  background: var(--paper-raised, #FBF8F0); color: var(--ink, #1C1A17);
-  border: 1px solid var(--rule-strong, #C7BCA6);
+  background: var(--paper-raised, #fbf8f0);
+  color: var(--ink, #1c1a17);
+  border: 1px solid var(--rule-strong, #c7bca6);
   border-radius: var(--radius, 12px);
   box-shadow: none;
-  transition: border-color 0.16s ease, transform 0.1s ease;
+  transition:
+    border-color 0.16s ease,
+    transform 0.1s ease;
 }
-.sp-btn-secondary:active { transform: translateY(1px); }
+.sp-btn-secondary:active {
+  transform: translateY(1px);
+}
 
 /* Practice screen: drop the redundant F25 fluency pill (the back arrow replaces it) */
-.sp-practice-level { display: none; }
+.sp-practice-level {
+  display: none;
+}
 /* Back arrow (top-left) shares the line with the settings controls (right).
    The hidden fluency pill is the only other child, so space-between pins the
    compact back to the left and the auto-skip/refresh group to the right. */
-.sp-practice-top { justify-content: space-between; }
+.sp-practice-top {
+  justify-content: space-between;
+}
 
 /* Top-row controls — equal height; auto-skip toggle reads ink=ON, paper=OFF */
-.sp-autoskip-toggle, .sp-new-sentence-btn, .sp-report-btn {
-  height: 44px; min-height: 44px; border-radius: var(--radius, 12px);
+.sp-autoskip-toggle,
+.sp-new-sentence-btn,
+.sp-report-btn {
+  height: 44px;
+  min-height: 44px;
+  border-radius: var(--radius, 12px);
   box-shadow: none;
-  transition: border-color 0.16s ease, background 0.16s ease, transform 0.1s ease;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    transform 0.1s ease;
 }
-.sp-new-sentence-btn, .sp-report-btn { width: 44px; font-size: 18px; }
+.sp-new-sentence-btn,
+.sp-report-btn {
+  width: 44px;
+  font-size: 18px;
+}
 .sp-autoskip-toggle {
-  width: auto; padding: 0 16px; font-size: 13px; font-weight: 700;
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--paper-raised, #FBF8F0); color: var(--ink, #1C1A17); border: 1px solid var(--rule-strong, #C7BCA6);
+  width: auto;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--paper-raised, #fbf8f0);
+  color: var(--ink, #1c1a17);
+  border: 1px solid var(--rule-strong, #c7bca6);
 }
 .sp-autoskip-toggle.active {
-  background: var(--ink, #1C1A17); color: var(--paper, #F3EEE2); border-color: var(--ink, #1C1A17); box-shadow: none;
+  background: var(--ink, #1c1a17);
+  color: var(--paper, #f3eee2);
+  border-color: var(--ink, #1c1a17);
+  box-shadow: none;
 }
-.sp-autoskip-toggle:active, .sp-new-sentence-btn:active, .sp-report-btn:active {
+.sp-autoskip-toggle:active,
+.sp-new-sentence-btn:active,
+.sp-report-btn:active {
   transform: translateY(1px);
 }
 @media (prefers-reduced-motion: reduce) {
-  .sp-autoskip-toggle, .sp-new-sentence-btn, .sp-report-btn { transition: none; }
-  .sp-autoskip-toggle:active, .sp-new-sentence-btn:active, .sp-report-btn:active { transform: none; }
+  .sp-autoskip-toggle,
+  .sp-new-sentence-btn,
+  .sp-report-btn {
+    transition: none;
+  }
+  .sp-autoskip-toggle:active,
+  .sp-new-sentence-btn:active,
+  .sp-report-btn:active {
+    transform: none;
+  }
 }
 
 /* ====================================================================
@@ -1166,15 +1450,18 @@ canvas {
    ==================================================================== */
 
 /* Calm the overall vertical rhythm so the screen breathes like practice-english. */
-.sp-assessment { gap: 16px; padding: 8px 16px; }
+.sp-assessment {
+  gap: 16px;
+  padding: 8px 16px;
+}
 
 /* ── Prompt card: the single cream candy tile. It now wraps the prompt
    (audio + meaning), the zhuyin char tiles, the writing pad, AND the control
    button row — one container, one purple border + 3D drop. ── */
 .sp-prompt-card {
   width: 100%;
-  background: var(--paper-raised, #FBF8F0);
-  border: 1px solid var(--rule, #DAD2C2);
+  background: var(--paper-raised, #fbf8f0);
+  border: 1px solid var(--rule, #dad2c2);
   border-radius: var(--radius-lg, 16px);
   box-shadow: var(--shadow-md);
   padding: 18px 16px 16px;
@@ -1198,7 +1485,7 @@ canvas {
   font-size: 17px;
   font-weight: 800;
   line-height: 1.4;
-  color: var(--text, #2D1B00);
+  color: var(--text, #2d1b00);
   background: none;
   border: none;
   box-shadow: none;
@@ -1225,10 +1512,9 @@ canvas {
    (that would be cream-on-cream). Keep just the dark drawing surface with a thin
    purple hairline + a soft inset shadow so it reads as a recessed slot in the tile. */
 .sp-canvas-frame .canvas-wrapper {
-  border: 1px solid var(--rule-strong, #C7BCA6);
+  border: 1px solid var(--rule-strong, #c7bca6);
   border-radius: var(--radius, 12px);
-  box-shadow:
-    inset 0 1px 6px rgba(0,0,0,0.3);
+  box-shadow: inset 0 1px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Control row: hint / peek / skip — tidy, centered candy buttons at the
@@ -1238,7 +1524,10 @@ canvas {
   gap: 14px;
   margin-top: 2px;
 }
-.sp-hint-btn, .sp-show-btn, .sp-skip-btn, .sp-top-bar .sp-audio-btn {
+.sp-hint-btn,
+.sp-show-btn,
+.sp-skip-btn,
+.sp-top-bar .sp-audio-btn {
   width: 64px;
   height: 56px;
   min-height: 56px;
@@ -1249,7 +1538,11 @@ canvas {
   justify-content: center;
 }
 /* The skip button carries a short glyph, so let it size like the others. */
-.sp-skip-btn { font-size: 24px; padding: 0; font-weight: 800; }
+.sp-skip-btn {
+  font-size: 24px;
+  padding: 0;
+  font-weight: 800;
+}
 
 /* The 🔊 in the prompt row: cream candy square, sized to anchor the meaning text. */
 .sp-prompt-row .sp-audio-btn {
@@ -1264,25 +1557,41 @@ canvas {
 }
 
 /* Visible keyboard focus on every control (quality floor). */
-.sp-hint-btn:focus-visible, .sp-show-btn:focus-visible, .sp-skip-btn:focus-visible,
-.sp-audio-btn:focus-visible, .sp-autoskip-toggle:focus-visible,
+.sp-hint-btn:focus-visible,
+.sp-show-btn:focus-visible,
+.sp-skip-btn:focus-visible,
+.sp-audio-btn:focus-visible,
+.sp-autoskip-toggle:focus-visible,
 .sp-new-sentence-btn:focus-visible {
-  outline: 2px solid var(--seal, #C0392B);
+  outline: 2px solid var(--seal, #c0392b);
   outline-offset: 2px;
   z-index: 1;
 }
 
 /* Hover only on devices with a real pointer (iOS sticky-hover fix). */
 @media (hover: hover) {
-  .sp-hint-btn:hover, .sp-show-btn:hover, .sp-skip-btn:hover,
-  .sp-audio-btn:hover, .sp-new-sentence-btn:hover {
-    border-color: var(--ink, #1C1A17);
+  .sp-hint-btn:hover,
+  .sp-show-btn:hover,
+  .sp-skip-btn:hover,
+  .sp-audio-btn:hover,
+  .sp-new-sentence-btn:hover {
+    border-color: var(--ink, #1c1a17);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sp-hint-btn, .sp-show-btn, .sp-skip-btn, .sp-audio-btn { transition: none; }
-  .sp-hint-btn:hover, .sp-show-btn:hover, .sp-skip-btn:hover, .sp-audio-btn:hover,
-  .sp-new-sentence-btn:hover { transform: none; }
+  .sp-hint-btn,
+  .sp-show-btn,
+  .sp-skip-btn,
+  .sp-audio-btn {
+    transition: none;
+  }
+  .sp-hint-btn:hover,
+  .sp-show-btn:hover,
+  .sp-skip-btn:hover,
+  .sp-audio-btn:hover,
+  .sp-new-sentence-btn:hover {
+    transform: none;
+  }
 }
 
 /* ====================================================================
@@ -1358,15 +1667,23 @@ canvas {
 }
 
 /* Per-stat accent = ONE muted top rule each (no candy faces). */
-.sp-landing-stat-teal   { --sp-stat-accent: var(--teal, #4E7C76); }
-.sp-landing-stat-purple { --sp-stat-accent: var(--purple, #5E5670); }
-.sp-landing-stat-gold   { --sp-stat-accent: var(--seal, #C0392B); }
+.sp-landing-stat-teal {
+  --sp-stat-accent: var(--teal, #4e7c76);
+}
+.sp-landing-stat-purple {
+  --sp-stat-accent: var(--purple, #5e5670);
+}
+.sp-landing-stat-gold {
+  --sp-stat-accent: var(--seal, #c0392b);
+}
 
 /* Tighten the landing's vertical rhythm: the kit card's default 22px gap left
    the screen feeling airy/spacey (the same complaint as My Characters). 16px is
    calmer; the action group (Start + Auto Skip) is then pulled even closer so it
    reads as one block, killing the dead space. */
-.sp-landing-card.ui-screen-card { gap: 16px; }
+.sp-landing-card.ui-screen-card {
+  gap: 16px;
+}
 
 /* Size override for the kit's <Button variant="primary"> on this screen: full
    width + a touch larger. The candy 3D look, hover lift, :active compression,
@@ -1400,12 +1717,29 @@ canvas {
   width: 100%;
   gap: 10px;
   padding-top: 14px;
-  border-top: 2px dashed color-mix(in srgb, var(--border, #5A1A96) 28%, transparent);
+  border-top: 2px dashed color-mix(in srgb, var(--border, #5a1a96) 28%, transparent);
 }
 .sp-landing-card .sp-landing-targets-label {
   font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  color: var(--text-muted, #6B4C20);
+  color: var(--text-muted, #6b4c20);
+}
+
+/* ===== Landscape (issue #130) ==============================================
+   Portrait is left untouched. In landscape the practice column is centered
+   (not stretched full-width on a tablet) and the writing pad is fit to the
+   short landscape height. The canvas already CSS-scales to its wrapper — the
+   same path a narrow portrait phone uses — so stroke-input coordinate mapping
+   is unaffected. Lock-to-portrait users get the rotate overlay instead. */
+@media (orientation: landscape) {
+  .sp-assessment {
+    max-width: 680px;
+    margin-inline: auto;
+    padding: 8px 24px;
+  }
+  .sp-canvas-frame .canvas-wrapper {
+    max-width: min(320px, 46vh);
+  }
 }

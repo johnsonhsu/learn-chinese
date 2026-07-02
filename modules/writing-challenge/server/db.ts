@@ -1,16 +1,16 @@
-import Database from 'better-sqlite3';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import Database from "better-sqlite3";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DB_PATH = join(__dirname, '..', 'writing-challenge.db');
+const DB_PATH = join(__dirname, "..", "writing-challenge.db");
 let db: InstanceType<typeof Database>;
 
 export function initDatabase() {
   if (db) return;
   db = new Database(DB_PATH);
-  db.pragma('journal_mode = WAL');
-  db.pragma('foreign_keys = ON');
+  db.pragma("journal_mode = WAL");
+  db.pragma("foreign_keys = ON");
   createSchema();
 }
 
@@ -34,7 +34,7 @@ function createSchema() {
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS character_stats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_id INTEGER NOT NULL,
@@ -82,7 +82,7 @@ db.exec(`
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS lesson_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_id INTEGER NOT NULL,
@@ -95,7 +95,7 @@ db.exec(`
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS user_settings (
     profile_id INTEGER PRIMARY KEY,
     session_size INTEGER DEFAULT 5,
@@ -103,9 +103,13 @@ db.exec(`
     FOREIGN KEY (profile_id) REFERENCES profiles(id) ON DELETE CASCADE
   )
 `);
-try { db.exec(`ALTER TABLE user_settings ADD COLUMN language TEXT DEFAULT 'zh-TW'`); } catch { /* exists */ }
+  try {
+    db.exec(`ALTER TABLE user_settings ADD COLUMN language TEXT DEFAULT 'zh-TW'`);
+  } catch {
+    /* exists */
+  }
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS active_lessons (
     profile_id INTEGER PRIMARY KEY,
     lesson_data TEXT NOT NULL,
@@ -117,7 +121,7 @@ db.exec(`
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS activity_log (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_id INTEGER NOT NULL,
@@ -132,56 +136,56 @@ db.exec(`
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS module_settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   )
 `);
 
-// Default module settings
-const defaults: Record<string, string> = {
-  'stroke_leniency': '1.0',
-  'strokes_per_fail': '3',
-  'correct_weight': '0.6',
-  'weight_recent': '50',
-  'weight_overall': '30',
-  'weight_streak': '20',
-  'streak_cap': '5',
-  'decay_per_day': '1',
-  'decay_mode': 'scaled',
-  'rank_freq_weight': '60',
-  'rank_level_weight': '40',
-  'max_word_level': '',
-  'freq_model': 'book',
-  'above_level_threshold': '30',
-  'target_lookback_pct': '2',
-  'target_lookahead_pct': '5',
-  'target_include_gaps': 'true',
-  'known_recent_enabled': 'true',
-  'known_recent_good': '3',
-  'known_recent_window': '4',
-  'known_retention_enabled': 'true',
-  'known_retention_min': '80',
-  'known_recency_enabled': 'true',
-  'known_recency_days': '30',
-  'level_known_pct': '80',
-  // Char-selection parity (read by sentence-generator; previously unseeded).
-  'parity_need_cap': '4',
-  'parity_recency_cap': '3',
-  'parity_mastery_weight': '1.5',
-  'parity_miss_boost': '1',
-  'weight_incorrect_count': '5',
-};
-for (const [key, value] of Object.entries(defaults)) {
-  db.prepare('INSERT OR IGNORE INTO module_settings (key, value) VALUES (?, ?)').run(key, value);
-}
+  // Default module settings
+  const defaults: Record<string, string> = {
+    stroke_leniency: "1.0",
+    strokes_per_fail: "3",
+    correct_weight: "0.6",
+    weight_recent: "50",
+    weight_overall: "30",
+    weight_streak: "20",
+    streak_cap: "5",
+    decay_per_day: "1",
+    decay_mode: "scaled",
+    rank_freq_weight: "60",
+    rank_level_weight: "40",
+    max_word_level: "",
+    freq_model: "book",
+    above_level_threshold: "30",
+    target_lookback_pct: "2",
+    target_lookahead_pct: "5",
+    target_include_gaps: "true",
+    known_recent_enabled: "true",
+    known_recent_good: "3",
+    known_recent_window: "4",
+    known_retention_enabled: "true",
+    known_retention_min: "80",
+    known_recency_enabled: "true",
+    known_recency_days: "30",
+    level_known_pct: "80",
+    // Char-selection parity (read by sentence-generator; previously unseeded).
+    parity_need_cap: "4",
+    parity_recency_cap: "3",
+    parity_mastery_weight: "1.5",
+    parity_miss_boost: "1",
+    weight_incorrect_count: "5",
+  };
+  for (const [key, value] of Object.entries(defaults)) {
+    db.prepare("INSERT OR IGNORE INTO module_settings (key, value) VALUES (?, ?)").run(key, value);
+  }
 
-// Curriculum content (bank_sentences, tocfl_words, char_words) is platform-owned
-// now and lives in platform/content.db — accessed via @shared/character-stats/
-// content-db. This module DB carries only its own settings + per-profile tables.
+  // Curriculum content (bank_sentences, tocfl_words, char_words) is platform-owned
+  // now and lives in platform/content.db — accessed via @shared/character-stats/
+  // content-db. This module DB carries only its own settings + per-profile tables.
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS practice_sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_id INTEGER NOT NULL,
@@ -224,7 +228,7 @@ db.exec(`
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS practice_sentences (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id INTEGER NOT NULL,
@@ -257,7 +261,7 @@ db.exec(`
   )
 `);
 
-db.exec(`
+  db.exec(`
   CREATE TABLE IF NOT EXISTS session_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     profile_id INTEGER NOT NULL,
@@ -275,21 +279,38 @@ db.exec(`
   )
 `);
 
-// Migrate existing lesson_history into activity_log (one-time)
-try {
-  db.exec(`
+  // Migrate existing lesson_history into activity_log (one-time)
+  try {
+    db.exec(`
     INSERT OR IGNORE INTO activity_log (profile_id, activity_type, started_at, completed_at, char_results, new_words, summary)
     SELECT profile_id, 'lesson', started_at, started_at, results, new_words, summary
     FROM lesson_history
   `);
-} catch { /* lesson_history may not exist */ }
+  } catch {
+    /* lesson_history may not exist */
+  }
 
-
-// Migrate existing profiles (add new columns if missing)
-try { db.exec(`ALTER TABLE profiles ADD COLUMN assessed_level REAL DEFAULT -1`); } catch { /* already exists */ }
-try { db.exec(`ALTER TABLE profiles ADD COLUMN known_words TEXT DEFAULT '[]'`); } catch { /* already exists */ }
-try { db.exec(`ALTER TABLE profiles ADD COLUMN user_id INTEGER UNIQUE`); } catch { /* already exists */ }
-try { db.exec(`ALTER TABLE profiles ADD COLUMN curriculum_position REAL DEFAULT 0`); } catch { /* already exists */ }
+  // Migrate existing profiles (add new columns if missing)
+  try {
+    db.exec(`ALTER TABLE profiles ADD COLUMN assessed_level REAL DEFAULT -1`);
+  } catch {
+    /* already exists */
+  }
+  try {
+    db.exec(`ALTER TABLE profiles ADD COLUMN known_words TEXT DEFAULT '[]'`);
+  } catch {
+    /* already exists */
+  }
+  try {
+    db.exec(`ALTER TABLE profiles ADD COLUMN user_id INTEGER UNIQUE`);
+  } catch {
+    /* already exists */
+  }
+  try {
+    db.exec(`ALTER TABLE profiles ADD COLUMN curriculum_position REAL DEFAULT 0`);
+  } catch {
+    /* already exists */
+  }
 }
 
 // --- Types ---
@@ -328,7 +349,7 @@ export interface ProfileData {
   createdAt: string;
 }
 
-export type CharResult = 'perfect' | 'correct' | 'incorrect' | 'skip';
+export type CharResult = "perfect" | "correct" | "incorrect" | "skip";
 
 export interface CharacterStat {
   character: string;
@@ -350,10 +371,10 @@ export interface CharacterStat {
   fastestMs: number;
   slowestMs: number;
   avgMs: number;
-  lastResult: CharResult | '';
+  lastResult: CharResult | "";
   lastFailedStrokes: number;
   lastHintUsed: boolean;
-  firstResult: CharResult | '';
+  firstResult: CharResult | "";
   recentResults: string;
 }
 
@@ -364,7 +385,7 @@ function rowToProfile(row: ProfileRow): ProfileData {
     currentLevel: row.current_level,
     assessedLevel: row.assessed_level,
     curriculumPosition: row.curriculum_position || 0,
-    knownWords: JSON.parse(row.known_words || '[]'),
+    knownWords: JSON.parse(row.known_words || "[]"),
     completedChars: JSON.parse(row.completed_chars),
     completedWords: JSON.parse(row.completed_words),
     stats: {
@@ -379,42 +400,54 @@ function rowToProfile(row: ProfileRow): ProfileData {
 
 // --- Profile CRUD ---
 export function getAllProfiles(): ProfileData[] {
-  return (db.prepare('SELECT * FROM profiles ORDER BY name').all() as ProfileRow[]).map(rowToProfile);
+  return (db.prepare("SELECT * FROM profiles ORDER BY name").all() as ProfileRow[]).map(
+    rowToProfile,
+  );
 }
 
 export function getProfile(id: number): ProfileData | null {
-  const row = db.prepare('SELECT * FROM profiles WHERE id = ?').get(id) as ProfileRow | undefined;
+  const row = db.prepare("SELECT * FROM profiles WHERE id = ?").get(id) as ProfileRow | undefined;
   return row ? rowToProfile(row) : null;
 }
 
 export function getProfileByName(name: string): ProfileData | null {
-  const row = db.prepare('SELECT * FROM profiles WHERE name = ?').get(name) as ProfileRow | undefined;
+  const row = db.prepare("SELECT * FROM profiles WHERE name = ?").get(name) as
+    ProfileRow | undefined;
   return row ? rowToProfile(row) : null;
 }
 
 export function createProfile(name: string): ProfileData {
-  const result = db.prepare('INSERT INTO profiles (name) VALUES (?)').run(name);
+  const result = db.prepare("INSERT INTO profiles (name) VALUES (?)").run(name);
   const id = result.lastInsertRowid as number;
-  db.prepare('INSERT INTO user_settings (profile_id) VALUES (?)').run(id);
+  db.prepare("INSERT INTO user_settings (profile_id) VALUES (?)").run(id);
   return getProfile(id)!;
 }
 
 export function getOrCreateProfile(userId: number): ProfileData {
-  const row = db.prepare('SELECT * FROM profiles WHERE user_id = ?').get(userId) as ProfileRow | undefined;
+  const row = db.prepare("SELECT * FROM profiles WHERE user_id = ?").get(userId) as
+    ProfileRow | undefined;
   if (row) return rowToProfile(row);
-  const result = db.prepare('INSERT INTO profiles (user_id, name) VALUES (?, ?)').run(userId, `user_${userId}`);
+  const result = db
+    .prepare("INSERT INTO profiles (user_id, name) VALUES (?, ?)")
+    .run(userId, `user_${userId}`);
   const id = result.lastInsertRowid as number;
-  db.prepare('INSERT OR IGNORE INTO user_settings (profile_id) VALUES (?)').run(id);
+  db.prepare("INSERT OR IGNORE INTO user_settings (profile_id) VALUES (?)").run(id);
   return getProfile(id)!;
 }
 
 export function updateProfile(id: number, updates: Record<string, unknown>) {
   const columnMap: Record<string, string> = {
-    name: 'name', currentLevel: 'current_level', assessedLevel: 'assessed_level', curriculumPosition: 'curriculum_position',
-    knownWords: 'known_words', completedChars: 'completed_chars',
-    completedWords: 'completed_words', totalPracticed: 'total_practiced',
-    totalQuizPassed: 'total_quiz_passed', streakDays: 'streak_days',
-    lastPracticeDate: 'last_practice_date',
+    name: "name",
+    currentLevel: "current_level",
+    assessedLevel: "assessed_level",
+    curriculumPosition: "curriculum_position",
+    knownWords: "known_words",
+    completedChars: "completed_chars",
+    completedWords: "completed_words",
+    totalPracticed: "total_practiced",
+    totalQuizPassed: "total_quiz_passed",
+    streakDays: "streak_days",
+    lastPracticeDate: "last_practice_date",
   };
   const sets: string[] = [];
   const values: unknown[] = [];
@@ -426,11 +459,11 @@ export function updateProfile(id: number, updates: Record<string, unknown>) {
   }
   if (sets.length === 0) return;
   values.push(id);
-  db.prepare(`UPDATE profiles SET ${sets.join(', ')} WHERE id = ?`).run(...values);
+  db.prepare(`UPDATE profiles SET ${sets.join(", ")} WHERE id = ?`).run(...values);
 }
 
 export function deleteProfile(id: number) {
-  db.prepare('DELETE FROM profiles WHERE id = ?').run(id);
+  db.prepare("DELETE FROM profiles WHERE id = ?").run(id);
 }
 
 // --- Character Stats ---
@@ -483,25 +516,25 @@ function rowToCharStat(r: CharStatRow): CharacterStat {
     fastestMs: r.fastest_ms,
     slowestMs: r.slowest_ms,
     avgMs: r.times_seen > 0 ? Math.round(r.total_ms / r.times_seen) : 0,
-    lastResult: (r.last_result || '') as CharResult | '',
+    lastResult: (r.last_result || "") as CharResult | "",
     lastFailedStrokes: r.last_failed_strokes,
     lastHintUsed: r.last_hint_used === 1,
-    firstResult: (r.first_result || '') as CharResult | '',
-    recentResults: r.recent_results || '',
+    firstResult: (r.first_result || "") as CharResult | "",
+    recentResults: r.recent_results || "",
   };
 }
 
 export function getCharacterStats(profileId: number): CharacterStat[] {
-  const rows = db.prepare(
-    'SELECT * FROM character_stats WHERE profile_id = ? ORDER BY last_seen DESC'
-  ).all(profileId) as CharStatRow[];
+  const rows = db
+    .prepare("SELECT * FROM character_stats WHERE profile_id = ? ORDER BY last_seen DESC")
+    .all(profileId) as CharStatRow[];
   return rows.map(rowToCharStat);
 }
 
 export function getCharacterStat(profileId: number, char: string): CharacterStat | null {
-  const r = db.prepare(
-    'SELECT * FROM character_stats WHERE profile_id = ? AND character = ?'
-  ).get(profileId, char) as CharStatRow | undefined;
+  const r = db
+    .prepare("SELECT * FROM character_stats WHERE profile_id = ? AND character = ?")
+    .get(profileId, char) as CharStatRow | undefined;
   return r ? rowToCharStat(r) : null;
 }
 
@@ -515,33 +548,38 @@ export interface CharAttempt {
 export function recordCharacterAttempt(profileId: number, char: string, attempt: CharAttempt) {
   const now = new Date().toISOString();
   const { result, failedStrokes, hintUsed, durationMs } = attempt;
-  const resultCode = result === 'perfect' ? 'P' : result === 'correct' ? 'C' : 'I';
+  const resultCode = result === "perfect" ? "P" : result === "correct" ? "C" : "I";
 
-  const existing = db.prepare(
-    'SELECT * FROM character_stats WHERE profile_id = ? AND character = ?'
-  ).get(profileId, char) as CharStatRow | undefined;
+  const existing = db
+    .prepare("SELECT * FROM character_stats WHERE profile_id = ? AND character = ?")
+    .get(profileId, char) as CharStatRow | undefined;
 
   if (existing) {
     // Streaks
-    const streakPerfect = result === 'perfect' ? existing.streak_perfect + 1 : 0;
-    const streakCorrect = result !== 'incorrect' ? existing.streak_correct + 1 : 0;
-    const streakIncorrect = result === 'incorrect' ? existing.streak_incorrect + 1 : 0;
+    const streakPerfect = result === "perfect" ? existing.streak_perfect + 1 : 0;
+    const streakCorrect = result !== "incorrect" ? existing.streak_correct + 1 : 0;
+    const streakIncorrect = result === "incorrect" ? existing.streak_incorrect + 1 : 0;
     const bestStreakPerfect = Math.max(existing.best_streak_perfect, streakPerfect);
     const bestStreakCorrect = Math.max(existing.best_streak_correct, streakCorrect);
 
     // Timing (skip if durationMs === 0, i.e. skipped chars)
-    const fastestMs = durationMs > 0
-      ? (existing.fastest_ms === 0 ? durationMs : Math.min(existing.fastest_ms, durationMs))
-      : existing.fastest_ms;
-    const slowestMs = durationMs > 0 ? Math.max(existing.slowest_ms, durationMs) : existing.slowest_ms;
+    const fastestMs =
+      durationMs > 0
+        ? existing.fastest_ms === 0
+          ? durationMs
+          : Math.min(existing.fastest_ms, durationMs)
+        : existing.fastest_ms;
+    const slowestMs =
+      durationMs > 0 ? Math.max(existing.slowest_ms, durationMs) : existing.slowest_ms;
     const addMs = durationMs > 0 ? durationMs : 0;
 
     // Recent results (keep last 10)
-    const recent = (existing.recent_results ? existing.recent_results + ',' : '') + resultCode;
-    const recentArr = recent.split(',');
-    const recentTrimmed = recentArr.slice(-10).join(',');
+    const recent = (existing.recent_results ? existing.recent_results + "," : "") + resultCode;
+    const recentArr = recent.split(",");
+    const recentTrimmed = recentArr.slice(-10).join(",");
 
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE character_stats SET
         times_seen = times_seen + 1,
         times_perfect = times_perfect + ?,
@@ -558,24 +596,37 @@ export function recordCharacterAttempt(profileId: number, char: string, attempt:
         last_result = ?, last_failed_strokes = ?, last_hint_used = ?,
         recent_results = ?
       WHERE profile_id = ? AND character = ?
-    `).run(
-      result === 'perfect' ? 1 : 0,
-      result === 'correct' ? 1 : 0,
-      result === 'incorrect' ? 1 : 0,
+    `,
+    ).run(
+      result === "perfect" ? 1 : 0,
+      result === "correct" ? 1 : 0,
+      result === "incorrect" ? 1 : 0,
       hintUsed ? 1 : 0,
-      streakPerfect, streakCorrect, streakIncorrect,
-      bestStreakPerfect, bestStreakCorrect,
+      streakPerfect,
+      streakCorrect,
+      streakIncorrect,
+      bestStreakPerfect,
+      bestStreakCorrect,
       now,
-      result, now,
-      result, now,
-      result, now,
-      fastestMs, slowestMs, addMs,
-      result, failedStrokes, hintUsed ? 1 : 0,
+      result,
+      now,
+      result,
+      now,
+      result,
+      now,
+      fastestMs,
+      slowestMs,
+      addMs,
+      result,
+      failedStrokes,
+      hintUsed ? 1 : 0,
       recentTrimmed,
-      profileId, char,
+      profileId,
+      char,
     );
   } else {
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO character_stats (
         profile_id, character,
         times_seen, times_perfect, times_correct, times_incorrect, times_hint_used,
@@ -586,29 +637,38 @@ export function recordCharacterAttempt(profileId: number, char: string, attempt:
         last_result, last_failed_strokes, last_hint_used,
         first_result, recent_results
       ) VALUES (?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      profileId, char,
-      result === 'perfect' ? 1 : 0,
-      result === 'correct' ? 1 : 0,
-      result === 'incorrect' ? 1 : 0,
+    `,
+    ).run(
+      profileId,
+      char,
+      result === "perfect" ? 1 : 0,
+      result === "correct" ? 1 : 0,
+      result === "incorrect" ? 1 : 0,
       hintUsed ? 1 : 0,
-      result === 'perfect' ? 1 : 0,
-      result !== 'incorrect' ? 1 : 0,
-      result === 'incorrect' ? 1 : 0,
-      result === 'perfect' ? 1 : 0,
-      result !== 'incorrect' ? 1 : 0,
-      now, now,
-      result === 'perfect' ? now : '',
-      result !== 'incorrect' ? now : '',
-      result === 'incorrect' ? now : '',
-      durationMs > 0 ? durationMs : 0, durationMs > 0 ? durationMs : 0, durationMs > 0 ? durationMs : 0,
-      result, failedStrokes, hintUsed ? 1 : 0,
-      result, resultCode,
+      result === "perfect" ? 1 : 0,
+      result !== "incorrect" ? 1 : 0,
+      result === "incorrect" ? 1 : 0,
+      result === "perfect" ? 1 : 0,
+      result !== "incorrect" ? 1 : 0,
+      now,
+      now,
+      result === "perfect" ? now : "",
+      result !== "incorrect" ? now : "",
+      result === "incorrect" ? now : "",
+      durationMs > 0 ? durationMs : 0,
+      durationMs > 0 ? durationMs : 0,
+      durationMs > 0 ? durationMs : 0,
+      result,
+      failedStrokes,
+      hintUsed ? 1 : 0,
+      result,
+      resultCode,
     );
   }
 
   // Update profile streak
-  const row = db.prepare('SELECT * FROM profiles WHERE id = ?').get(profileId) as ProfileRow | undefined;
+  const row = db.prepare("SELECT * FROM profiles WHERE id = ?").get(profileId) as
+    ProfileRow | undefined;
   if (row) {
     const today = now.slice(0, 10);
     let streak = row.streak_days;
@@ -616,23 +676,24 @@ export function recordCharacterAttempt(profileId: number, char: string, attempt:
       const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
       streak = row.last_practice_date === yesterday ? streak + 1 : 1;
     }
-    db.prepare(`UPDATE profiles SET total_practiced = total_practiced + 1, streak_days = ?, last_practice_date = ? WHERE id = ?`)
-      .run(streak, today, profileId);
+    db.prepare(
+      `UPDATE profiles SET total_practiced = total_practiced + 1, streak_days = ?, last_practice_date = ? WHERE id = ?`,
+    ).run(streak, today, profileId);
   }
 }
-
 
 // --- User Settings ---
 export interface UserSettings {
   sessionSize: number;
-  language: 'en' | 'zh-TW';
+  language: "en" | "zh-TW";
 }
 
 export function getSettings(profileId: number): UserSettings {
-  const row = db.prepare('SELECT * FROM user_settings WHERE profile_id = ?').get(profileId) as { session_size: number; language: string } | undefined;
+  const row = db.prepare("SELECT * FROM user_settings WHERE profile_id = ?").get(profileId) as
+    { session_size: number; language: string } | undefined;
   return {
     sessionSize: row?.session_size || 5,
-    language: (row?.language as 'en' | 'zh-TW') || 'zh-TW',
+    language: (row?.language as "en" | "zh-TW") || "zh-TW",
   };
 }
 
@@ -640,10 +701,12 @@ export function updateSettings(profileId: number, settings: Partial<UserSettings
   const current = getSettings(profileId);
   const sessionSize = settings.sessionSize ?? current.sessionSize;
   const language = settings.language ?? current.language;
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO user_settings (profile_id, session_size, language) VALUES (?, ?, ?)
     ON CONFLICT(profile_id) DO UPDATE SET session_size = ?, language = ?
-  `).run(profileId, sessionSize, language, sessionSize, language);
+  `,
+  ).run(profileId, sessionSize, language, sessionSize, language);
 }
 
 // --- Activity Log ---
@@ -671,40 +734,62 @@ export function saveActivityLog(
   const durationSeconds = startedAt
     ? Math.round((new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000)
     : null;
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO activity_log (profile_id, activity_type, started_at, completed_at, duration_seconds, char_results, new_words, summary)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(profileId, activityType, startedAt, completedAt, durationSeconds, JSON.stringify(charResults), JSON.stringify(newWords), JSON.stringify(summary));
+  `,
+  ).run(
+    profileId,
+    activityType,
+    startedAt,
+    completedAt,
+    durationSeconds,
+    JSON.stringify(charResults),
+    JSON.stringify(newWords),
+    JSON.stringify(summary),
+  );
 }
 
 export function getActivityLog(profileId: number, limit = 50): ActivityLogEntry[] {
-  const rows = db.prepare(
-    'SELECT * FROM activity_log WHERE profile_id = ? ORDER BY completed_at DESC LIMIT ?'
-  ).all(profileId, limit) as {
-    id: number; profile_id: number; activity_type: string; started_at: string | null;
-    completed_at: string; duration_seconds: number | null; char_results: string; new_words: string; summary: string;
+  const rows = db
+    .prepare("SELECT * FROM activity_log WHERE profile_id = ? ORDER BY completed_at DESC LIMIT ?")
+    .all(profileId, limit) as {
+    id: number;
+    profile_id: number;
+    activity_type: string;
+    started_at: string | null;
+    completed_at: string;
+    duration_seconds: number | null;
+    char_results: string;
+    new_words: string;
+    summary: string;
   }[];
-  return rows.map(r => ({
+  return rows.map((r) => ({
     id: r.id,
     profileId: r.profile_id,
     activityType: r.activity_type,
     startedAt: r.started_at,
     completedAt: r.completed_at,
     durationSeconds: r.duration_seconds,
-    charResults: JSON.parse(r.char_results || '[]'),
-    newWords: JSON.parse(r.new_words || '[]'),
-    summary: JSON.parse(r.summary || '{}'),
+    charResults: JSON.parse(r.char_results || "[]"),
+    newWords: JSON.parse(r.new_words || "[]"),
+    summary: JSON.parse(r.summary || "{}"),
   }));
 }
 
 export function addKnownWords(profileId: number, words: string[]) {
-  const row = db.prepare('SELECT known_words FROM profiles WHERE id = ?').get(profileId) as { known_words: string } | undefined;
+  const row = db.prepare("SELECT known_words FROM profiles WHERE id = ?").get(profileId) as
+    { known_words: string } | undefined;
   if (!row) return;
-  const known: string[] = JSON.parse(row.known_words || '[]');
+  const known: string[] = JSON.parse(row.known_words || "[]");
   for (const w of words) {
     if (!known.includes(w)) known.push(w);
   }
-  db.prepare('UPDATE profiles SET known_words = ? WHERE id = ?').run(JSON.stringify(known), profileId);
+  db.prepare("UPDATE profiles SET known_words = ? WHERE id = ?").run(
+    JSON.stringify(known),
+    profileId,
+  );
 }
 
 // --- Active Lessons ---
@@ -716,9 +801,14 @@ export interface ActiveLessonState {
 }
 
 export function getActiveLesson(profileId: number): ActiveLessonState | null {
-  const row = db.prepare('SELECT * FROM active_lessons WHERE profile_id = ?').get(profileId) as {
-    lesson_data: string; sentence_index: number; char_index: number; char_results: string;
-  } | undefined;
+  const row = db.prepare("SELECT * FROM active_lessons WHERE profile_id = ?").get(profileId) as
+    | {
+        lesson_data: string;
+        sentence_index: number;
+        char_index: number;
+        char_results: string;
+      }
+    | undefined;
   if (!row) return null;
   return {
     lessonData: JSON.parse(row.lesson_data),
@@ -729,42 +819,60 @@ export function getActiveLesson(profileId: number): ActiveLessonState | null {
 }
 
 export function saveActiveLesson(profileId: number, state: ActiveLessonState) {
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO active_lessons (profile_id, lesson_data, sentence_index, char_index, char_results)
     VALUES (?, ?, ?, ?, ?)
     ON CONFLICT(profile_id) DO UPDATE SET
       lesson_data = ?, sentence_index = ?, char_index = ?, char_results = ?
-  `).run(
+  `,
+  ).run(
     profileId,
-    JSON.stringify(state.lessonData), state.sentenceIndex, state.charIndex, JSON.stringify(state.charResults),
-    JSON.stringify(state.lessonData), state.sentenceIndex, state.charIndex, JSON.stringify(state.charResults),
+    JSON.stringify(state.lessonData),
+    state.sentenceIndex,
+    state.charIndex,
+    JSON.stringify(state.charResults),
+    JSON.stringify(state.lessonData),
+    state.sentenceIndex,
+    state.charIndex,
+    JSON.stringify(state.charResults),
   );
 }
 
 export function clearActiveLesson(profileId: number) {
-  db.prepare('DELETE FROM active_lessons WHERE profile_id = ?').run(profileId);
+  db.prepare("DELETE FROM active_lessons WHERE profile_id = ?").run(profileId);
 }
 
 export function getActiveLessonStartedAt(profileId: number): string | null {
-  const row = db.prepare('SELECT created_at FROM active_lessons WHERE profile_id = ?').get(profileId) as { created_at: string } | undefined;
+  const row = db
+    .prepare("SELECT created_at FROM active_lessons WHERE profile_id = ?")
+    .get(profileId) as { created_at: string } | undefined;
   return row?.created_at ?? null;
 }
 
-export function getDb() { return db; }
+export function getDb() {
+  return db;
+}
 
 // --- Module Settings ---
 
 export function getModuleSetting(key: string): string | null {
-  const row = db.prepare('SELECT value FROM module_settings WHERE key = ?').get(key) as { value: string } | undefined;
+  const row = db.prepare("SELECT value FROM module_settings WHERE key = ?").get(key) as
+    { value: string } | undefined;
   return row?.value ?? null;
 }
 
 export function setModuleSetting(key: string, value: string) {
-  db.prepare('INSERT INTO module_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?').run(key, value, value);
+  db.prepare(
+    "INSERT INTO module_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = ?",
+  ).run(key, value, value);
 }
 
 export function getAllModuleSettings(): Record<string, string> {
-  const rows = db.prepare('SELECT key, value FROM module_settings').all() as { key: string; value: string }[];
+  const rows = db.prepare("SELECT key, value FROM module_settings").all() as {
+    key: string;
+    value: string;
+  }[];
   const settings: Record<string, string> = {};
   for (const r of rows) settings[r.key] = r.value;
   return settings;
@@ -800,42 +908,65 @@ export interface PracticeSessionRow {
 }
 
 export function createSession(profileId: number, targetWord: string): PracticeSessionRow {
-  const result = db.prepare(
-    'INSERT INTO practice_sessions (profile_id, target_word) VALUES (?, ?)'
-  ).run(profileId, targetWord);
-  return db.prepare('SELECT * FROM practice_sessions WHERE id = ?').get(result.lastInsertRowid) as PracticeSessionRow;
+  const result = db
+    .prepare("INSERT INTO practice_sessions (profile_id, target_word) VALUES (?, ?)")
+    .run(profileId, targetWord);
+  return db
+    .prepare("SELECT * FROM practice_sessions WHERE id = ?")
+    .get(result.lastInsertRowid) as PracticeSessionRow;
 }
 
 export function getActiveSession(profileId: number): PracticeSessionRow | null {
-  return db.prepare(
-    "SELECT * FROM practice_sessions WHERE profile_id = ? AND status = 'active' ORDER BY id DESC LIMIT 1"
-  ).get(profileId) as PracticeSessionRow | undefined || null;
+  return (
+    (db
+      .prepare(
+        "SELECT * FROM practice_sessions WHERE profile_id = ? AND status = 'active' ORDER BY id DESC LIMIT 1",
+      )
+      .get(profileId) as PracticeSessionRow | undefined) || null
+  );
 }
 
 export function updateSession(id: number, updates: Partial<PracticeSessionRow>) {
   const allowed = [
-    'associated_words', 'completed_at', 'duration_ms', 'sentences_shown',
-    'chars_written', 'unique_chars', 'new_chars', 'review_chars',
-    'perfect_count', 'correct_count', 'incorrect_count', 'perfect_rate',
-    'hit_skip_constraint', 'tocfl_coverage', 'movie_coverage', 'book_coverage',
-    'new_chars_unlocked', 'new_words_unlocked', 'chars_regressed', 'status',
+    "associated_words",
+    "completed_at",
+    "duration_ms",
+    "sentences_shown",
+    "chars_written",
+    "unique_chars",
+    "new_chars",
+    "review_chars",
+    "perfect_count",
+    "correct_count",
+    "incorrect_count",
+    "perfect_rate",
+    "hit_skip_constraint",
+    "tocfl_coverage",
+    "movie_coverage",
+    "book_coverage",
+    "new_chars_unlocked",
+    "new_words_unlocked",
+    "chars_regressed",
+    "status",
   ];
   const sets: string[] = [];
   const values: unknown[] = [];
   for (const [key, val] of Object.entries(updates)) {
     if (!allowed.includes(key)) continue;
     sets.push(`${key} = ?`);
-    values.push(typeof val === 'object' ? JSON.stringify(val) : val);
+    values.push(typeof val === "object" ? JSON.stringify(val) : val);
   }
   if (sets.length === 0) return;
   values.push(id);
-  db.prepare(`UPDATE practice_sessions SET ${sets.join(', ')} WHERE id = ?`).run(...values);
+  db.prepare(`UPDATE practice_sessions SET ${sets.join(", ")} WHERE id = ?`).run(...values);
 }
 
 export function getSessionHistory(profileId: number, limit = 50): PracticeSessionRow[] {
-  return db.prepare(
-    "SELECT * FROM practice_sessions WHERE profile_id = ? AND status = 'completed' ORDER BY completed_at DESC LIMIT ?"
-  ).all(profileId, limit) as PracticeSessionRow[];
+  return db
+    .prepare(
+      "SELECT * FROM practice_sessions WHERE profile_id = ? AND status = 'completed' ORDER BY completed_at DESC LIMIT ?",
+    )
+    .all(profileId, limit) as PracticeSessionRow[];
 }
 
 // --- Practice Sentences ---
@@ -861,52 +992,79 @@ export interface PracticeSentenceRow {
 }
 
 export function createPracticeSentence(
-  sessionId: number, profileId: number, templateId: number | null,
-  sentenceText: string, slotFills: Record<string, string>, targetWord: string
+  sessionId: number,
+  profileId: number,
+  templateId: number | null,
+  sentenceText: string,
+  slotFills: Record<string, string>,
+  targetWord: string,
 ): PracticeSentenceRow {
-  const result = db.prepare(`
+  const result = db
+    .prepare(
+      `
     INSERT INTO practice_sentences (session_id, profile_id, template_id, sentence_text, slot_fills, target_word, chars_in_sentence)
     VALUES (?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    sessionId, profileId, templateId, sentenceText, JSON.stringify(slotFills), targetWord,
-    [...sentenceText].filter(c => /[\u4e00-\u9fff]/.test(c)).length,
-  );
-  return db.prepare('SELECT * FROM practice_sentences WHERE id = ?').get(result.lastInsertRowid) as PracticeSentenceRow;
+  `,
+    )
+    .run(
+      sessionId,
+      profileId,
+      templateId,
+      sentenceText,
+      JSON.stringify(slotFills),
+      targetWord,
+      [...sentenceText].filter((c) => /[\u4e00-\u9fff]/.test(c)).length,
+    );
+  return db
+    .prepare("SELECT * FROM practice_sentences WHERE id = ?")
+    .get(result.lastInsertRowid) as PracticeSentenceRow;
 }
 
 export function completePracticeSentence(
   id: number,
-  results: { durationMs: number; completed: boolean; charResults: { char: string; result: string }[] }
+  results: {
+    durationMs: number;
+    completed: boolean;
+    charResults: { char: string; result: string }[];
+  },
 ) {
-  const perfect = results.charResults.filter(r => r.result === 'perfect').length;
-  const correct = results.charResults.filter(r => r.result === 'correct').length;
-  const incorrect = results.charResults.filter(r => r.result === 'incorrect').length;
+  const perfect = results.charResults.filter((r) => r.result === "perfect").length;
+  const correct = results.charResults.filter((r) => r.result === "correct").length;
+  const incorrect = results.charResults.filter((r) => r.result === "incorrect").length;
 
-  db.prepare(`
+  db.prepare(
+    `
     UPDATE practice_sentences SET
       completed_at = datetime('now'), duration_ms = ?,
       completed = ?, abandoned = ?,
       perfect_count = ?, correct_count = ?, incorrect_count = ?,
       char_results = ?
     WHERE id = ?
-  `).run(
+  `,
+  ).run(
     results.durationMs,
-    results.completed ? 1 : 0, results.completed ? 0 : 1,
-    perfect, correct, incorrect,
+    results.completed ? 1 : 0,
+    results.completed ? 0 : 1,
+    perfect,
+    correct,
+    incorrect,
     JSON.stringify(results.charResults),
     id,
   );
 }
 
 export function getSessionSentences(sessionId: number): PracticeSentenceRow[] {
-  return db.prepare('SELECT * FROM practice_sentences WHERE session_id = ? ORDER BY id').all(sessionId) as PracticeSentenceRow[];
+  return db
+    .prepare("SELECT * FROM practice_sentences WHERE session_id = ? ORDER BY id")
+    .all(sessionId) as PracticeSentenceRow[];
 }
 
 // --- Session History (daily aggregates) ---
 
 export function updateDailyHistory(profileId: number, session: PracticeSessionRow) {
   const date = (session.completed_at || session.started_at).slice(0, 10);
-  db.prepare(`
+  db.prepare(
+    `
     INSERT INTO session_history (profile_id, session_date, sessions_count, total_duration_ms, words_learned, chars_practiced, avg_perfect_rate)
     VALUES (?, ?, 1, ?, ?, ?, ?)
     ON CONFLICT(profile_id, session_date) DO UPDATE SET
@@ -915,21 +1073,42 @@ export function updateDailyHistory(profileId: number, session: PracticeSessionRo
       words_learned = words_learned + ?,
       chars_practiced = chars_practiced + ?,
       avg_perfect_rate = (avg_perfect_rate * sessions_count + ?) / (sessions_count + 1)
-  `).run(
-    profileId, date,
+  `,
+  ).run(
+    profileId,
+    date,
     session.duration_ms,
-    JSON.parse(session.new_words_unlocked || '[]').length,
+    JSON.parse(session.new_words_unlocked || "[]").length,
     session.chars_written,
     session.perfect_rate,
     session.duration_ms,
-    JSON.parse(session.new_words_unlocked || '[]').length,
+    JSON.parse(session.new_words_unlocked || "[]").length,
     session.chars_written,
     session.perfect_rate,
   );
 }
 
-export function getDailyHistory(profileId: number, days = 30): { session_date: string; sessions_count: number; total_duration_ms: number; words_learned: number; chars_practiced: number; avg_perfect_rate: number }[] {
-  return db.prepare(
-    'SELECT * FROM session_history WHERE profile_id = ? ORDER BY session_date DESC LIMIT ?'
-  ).all(profileId, days) as { session_date: string; sessions_count: number; total_duration_ms: number; words_learned: number; chars_practiced: number; avg_perfect_rate: number }[];
+export function getDailyHistory(
+  profileId: number,
+  days = 30,
+): {
+  session_date: string;
+  sessions_count: number;
+  total_duration_ms: number;
+  words_learned: number;
+  chars_practiced: number;
+  avg_perfect_rate: number;
+}[] {
+  return db
+    .prepare(
+      "SELECT * FROM session_history WHERE profile_id = ? ORDER BY session_date DESC LIMIT ?",
+    )
+    .all(profileId, days) as {
+    session_date: string;
+    sessions_count: number;
+    total_duration_ms: number;
+    words_learned: number;
+    chars_practiced: number;
+    avg_perfect_rate: number;
+  }[];
 }

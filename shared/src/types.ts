@@ -63,4 +63,4 @@ export interface MergeFieldRow {
   sort_order: number;
 }
 
-export type { MasteryConfig } from './mastery.js';
+export type { MasteryConfig } from "./mastery.js";
