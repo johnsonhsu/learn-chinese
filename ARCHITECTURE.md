@@ -629,7 +629,7 @@ A registry-driven theming system layers an optional alternate skin over the
 default look. **14 themes ship today** (`theme/themes.ts`), organized into picker
 groups (#129): **default** (Indigo — the default _selection_ — and Paper, the
 token-less `:root` baseline), **dark** (Midnight, Outer Space), **soft/seasonal**
-(Sakura, Matcha, Jungle), **retro** (90s, 80s Motiv), **Disney** (Boyish, Girlish),
+(Sakura, Matcha, Jungle, Christmas), **retro** (90s, 80s Motiv), **Disney** (Boyish, Girlish),
 and **foil** — the two premium skins **Gold** (warm foil) and **Silver** (cool
 platinum). Adding another is a single registry entry.
 

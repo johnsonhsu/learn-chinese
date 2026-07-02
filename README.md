@@ -91,7 +91,7 @@ On top of the kit there's a registry-driven **theming system**
 (`platform/src/theme/`) — **14 themes** in `themes.ts`. The default _selection_ is
 **Indigo**; the bare `:root` look is **Paper** (registry id `default`, which sets
 nothing). The picker groups them by category (#129): **default** (Indigo, Paper),
-**dark** (Midnight, Outer Space), **soft/seasonal** (Sakura, Matcha, Jungle),
+**dark** (Midnight, Outer Space), **soft/seasonal** (Sakura, Matcha, Jungle, Christmas),
 **retro** (90s, 80s Motiv), **Disney** (Boyish, Girlish), and **foil** — the two
 premium skins **Gold** (warm foil) and **Silver** (cool platinum). A theme is one
 entry in the `themes.ts` registry; its look is a `body[data-theme="<id>"]` block —
