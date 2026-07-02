@@ -684,6 +684,35 @@ registry entry.
   dropped). On restore, the safety net in `resolveEffectiveTheme` means a premium
   selection without its unlock simply falls back to `default`.
 
+### Orientation & landscape (issue #130)
+
+The app is **portrait-first** but **adapts to landscape**. Every landscape rule
+is gated behind `@media (orientation: landscape)`, so **portrait stays
+pixel-identical**. In landscape the centered columns widen (home / profile /
+settings / onboarding — see the "Landscape support" block in
+`platform/src/index.css`) and the writing pad is fit to the short landscape
+height (the canvas already CSS-scales to its wrapper — the same path a narrow
+portrait phone uses — so stroke-input coordinate mapping is unaffected;
+`modules/writing-challenge/src/App.css`). Reading modules and the char/word
+grids are already fluid (`--content-width` + `auto-fill`), so they use the
+extra width without bespoke rules.
+
+**Orientation policy (`platform/src/hooks/useOrientationLock.ts`).** The
+**Lock-to-portrait** setting is the single source of truth:
+
+- **Lock OFF (default):** the app follows the device — portrait, or the new
+  landscape layouts.
+- **Lock ON:** the user explicitly chose portrait. iOS/iPadOS web cannot force
+  OS orientation, so a full-screen rotate overlay (`.rotate-overlay`, gated by
+  `html.lock-portrait`) blocks landscape with a "rotate back" message. Its
+  **dismiss** turns the lock off through the real store
+  (`window.__setPortraitLock` → `updateSettings`, demo-jar isolated) — not
+  `localStorage` (that was the old no-op bug, issue #112).
+
+The overlay is deliberately **kept** (not deleted): it is the honest fallback
+for users who opted into portrait — reconciling the parent epic's "remove the
+overlay" note with the shipped Lock-to-portrait feature (#98).
+
 ---
 
 ## 5.6 Code-entry keypad (`platform/src/components/CodeEntry.tsx`)
@@ -1071,7 +1100,7 @@ per-profile. Back returns to the picker. Sections, top to bottom:
 | Section                                      | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Notes / gating                                                                                                                                                             |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Language**                                 | App UI language toggle (`繁體中文` / `English`). Writes account `settings.language`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Always shown.                                                                                                                                                              |
-| **Orientation** (`settings.orientationLock`) | **Lock to portrait** toggle. Persists `orientationLock` in account prefs and applies it via the Screen Orientation API when available; best-effort only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Always shown.                                                                                                                                                              |
+| **Orientation** (`settings.orientationLock`) | **Lock to portrait** toggle. **Off by default** — the app adapts to landscape (§5.5 → _Orientation & landscape_). When on, best-effort locks via the Screen Orientation API; since iOS/iPadOS web can't force OS orientation, a full-screen "rotate back to portrait" overlay blocks landscape (its dismiss turns the lock off).                                                                                                                                                                                                                                                                                                   | Always shown.                                                                                                                                                              |
 | **Theme** (`settings.theme`)                 | **Device-level** theme selector (`ThemeSelect`, scope=`device`) — the default look for every profile. Default is free; **Gold/Silver are premium** and each is listed **only after** its own code is redeemed device-wide (premium prerequisite `9000`, then `9900` → Silver / `9901` → Gold, under the Device ID below) — locked skins aren't shown here at all. Persists via `setDeviceTheme` → `localStorage` `lc-gold-mode`.                                                                                                                                                                                                   | Always shown, on every device. Resolution + storage: §5.5. (Replaced the old gold-device-only "Premium" toggle.)                                                           |
 | **Backup & Restore**                         | **Back up now** exports a JSON of all profiles + prefs + theme state + unlocks (`exportBackup`). **Restore from file** parses a backup (`parseBackup`) and opens a modal for **selective** per-profile restore plus an optional "include prefs" toggle (`importBackupSelective`); reloads on success.                                                                                                                                                                                                                                                                                                                              | User data is per-device and never uploaded (§3); this manual JSON file is the only transfer path.                                                                          |
 | **App version** (`settings.update`)          | **Update app now** clears caches + reloads (`onForceUpdate`), enabled only when the origin is reachable (a no-store `GET /data/version.json` poke; disabled offline, with a Retry link). Shows **Device version** (`__CONTENT_VERSION__`, baked at build), **Server version** (from the same poke) with an up-to-date / update-available note, and the **Device ID** (read-or-create UUID in `localStorage` `lc-device-id`; tap to copy — for support). Also holds the **Enter code** link → the `CodeEntry` keypad (§5.6) for redeeming the admin (`8000`→`8001`) and premium (`9000`→`9900`/`9901`) code series at device scope. | Versions are truncated to 8 chars for display. See §4 for `version` vs `contentHash`.                                                                                      |
