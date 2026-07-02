@@ -69,6 +69,9 @@ sentence-bank-todo.md
 sentence-bank-accepted.tsv
 scripts/generated-stories.txt
 scripts/template-candidates.txt
+# sentence-QA harness output (#74) — real run results + generated report are
+# local review artifacts, never committed. The sample FIXTURE is committed.
+scripts/sentence-qa-results/
 .ref-frames/
 
 # ─── Python cache (pytest/opencc) ───
