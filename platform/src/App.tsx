@@ -50,6 +50,7 @@ const WelcomePopup = lazy(() => import("./WelcomePopup.tsx"));
 const LandingPage = lazy(() => import("./LandingPage.tsx"));
 const Styleguide = lazy(() => import("./Styleguide.tsx"));
 const LandscapePreview = lazy(() => import("./LandscapePreview.tsx"));
+const ThreeWorlds = lazy(() => import("./ThreeWorlds.tsx"));
 const DemoGate = lazy(() => import("./DemoGate.tsx"));
 
 interface ModuleManifest {
@@ -157,6 +158,14 @@ function shouldShowStyleguide(): boolean {
   return new URLSearchParams(location.search).has("ui");
 }
 
+// Dev/reference entry: `?devnote=<slug>` renders an internal design note (mirrors
+// `?ui`). Deliberately NOT linked from the app UI — reachable only by visiting
+// the URL directly. Currently the only note is the "three worlds" design
+// exploration (`?devnote=three-worlds`); add future notes as slug branches below.
+function shouldShowDevNote(): boolean {
+  return new URLSearchParams(location.search).has("devnote");
+}
+
 export default function App() {
   if (shouldShowStyleguide()) {
     // `?ui=landscape` is a distinct sub-page of the styleguide (the landscape
@@ -165,6 +174,15 @@ export default function App() {
     return (
       <Suspense fallback={<div className="loading" />}>
         {uiPage === "landscape" ? <LandscapePreview /> : <Styleguide />}
+      </Suspense>
+    );
+  }
+  if (shouldShowDevNote()) {
+    // Only note today is the design exploration; the slug is accepted for
+    // forward-compat so more notes can branch here without new query params.
+    return (
+      <Suspense fallback={<div className="loading" />}>
+        <ThreeWorlds />
       </Suspense>
     );
   }
