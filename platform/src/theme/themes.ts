@@ -109,6 +109,11 @@ export interface Theme {
    * means always available.
    */
   availableMonths?: number[];
+  /**
+   * A feature key (utils/unlocks) that, when redeemed, LIFTS the seasonal gate
+   * so the theme is selectable all year — e.g. Christmas via code 9980.
+   */
+  seasonalUnlockFeature?: string;
   /** Token values are NOT inlined here — kept for registry completeness. */
   cssDefined: true;
 }
@@ -203,8 +208,9 @@ export const THEMES: Theme[] = [
     premium: false,
     arrangement: "grid",
     group: "soft",
-    // Seasonal: only selectable Nov–Jan (issue #128).
+    // Seasonal: only selectable Nov–Jan (issue #128); code 9980 lifts the gate.
     availableMonths: [11, 12, 1],
+    seasonalUnlockFeature: "theme-christmas-allyear",
     cssDefined: true,
   },
   {

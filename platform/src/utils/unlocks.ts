@@ -39,9 +39,9 @@
  * installed instance keeps 'lc-unlocks' untouched. Locked in at module load like
  * theme-store's device-theme key — isDemoMode() is memoized for the page session.
  */
-import { demoKey } from '../offline/demo-key.js';
+import { demoKey } from "../offline/demo-key.js";
 
-const UNLOCKS_KEY = demoKey('lc-unlocks');
+const UNLOCKS_KEY = demoKey("lc-unlocks");
 
 /**
  * What redeeming a single code does. `grant` is the feature key it adds to the
@@ -62,12 +62,14 @@ export interface CodeDef {
  */
 export const CODE_FEATURES: Record<string, CodeDef> = {
   // — Premium series —
-  '9000': { grant: 'premium-prereq' },                          // prerequisite — reveals nothing alone
-  '9900': { grant: 'theme-silver', requires: 'premium-prereq' },
-  '9901': { grant: 'theme-gold', requires: 'premium-prereq' },
+  "9000": { grant: "premium-prereq" }, // prerequisite — reveals nothing alone
+  "9900": { grant: "theme-silver", requires: "premium-prereq" },
+  "9901": { grant: "theme-gold", requires: "premium-prereq" },
+  // — Seasonal-theme all-year unlock (free, no prerequisite) —
+  "9980": { grant: "theme-christmas-allyear" }, // lifts Christmas's Nov–Jan gate → all year
   // — Admin series —
-  '8000': { grant: 'admin-prereq' },                            // prerequisite — reveals nothing alone
-  '8001': { grant: 'admin', requires: 'admin-prereq' },
+  "8000": { grant: "admin-prereq" }, // prerequisite — reveals nothing alone
+  "8001": { grant: "admin", requires: "admin-prereq" },
 };
 
 /** The set of feature keys unlocked on this device. Empty when unset / blocked. */
@@ -77,7 +79,7 @@ export function getUnlockedFeatures(): string[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((v): v is string => typeof v === 'string');
+    return parsed.filter((v): v is string => typeof v === "string");
   } catch {
     return []; // storage blocked or malformed — nothing unlocked
   }
@@ -118,9 +120,9 @@ export function setUnlockedFeatures(keys: string[]): void {
  * message is identical. Both grant nothing.
  */
 export type RedeemResult =
-  | { status: 'granted'; feature: string }
-  | { status: 'prerequisite-missing'; required: string }
-  | { status: 'unknown' };
+  | { status: "granted"; feature: string }
+  | { status: "prerequisite-missing"; required: string }
+  | { status: "unknown" };
 
 /**
  * Redeem a code. Looks it up in CODE_FEATURES; if it has an unmet prerequisite
@@ -130,10 +132,10 @@ export type RedeemResult =
  */
 export function redeemCode(code: string): RedeemResult {
   const def = CODE_FEATURES[code];
-  if (!def) return { status: 'unknown' };
+  if (!def) return { status: "unknown" };
   if (def.requires && !isFeatureUnlocked(def.requires)) {
-    return { status: 'prerequisite-missing', required: def.requires };
+    return { status: "prerequisite-missing", required: def.requires };
   }
   setUnlockedFeatures([def.grant]);
-  return { status: 'granted', feature: def.grant };
+  return { status: "granted", feature: def.grant };
 }

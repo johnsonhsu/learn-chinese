@@ -237,4 +237,14 @@ describe("seasonal theme gating (christmas, issue #128)", () => {
     vi.setSystemTime(new Date("2025-12-15T12:00:00"));
     expect(resolveEffectiveTheme(null)).toBe("christmas");
   });
+
+  it("the all-year unlock (code 9980 → theme-christmas-allyear) lifts the seasonal gate", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-07-15T12:00:00")); // off-season
+    expect(isThemeAvailable(getTheme("christmas"))).toBe(false);
+    setUnlockedFeatures(["theme-christmas-allyear"]);
+    expect(isThemeAvailable(getTheme("christmas"))).toBe(true);
+    setDeviceTheme("christmas");
+    expect(resolveEffectiveTheme(null)).toBe("christmas");
+  });
 });

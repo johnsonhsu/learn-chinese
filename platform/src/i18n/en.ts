@@ -64,6 +64,7 @@ export default {
   "theme.disney-boyish": "Disney: Boyish",
   "theme.disney-girlish": "Disney: Girlish",
   "theme.christmas": "Christmas",
+  "theme.outer-space": "Outer Space",
   "theme.group.default": "Modern",
   "theme.group.dark": "Dark Mode",
   "theme.group.retro": "Retro / 90s",
@@ -125,6 +126,7 @@ export default {
   "unlock.premiumUnlocked": "Premium unlocked — now enter a theme code",
   "unlock.silverUnlocked": "Silver theme unlocked",
   "unlock.goldUnlocked": "Gold theme unlocked",
+  "unlock.christmasUnlocked": "Christmas theme unlocked — available all year",
   "settings.levers": "Tuning levers",
   "levers.title": "Tuning levers",
   "levers.intro":

@@ -135,10 +135,15 @@ export function isDevicePremiumUnlocked(): boolean {
  * not shown at all.
  */
 export function isThemeAvailable(theme: Theme): boolean {
-  // Seasonal gate (issue #128): a theme with `availableMonths` is only
-  // selectable in those months (1-based, user's local time) — applies to free
-  // themes too (e.g. Christmas, Nov–Jan).
-  if (theme.availableMonths && !theme.availableMonths.includes(new Date().getMonth() + 1)) {
+  // Seasonal gate (issue #128): a theme with `availableMonths` is only selectable
+  // in those months (1-based, user's local time) — applies to free themes too
+  // (Christmas, Nov–Jan) — UNLESS its `seasonalUnlockFeature` is redeemed (code
+  // 9980 → Christmas all year), which lifts the season limit.
+  if (
+    theme.availableMonths &&
+    !theme.availableMonths.includes(new Date().getMonth() + 1) &&
+    !(theme.seasonalUnlockFeature != null && isFeatureUnlocked(theme.seasonalUnlockFeature))
+  ) {
     return false;
   }
   if (!theme.premium) return true;
